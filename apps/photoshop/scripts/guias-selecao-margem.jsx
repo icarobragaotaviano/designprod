@@ -1,18 +1,18 @@
 /**
  * @ibd-id photoshop/guias-selecao-margem
- * @ibd-titulo Guias da seleção e margem
- * @ibd-descricao Cria guias nos limites da seleção de pixels e margens internas, externas ou ambas.
+ * @ibd-titulo Remendo de adesivo — seleção e margem
+ * @ibd-descricao Cria guias, seleciona a área total com margem e gera um novo documento mesclado na escala e nas cores do original.
  * @ibd-app photoshop
- * @ibd-versao 1.0.0
- * @ibd-tags guias, margem, selecao, arte-final
+ * @ibd-versao 1.1.0
+ * @ibd-tags remendo, adesivo, guias, margem, arte-final
  *
- * Script independente do Kit Guias e Sangria v1.0.
+ * Remendos v1.1.0: duplicata mesclada e recorte sem reamostragem.
  * Guia: docs/guias-e-sangria.md. Testes locais: npm run test:guias.
  * A execução dentro dos aplicativos Adobe ainda precisa ser validada.
  */
 
 #target photoshop
-/* Kit Guias e Sangria | v1.0 | 21/09/2026
+/* Remendos, Guias e Sangria | v1.1.0 | 21/09/2026
  * ExtendScript/JSX independente, ES3. Windows e macOS desktop.
  * Abra pelo menu Arquivo > Scripts. Consulte docs/guias-e-sangria.md.
  * Valida\u00e7\u00e3o local de l\u00f3gica; execu\u00e7\u00e3o no aplicativo Adobe ainda necess\u00e1ria.
@@ -114,55 +114,55 @@ var G = (function () {
         c.preferredSize = [460, height || 42];
         return c;
     }
-    function marginDialog(title, boundsProvider, resolution, isAI, canvas) {
-        var w = new Window("dialog", title);
+    function patch(bounds, value, unit, resolution, canvas) {
+        validRect(bounds);
+        var raw = toBase(value, unit, resolution);
+        if (raw < 0 || !isFinite(raw)) { throw new Error("A margem precisa ser positiva ou zero."); }
+        // Recorte em pixels inteiros: n\u00e3o reamostrar nem cortar parte de um pixel.
+        var margin = raw === 0 ? 0 : Math.max(1, Math.ceil(raw - 0.000000001));
+        var base = [Math.floor(bounds[0]), Math.floor(bounds[1]), Math.ceil(bounds[2]), Math.ceil(bounds[3])];
+        var total = [base[0]-margin, base[1]-margin, base[2]+margin, base[3]+margin];
+        if (total[0] < 0 || total[1] < 0 || total[2] > canvas[0] || total[3] > canvas[1]) {
+            throw new Error("A margem ultrapassa a imagem existente.\nReduza a margem ou ajuste a sele\u00e7\u00e3o para incluir apenas conte\u00fado da arte.");
+        }
+        var rects = [{name:"\u00c1rea a cobrir", b:base}, {name:"Borda do remendo", b:total}];
+        var local = [], i, b;
+        for (i = 0; i < rects.length; i++) {
+            b = rects[i].b;
+            local.push({name:rects[i].name, b:[b[0]-total[0], b[1]-total[1], b[2]-total[0], b[3]-total[1]]});
+        }
+        return {b:base, total:total, width:total[2]-total[0], height:total[3]-total[1],
+            margin:margin, marginMM:margin*25.4/resolution, guides:plan(rects), localGuides:plan(local)};
+    }
+    function patchDialog(bounds, resolution, canvas) {
+        var w = new Window("dialog", "Remendo de adesivo | Photoshop");
         w.orientation = "column"; w.alignChildren = "fill"; w.spacing = 12; w.margins = 18;
-        message(w, isAI ? "Cria guias nos quatro limites do conjunto selecionado e na margem escolhida." :
-            "Cria guias nos quatro limites da sele\u00e7\u00e3o de pixels e na margem escolhida.", 38);
+        message(w, "A sele\u00e7\u00e3o marca a \u00e1rea a cobrir. A margem amplia o remendo igualmente nos quatro lados.", 38);
         var row = w.add("group");
-        row.add("statictext", undefined, "Margem em cada lado:");
+        row.add("statictext", undefined, "Margem de sobreposi\u00e7\u00e3o:");
         var value = row.add("edittext", undefined, "3"); value.characters = 9;
         var unit = row.add("dropdownlist", undefined, ["mm", "cm", "px", "pt"]); unit.selection = 0;
-        var modes = w.add("dropdownlist", undefined,
-            ["Externa \u2014 para fora", "Interna \u2014 para dentro", "Interna e externa"]);
-        modes.selection = 0;
-        var stroke = null;
-        if (isAI) {
-            stroke = w.add("checkbox", undefined, "Incluir a espessura dos tra\u00e7os"); stroke.value = true;
-            message(w, "Grupos com m\u00e1scara de recorte usam os limites da m\u00e1scara.\nObjetos girados usam o ret\u00e2ngulo horizontal/vertical que os envolve.", 40);
-        } else {
-            message(w, "Sele\u00e7\u00f5es irregulares usam o ret\u00e2ngulo que as envolve.\nA margem em mm, cm ou pt considera os " + fmt(resolution, 2) + " ppi do documento.", 40);
-        }
-        var preview = message(w, "", 48);
-        var status = message(w, "", 48);
+        message(w, "Cria as guias, seleciona toda a \u00e1rea at\u00e9 as guias externas e abre um novo documento com essa regi\u00e3o mesclada.", 42);
+        message(w, "Mant\u00e9m a escala, a resolu\u00e7\u00e3o e as cores do original.\nSele\u00e7\u00f5es irregulares usam o ret\u00e2ngulo que as envolve.", 40);
+        var preview = message(w, "", 66);
+        var status = message(w, "", 42);
         var buttons = w.add("group"); buttons.alignment = "right";
         buttons.add("button", undefined, "Cancelar", {name:"cancel"});
-        var ok = buttons.add("button", undefined, "Criar guias", {name:"ok"});
+        var ok = buttons.add("button", undefined, "Criar remendo", {name:"ok"});
         var result = null;
-        function read() {
-            var b = boundsProvider(stroke ? stroke.value : false);
-            var m = toBase(number(value.text), unit.selection.text, resolution);
-            var rects = rectangles(b, m, modes.selection.index);
-            return {b:b, rects:rects, guides:plan(rects), margin:m};
-        }
+        function read() { return patch(bounds, number(value.text), unit.selection.text, resolution, canvas); }
         function update() {
             try {
-                var c = read(), outside = false, i, b;
-                preview.text = "\u00c1rea: " + fmt(c.b[2]-c.b[0]) + " \u00d7 " + fmt(c.b[3]-c.b[1]) +
-                    (isAI ? " pt" : " px") + "\n" + c.guides.length + " posi\u00e7\u00f5es de guia. As guias existentes ser\u00e3o preservadas.";
-                if (canvas) {
-                    for (i = 0; i < c.rects.length; i++) {
-                        b = c.rects[i].b;
-                        if (b[0] < 0 || b[1] < 0 || b[2] > canvas[0] || b[3] > canvas[1]) { outside = true; }
-                    }
-                }
-                status.text = outside ? "Algumas guias ficar\u00e3o fora da tela. Este script n\u00e3o aumenta a tela." :
-                    "Margem zero cria apenas as guias dos limites originais.";
+                var c = read();
+                preview.text = "Novo documento: " + c.width + " \u00d7 " + c.height + " px\n" +
+                    "Tamanho de impress\u00e3o: " + fmt(c.width*25.4/resolution, 3) + " \u00d7 " +
+                    fmt(c.height*25.4/resolution, 3) + " mm | " + fmt(resolution) + " ppi\n" +
+                    "Margem aplicada: " + c.margin + " px = " + fmt(c.marginMM, 4) + " mm por lado.";
+                status.text = "Medidas arredondadas para fora at\u00e9 pixels inteiros.\nO original recebe as guias e a sele\u00e7\u00e3o total; a imagem n\u00e3o \u00e9 alterada.";
                 ok.enabled = true;
             } catch (e) { preview.text = ""; status.text = e.message; ok.enabled = false; }
         }
-        value.onChanging = update; unit.onChange = update; modes.onChange = update;
-        if (stroke) { stroke.onClick = update; }
+        value.onChanging = update; unit.onChange = update;
         ok.onClick = function () {
             try { result = read(); w.close(1); } catch (e) { alert(e.message); }
         };
@@ -170,7 +170,7 @@ var G = (function () {
         return w.show() === 1 ? result : null;
     }
     return {number:number, toBase:toBase, fmt:fmt, validRect:validRect, rectangles:rectangles,
-        plan:plan, bleed:bleed, union:union, message:message, marginDialog:marginDialog};
+        plan:plan, bleed:bleed, union:union, message:message, patch:patch, patchDialog:patchDialog};
 }());
 
 var PS = (function () {
@@ -228,33 +228,123 @@ var PS = (function () {
         }
         return scan(doc.layerSets);
     }
+    function characteristics(doc) {
+        var type = String(doc.colorProfileType), name = null, channels = [], i;
+        if (type === "undefined") { throw new Error("N\u00e3o foi poss\u00edvel verificar o perfil de cor do documento."); }
+        // Um original sem perfil deve continuar sem perfil: n\u00e3o atribuir o espa\u00e7o de trabalho.
+        if (!/NONE/i.test(type)) { name = doc.colorProfileName; }
+        for (i = 0; i < doc.channels.length; i++) {
+            channels.push({name:doc.channels[i].name, kind:String(doc.channels[i].kind)});
+        }
+        return {resolution:doc.resolution, mode:String(doc.mode), bits:String(doc.bitsPerChannel),
+            aspect:doc.pixelAspectRatio, profileType:type, profileName:name, channels:channels};
+    }
+    function checkCharacteristics(expected, doc) {
+        var actual = characteristics(doc), different = [], i;
+        if (actual.resolution !== expected.resolution) { different.push("resolu\u00e7\u00e3o"); }
+        if (actual.mode !== expected.mode) { different.push("modo de cor"); }
+        if (actual.bits !== expected.bits) { different.push("profundidade de bits"); }
+        if (actual.aspect !== expected.aspect) { different.push("propor\u00e7\u00e3o dos pixels"); }
+        if (actual.profileType !== expected.profileType || actual.profileName !== expected.profileName) {
+            different.push("perfil de cor");
+        }
+        if (actual.channels.length !== expected.channels.length) { different.push("canais"); }
+        else {
+            for (i = 0; i < actual.channels.length; i++) {
+                if (actual.channels[i].name !== expected.channels[i].name || actual.channels[i].kind !== expected.channels[i].kind) {
+                    different.push("canais"); break;
+                }
+            }
+        }
+        if (different.length) {
+            throw new Error("O Photoshop alterou " + different.join(", ") + " ao gerar a c\u00f3pia.\nO remendo foi interrompido para preservar as caracter\u00edsticas do original.");
+        }
+    }
+    function patchName(doc) {
+        var base = doc.name.replace(/\.[^\.]+$/, "") + "_remendo", name = base, counter = 1, i, used;
+        do {
+            used = false;
+            for (i = 0; i < app.documents.length; i++) {
+                if (app.documents[i].name.toLowerCase() === name.toLowerCase()) { used = true; break; }
+            }
+            if (used) { counter++; name = base + "_" + counter; }
+        } while (used);
+        return name;
+    }
     function error(e) {
         alert("N\u00e3o foi poss\u00edvel concluir.\n\n" + e.message +
             (e.line ? "\nLinha: " + e.line : "") + "\n\nAplicativo: Photoshop " + app.version);
     }
-    return {pixels:pixels, history:history, addGuides:addGuides, hasArtboards:hasArtboards, error:error};
+    return {pixels:pixels, history:history, addGuides:addGuides, hasArtboards:hasArtboards, characteristics:characteristics, checkCharacteristics:checkCharacteristics, patchName:patchName, error:error};
 }());
 
-if (!app.documents.length) { alert("Abra um documento e fa\u00e7a uma sele\u00e7\u00e3o de pixels."); return; }
-var doc = app.activeDocument;
+if (!app.documents.length) { alert("Abra a arte existente e selecione a \u00e1rea que o adesivo deve cobrir."); return; }
+var source = app.activeDocument, target = null, before = null, changed = false;
 try {
+    if (PS.hasArtboards(source)) {
+        throw new Error("Esta vers\u00e3o de remendos trabalha com uma tela \u00fanica.\nAbra a arte sem pranchetas para manter o recorte na escala original.");
+    }
     var bounds, canvas;
-    PS.pixels(doc, function () {
+    PS.pixels(source, function () {
         var raw;
-        try { raw = doc.selection.bounds; }
-        catch (e) { throw new Error("Fa\u00e7a uma sele\u00e7\u00e3o com a ferramenta Letreiro (M).\nPara selecionar o conte\u00fado de uma camada, use Ctrl/Cmd + clique na miniatura dela."); }
+        try { raw = source.selection.bounds; }
+        catch (e) { throw new Error("Fa\u00e7a uma sele\u00e7\u00e3o da \u00e1rea a cobrir com a ferramenta Letreiro (M)."); }
         bounds = G.validRect([raw[0].as("px"), raw[1].as("px"), raw[2].as("px"), raw[3].as("px")]);
-        canvas = [doc.width.as("px"), doc.height.as("px")];
+        canvas = [source.width.as("px"), source.height.as("px")];
     });
-    var config = G.marginDialog("Guias da sele\u00e7\u00e3o + margem | Photoshop", function () { return bounds; },
-        doc.resolution, false, canvas);
+    var expected = PS.characteristics(source);
+    var config = G.patchDialog(bounds, source.resolution, canvas);
     if (!config) { return; }
-    var count = 0;
-    PS.history(doc, "Guias da sele\u00e7\u00e3o + margem", function () {
-        PS.pixels(doc, function () { count = PS.addGuides(doc, config.guides); });
+    var count = 0, area = config.total;
+    before = source.activeHistoryState;
+    PS.history(source, "Remendo: guias e sele\u00e7\u00e3o total", function () {
+        PS.pixels(source, function () {
+            count = PS.addGuides(source, config.guides);
+            // Substitui a sele\u00e7\u00e3o pela \u00e1rea TOTAL do remendo, incluindo a margem.
+            source.selection.select([
+                [area[0],area[1]], [area[2],area[1]], [area[2],area[3]], [area[0],area[3]]
+            ], SelectionType.REPLACE, 0, false);
+        });
     });
-    alert(count + " guia(s) criada(s).\n" + (config.guides.length-count) +
-        " posi\u00e7\u00e3o(\u00f5es) j\u00e1 tinha(m) guia.\n\nSe estiverem ocultas: Exibir > Mostrar > Guias.");
-} catch (e) { PS.error(e); }
+    changed = true;
+    // Mescla a composi\u00e7\u00e3o inteira ANTES do recorte: efeitos/ajustes n\u00e3o s\u00e3o
+    // recalculados sobre uma tela menor. A duplicata herda os atributos do arquivo.
+    target = source.duplicate(PS.patchName(source), true);
+    app.activeDocument = target;
+    PS.pixels(target, function () {
+        PS.checkCharacteristics(expected, target);
+        target.selection.deselect();
+        // Sem largura/altura/resolu\u00e7\u00e3o de sa\u00edda: apenas recorte, sem reamostragem.
+        target.crop([UnitValue(area[0],"px"), UnitValue(area[1],"px"),
+            UnitValue(area[2],"px"), UnitValue(area[3],"px")]);
+        if (target.width.as("px") !== config.width || target.height.as("px") !== config.height) {
+            throw new Error("O Photoshop n\u00e3o produziu as dimens\u00f5es exatas do remendo.");
+        }
+        PS.checkCharacteristics(expected, target);
+        if (target.layers.length !== 1) { throw new Error("A c\u00f3pia n\u00e3o resultou em uma \u00fanica camada mesclada."); }
+        // Mostrar a composi\u00e7\u00e3o, mesmo se um canal auxiliar estiver ativo no original.
+        target.activeChannels = target.componentChannels;
+        // Guias do remendo nas coordenadas locais; n\u00e3o transportar guias alheias ao recorte.
+        while (target.guides.length) { target.guides[0].remove(); }
+        PS.addGuides(target, config.localGuides);
+    });
+    alert("Remendo criado: " + config.width + " \u00d7 " + config.height + " px.\n" +
+        "Escala original | " + G.fmt(expected.resolution) + " ppi.\n" +
+        "Margem: " + config.margin + " px por lado.\n\n" +
+        "O original ficou com as guias e a sele\u00e7\u00e3o total.\n" +
+        "O novo documento cont\u00e9m a composi\u00e7\u00e3o mesclada dessa \u00e1rea. Salve o remendo em PSD.");
+} catch (e) {
+    var recovery = "";
+    if (target) {
+        try { target.close(SaveOptions.DONOTSAVECHANGES); }
+        catch (closeError) { recovery += "\nA c\u00f3pia incompleta ficou aberta; verifique-a antes de salvar."; }
+    }
+    try {
+        app.activeDocument = source;
+        if (changed && before) { source.activeHistoryState = before; }
+    } catch (restoreError) { recovery += "\nVerifique as guias e a sele\u00e7\u00e3o no Hist\u00f3rico do original."; }
+    if (recovery) { e = new Error(e.message + recovery); }
+    PS.error(e);
+}
 
 }());

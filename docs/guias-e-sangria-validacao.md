@@ -1,71 +1,72 @@
-# Validação do kit — v1.0
+# Validação — remendos, guias e sangria
 
-Data: 21/09/2026.
+21/09/2026 · Remendos de adesivos 1.1.0.
 
-**28 de 28 verificações locais passaram.** Os cálculos foram executados em JavaScript. As chamadas aos aplicativos foram simuladas com contratos de objetos; Photoshop e Illustrator não foram executados neste ambiente.
+**40 de 40 verificações locais passaram.** Os cálculos foram executados em JavaScript. As chamadas aos aplicativos e o recorte de pixels foram simulados com contratos de objetos; Photoshop e Illustrator não foram executados neste ambiente.
 
-Esses testes verificam a lógica e a recuperação prevista para erros. Não validam renderização de ScriptUI, particularidades de versões Adobe, desempenho em arquivos grandes nem o comportamento real de histórico e guias no aplicativo.
+Esses testes verificam a lógica e a recuperação prevista para erros. Não homologam a renderização de efeitos, fontes, objetos inteligentes, perfis ICC, transparência ou canais dentro do Photoshop. A imagem final ainda requer conferência visual no aplicativo.
 
 ## Como reproduzir
 
 ```bash
-npm run test:guias
+npm run catalog
+npm test
 ```
 
-A suíte lê os scripts em `apps/photoshop/scripts/` e `apps/illustrator/scripts/`. `npm test` executa também a validação estrutural já existente no repositório.
+`npm run test:guias` executa somente a suíte de 40 verificações. Ela lê os scripts reais de `apps/`, sem manter cópias de implementação nos testes. O CI executa `npm test` e confere se o catálogo gerado está sincronizado.
 
-## Verificações executadas
+## O que foi verificado
 
-| Verificação | Resultado |
+| Área | Verificações |
 |---|---|
-| Margem externa: oito posições nos quatro limites e a 10 px deles | Passou |
-| Margem interna e ambas: orientação, simetria e 12 posições | Passou |
-| Margem zero: somente quatro posições | Passou |
-| Margem interna não colapsa nem inverte a área | Passou |
-| Entradas inválidas são recusadas; vírgula decimal é aceita | Passou |
-| Conversões físicas usam a resolução correta | Passou |
-| Sangria 3 mm a 300 ppi: 36 px por lado e corte sem redimensionar | Passou |
-| Sangria física nunca fica abaixo do pedido (diferentes resoluções) | Passou |
-| Sangria rejeita valor zero e negativo | Passou |
-| PS: coordenadas da imagem, preferências e seleção preservadas | Passou |
-| PS: posições existentes são reutilizadas sem apagar guias | Passou |
-| PS: cancelamento e margem inválida não criam guias | Passou |
-| PS: falta de seleção informa o usuário e restaura preferências | Passou |
-| PS: falha parcial ao criar guias reverte a operação inteira | Passou |
-| PS: sangria em cópia mantém original; centro, guias e resolução corretos | Passou |
-| PS: sangria de 20 px no documento atual acrescenta 40 px à tela | Passou |
-| PS: falha de sangria no original reverte tela, conteúdo e guias | Passou |
-| PS: falha na cópia remove apenas a cópia temporária | Passou |
-| PS: documentos com pranchetas são recusados antes de alterar a tela | Passou |
-| AI: guias externas corretas com eixo Y para cima e camada separada | Passou |
-| AI: opção de traços usa limites visíveis ou geométricos | Passou |
-| AI: grupo recortado usa máscara e ignora arte que ultrapassa o recorte | Passou |
-| AI: união de múltiplos objetos e grupos ignora guias selecionadas | Passou |
-| AI: cancelamento preserva a camada e o sistema de coordenadas | Passou |
-| AI: erro parcial remove a camada de guias incompleta | Passou |
-| Sintaxe JavaScript do arquivo completo: guias-selecao-margem.jsx | Passou |
-| Sintaxe JavaScript do arquivo completo: sangria-guias-canvas.jsx | Passou |
-| Sintaxe JavaScript do arquivo completo: guias-selecao-margem.jsx | Passou |
+| Geometria | Margens, unidades, medidas inválidas, retângulos e arredondamento. |
+| Remendo: sequência | Criação de guias antes da seleção total; seleção antes da duplicata mesclada; mesclagem antes do recorte. |
+| Remendo: conteúdo | Em uma matriz de pixels simulada, o resultado corresponde à região da composição incluindo margem e transparência; o original fica intacto. |
+| Remendo: características | Resolução, modo de cor, bits, perfil, condição sem perfil, proporção de pixels e canais. |
+| Remendo: divergência | Cópia recusada se atributos ou dimensões mudarem; original restaurado. |
+| Remendo: falhas | Duplicação, recorte e guias locais podem falhar sem deixar alterações parciais previstas no original. |
+| Remendo: limites | Margem zero, margem fora da arte, seleção fracionária, nome de documento repetido e pranchetas. |
+| Sangria | Dimensões simétricas, cópia opcional, resolução e recuperação de falhas. |
+| Illustrator | Eixo Y, traços, máscaras de recorte, conjuntos de objetos e camada de guias. |
+| Sintaxe | Compilação dos três arquivos em JavaScript após remover `#target`; verificações básicas de sintaxe compatível com ES3. Não equivale a executar o interpretador ExtendScript. |
 
-## Conferência dentro dos aplicativos
+## Conferência do remendo no Photoshop
 
-Faça a conferência em um documento de teste antes de incorporar o kit à produção.
+1. Use uma arte com várias camadas visíveis, uma camada oculta, texto, efeitos e um fundo reconhecível. Faça uma cópia de teste.
+2. Em um documento de **1000 × 600 px a 300 ppi**, selecione **X=100 a 500; Y=100 a 300**.
+3. Execute **Remendo de adesivo — seleção e margem**, com **10 px** por lado.
+4. Confira o resultado abaixo.
 
-| Caso | Entrada | Resultado esperado |
-|---|---|---|
-| Photoshop: seleção | Seleção de X=100 a 500 e Y=100 a 300; margem externa de 10 px. | Guias verticais: 90, 100, 500, 510. Horizontais: 90, 100, 300, 310. |
-| Photoshop: sangria | Tela 1000 × 600 px; 300 ppi; sangria 3 mm; criar em cópia. | Original intacto. Cópia 1072 × 672 px a 300 ppi. Corte: X=36/1036 e Y=36/636. Borda: X=0/1072 e Y=0/672. |
-| Photoshop: recuperação | Desfazer no Histórico após aplicar no documento atual. | Retorno ao tamanho e às guias anteriores. |
-| Illustrator: margem física | Retângulo de 100 × 60 mm; margem de 5 mm. | Distância de 5 mm em cada lado; limites externos de 110 × 70 mm. Guias em camada separada bloqueada. |
-| Illustrator: recorte | Imagem maior que uma máscara retangular, com o grupo selecionado. | Guias nos limites da máscara, e não nos limites da imagem escondida. |
+| Item | Resultado esperado |
+|---|---|
+| Seleção no original | X=90 a 510; Y=90 a 310, substituindo a seleção anterior. |
+| Guias verticais no original | X=90, 100, 500, 510. |
+| Guias horizontais no original | Y=90, 100, 300, 310. |
+| Novo documento | 420 × 220 px, 300 ppi, uma camada mesclada. |
+| Guias verticais no remendo | X=0, 10, 410, 420. |
+| Guias horizontais no remendo | Y=0, 10, 210, 220. |
+| Características | Mesmo modo, bits, perfil, proporção de pixels e canais do original. |
+| Imagem do original | Camadas, visibilidade e conteúdo conservados. |
 
-As guias do Photoshop podem ficar ocultas pelas opções de exibição. As do Illustrator também dependem da visibilidade de guias. Cores e espessuras seguem as preferências do aplicativo.
+Para conferir a imagem, compare o novo documento com o mesmo recorte de uma duplicata mesclada manualmente. Use o mesmo modo, profundidade e perfil; não converta cores ao comparar. Inclua uma região transparente quando houver, e repita em RGB e CMYK conforme o fluxo de produção. Perfis de prova e zoom devem ser equivalentes para uma comparação visual.
 
-## Limites deliberados da versão
+Com **3 mm a 300 ppi**, a mesma seleção deve produzir **472 × 272 px**: 36 px de margem por lado, equivalentes a 3,048 mm. Se a margem sair da tela, o botão de criação deve permanecer indisponível até ajustar o valor ou a seleção.
 
-- Margem uniforme nos quatro lados; sem medidas independentes por lado.
-- Seleções são tratadas como um único retângulo envolvente.
-- Sangria do Photoshop para tela única; documentos com pranchetas são recusados.
-- O script de sangria não prolonga o conteúdo, não salva automaticamente e não cria um PDF de impressão.
-- No Illustrator, o retângulo da máscara de recorte é a referência; máscaras de opacidade e efeitos complexos não têm tratamento próprio.
-- Nenhuma versão específica de Photoshop ou Illustrator foi homologada nesta entrega.
+No original, desfazer a etapa no Histórico deve restaurar as guias e a seleção anteriores. O remendo criado permanece um documento separado, ainda não salvo.
+
+## Outros scripts
+
+| Caso | Resultado esperado |
+|---|---|
+| Sangria: tela 1000 × 600 px, 300 ppi, 3 mm | Cópia de 1072 × 672 px. Corte em X=36/1036 e Y=36/636. |
+| Illustrator: retângulo 100 × 60 mm, margem externa 5 mm | Guias externas delimitam 110 × 70 mm; guias ficam em uma camada separada. |
+| Illustrator: grupo com máscara de recorte | A referência é a máscara, não o conteúdo escondido. |
+
+## Limites da versão
+
+- Remendos e sangria do Photoshop trabalham com uma tela única, sem pranchetas.
+- O remendo é retangular e usa a margem externa como sobreposição. O script de Illustrator continua oferecendo margens internas e externas.
+- A composição é mesclada; o novo documento não conserva a editabilidade das camadas.
+- O script não acrescenta pixels de imagem além da tela original e não salva automaticamente.
+- Os ZIPs antigos são históricos; para criar documentos de remendo, use a versão 1.1 ou o script atual em `apps/photoshop/scripts/`.
+- A validação dentro dos aplicativos Adobe continua pendente.

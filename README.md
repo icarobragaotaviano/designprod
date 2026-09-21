@@ -24,7 +24,7 @@ O painel do plugin **não** tem lista de ferramentas escrita em código: ele lê
 
 ```bash
 npm run validate        # checa metadados, catálogo, includes e manifest
-npm test                # valida estrutura e executa os 28 testes de guias/sangria
+npm test                # valida estrutura e executa os 40 testes de guias, remendos e sangria
 npm run catalog         # regenera catalog.json a partir dos scripts
 npm run install:dev     # instala os scripts nos menus dos apps Adobe
 npm run build:plugin    # empacota o plugin UXP do Photoshop
@@ -42,11 +42,11 @@ Não há dependências externas — só Node 18+.
 | Exportar páginas em PDFs separados | InDesign | Um PDF por página, usando um preset existente |
 | Organizar projeto | After Effects | Estrutura de pastas padrão, itens classificados automaticamente |
 | Renomear camadas / Limpar nomes | Photoshop (UXP) | Ferramentas nativas do painel, sem ExtendScript |
-| Guias da seleção e margem | Photoshop | Guias nos limites da seleção e margem interna, externa ou ambas |
+| Remendo de adesivo — seleção e margem | Photoshop | Cria guias, seleciona a área total com margem e abre um novo documento mesclado na escala original |
 | Sangria por guias e tela | Photoshop | Amplia a tela e marca corte e borda, com opção de criar uma cópia |
 | Guias da seleção e margem | Illustrator | Guias do conjunto selecionado e margem em uma camada separada |
 
-O [kit de guias e sangria](docs/guias-e-sangria.md) inclui instruções e exemplos. O [ZIP da primeira entrega](downloads/kit-guias-e-sangria-v1.zip) está disponível para download. Os cálculos passaram em 28 testes locais com contratos simulados; a execução dentro dos aplicativos Adobe ainda precisa ser validada.
+O [kit de guias e sangria](docs/guias-e-sangria.md) inclui instruções e exemplos. O [ZIP atualizado v1.1](downloads/kit-remendos-guias-e-sangria-v1.1.zip) inclui a criação de documentos de remendo; o [ZIP v1.0](downloads/kit-guias-e-sangria-v1.zip) fica como histórico. A lógica passou em 40 testes locais com contratos simulados; a execução dentro dos aplicativos Adobe ainda precisa ser validada.
 
 ## Estrutura
 

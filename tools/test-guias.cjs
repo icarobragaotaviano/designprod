@@ -105,14 +105,18 @@ function uiMock(config) {
 }
 function runPS(name, config={}) {
   let ctx, nextId=1;
-  const alerts=[], docs=[];
+  const alerts=[], docs=[], events=[];
   function UV(n) { return {value:Number(n),as:()=>Number(n)}; }
   const app={version:'27.0',preferences:{rulerUnits:'mm'},documents:docs,activeDocument:null};
   function docModel(seed) {
     const s=Object.assign({name:'Teste.psd',width:1000,height:600,resolution:300,origin:[81,37],
-      guides:[],selection:[100,100,500,300],layerSets:[],content:[10,20],mutations:0}, seed);
+      guides:[],selection:[100,100,500,300],layerSets:[],content:[10,20],mutations:0,
+      mode:'RGB',bitsPerChannel:'16',pixelAspectRatio:1,colorProfileType:'CUSTOM',colorProfileName:'sRGB IEC61966-2.1',
+      channels:[{name:'Red',kind:'component'},{name:'Green',kind:'component'},{name:'Blue',kind:'component'}],
+      layers:[{name:'Fundo',visible:true},{name:'Arte',visible:true},{name:'Oculta',visible:false}],
+      activeChannelNames:['Red','Green','Blue'],raster:null,isDuplicate:false}, seed);
     s.guides=s.guides.map(x=>({...x})); s.origin=s.origin.slice(); s.content=s.content.slice();
-    const d={id:nextId++, name:s.name, resolution:s.resolution, layerSets:s.layerSets,
+    const d={id:nextId++, name:s.name, layerSets:s.layerSets,
       resizeCanvas(w,h,anchor) {
         assert.equal(anchor,'center');
         const dx=(w.value-s.width)/2,dy=(h.value-s.height)/2;
@@ -121,24 +125,60 @@ function runPS(name, config={}) {
         if(s.selection) s.selection=s.selection.map((v,i)=>v+(i%2?dy:dx));
         s.width=w.value; s.height=h.value; s.mutations++;
       },
-      duplicate(name,merge) { assert.equal(merge,false); return docModel({...plain(s),name}); },
-      close() { docs.splice(docs.indexOf(d),1); },
+      duplicate(name,merge) {
+        events.push({op:'duplicate',doc:d.id,merge});
+        if(config.failDuplicate) throw new Error('Falha simulada ao duplicar');
+        const copy={...plain(s),name,isDuplicate:true,...(config.duplicateMismatch||{})};
+        if(merge) copy.layers=[{name:'Composição mesclada',visible:true}];
+        return docModel(copy);
+      },
+      crop(bounds) {
+        assert.equal(arguments.length,1,'Recorte não deve informar tamanho de saída nem reamostrar');
+        assert.equal(app.activeDocument,d);
+        events.push({op:'crop',doc:d.id,bounds:bounds.map(v=>v.value)});
+        if(config.failCrop) throw new Error('Falha simulada no recorte');
+        const [l,t,r,b]=bounds.map(v=>v.value);
+        if(s.raster) s.raster=s.raster.slice(t,b).map(row=>row.slice(l,r));
+        s.guides.forEach(g=>g.p-=g.axis==='V'?l:t);
+        s.content[0]-=l; s.content[1]-=t;
+        s.width=r-l; s.height=b-t;
+        Object.assign(s,config.cropMismatch||{});
+      },
+      close() { events.push({op:'close',doc:d.id}); docs.splice(docs.indexOf(d),1); },
       suspendHistory(label,code) { vm.runInContext(code,ctx); },
       state:()=>plain(s)
     };
     Object.defineProperties(d,{
       width:{get:()=>UV(s.width)},height:{get:()=>UV(s.height)},
+      resolution:{get:()=>s.resolution},mode:{get:()=>s.mode},bitsPerChannel:{get:()=>s.bitsPerChannel},
+      pixelAspectRatio:{get:()=>s.pixelAspectRatio},colorProfileType:{get:()=>s.colorProfileType},
+      colorProfileName:{get:()=>{
+        if(s.colorProfileType==='NONE') throw new Error('Documento sem perfil');
+        return s.colorProfileName;
+      }},
+      channels:{get:()=>s.channels},layers:{get:()=>s.layers},
+      componentChannels:{get:()=>s.channels.filter(c=>c.kind==='component')},
+      activeChannels:{get:()=>s.channels.filter(c=>s.activeChannelNames.includes(c.name)),set:v=>s.activeChannelNames=v.map(c=>c.name)},
       activeHistoryState:{get:()=>plain(s),set:v=>Object.assign(s,plain(v))},
       guides:{get:()=> {
-        const a=s.guides.map(g=>({direction:g.axis,coordinate:UV(g.p)}));
+        const a=s.guides.map(g=>({direction:g.axis,coordinate:UV(g.p),remove(){s.guides.splice(s.guides.indexOf(g),1);}}));
         a.add=(axis,p)=> {
           if(config.failGuideAt && s.mutations+1===config.failGuideAt) throw new Error('Falha simulada em guia');
+          if(config.failTargetGuide && s.isDuplicate) throw new Error('Falha simulada em guia do remendo');
+          events.push({op:'guide',doc:d.id,axis,p:p.value});
           s.guides.push({axis,p:p.value}); s.mutations++;
         };
         return a;
       }}
     });
-    d.selection={};
+    d.selection={
+      select(points,type,feather,antialias) {
+        assert.equal(app.activeDocument,d); assert.equal(type,'replace'); assert.equal(feather,0); assert.equal(antialias,false);
+        events.push({op:'select',doc:d.id});
+        s.selection=[points[0][0],points[0][1],points[2][0],points[2][1]];
+      },
+      deselect() { s.selection=null; events.push({op:'deselect',doc:d.id}); }
+    };
     Object.defineProperty(d.selection,'bounds',{get:()=>{
       if(!s.selection) throw new Error('Sem seleção');
       return s.selection.map(UV);
@@ -146,22 +186,24 @@ function runPS(name, config={}) {
     docs.push(d); return d;
   }
   const source=docModel(config.seed||{}); app.activeDocument=source;
+  if(config.existingName) docModel({name:config.existingName});
   if(config.noDoc) docs.length=0;
   const sandbox={app,UnitValue:UV,Units:{PIXELS:'px'},Direction:{VERTICAL:'V',HORIZONTAL:'H'},
     AnchorPosition:{MIDDLECENTER:'center'},SaveOptions:{DONOTSAVECHANGES:'no'},
+    SelectionType:{REPLACE:'replace'},
     Window:uiMock(config),alert:s=>alerts.push(s),
     stringIDToTypeID:s=>s,ActionReference:function(){this.putIdentifier=(key,id)=>this.id=id;},
     executeActionGet:ref=>({hasKey:()=>true,getBoolean:()=>ref.id===99})};
   sandbox.$={global:sandbox}; ctx=vm.createContext(sandbox);
   const f=name==='selection'?'apps/photoshop/scripts/guias-selecao-margem.jsx':'apps/photoshop/scripts/sangria-guias-canvas.jsx';
   vm.runInContext(fs.readFileSync(path.join(base,f),'utf8').replace(/^#target[^\n]*\n/gm,''),ctx);
-  return {source,app,docs,alerts};
+  return {source,app,docs,alerts,events};
 }
-test('PS: coordenadas da imagem, preferências e seleção preservadas',()=> {
+test('PS: guias corretas, preferências preservadas e seleção ampliada até a margem',()=> {
   const r=runPS('selection',{value:10,unit:'px'});
   assert.deepEqual(r.source.state().guides.map(g=>g.p),[100,500,100,300,90,510,90,310]);
   assert.deepEqual(r.source.state().origin,[81,37]); assert.equal(r.app.preferences.rulerUnits,'mm');
-  assert.deepEqual(r.source.state().selection,[100,100,500,300]);
+  assert.deepEqual(r.source.state().selection,[90,90,510,310]);
 });
 test('PS: posições existentes são reutilizadas sem apagar guias',()=> {
   const r=runPS('selection',{value:10,unit:'px',seed:{guides:[{axis:'V',p:100},{axis:'H',p:400}]}});
@@ -169,7 +211,7 @@ test('PS: posições existentes são reutilizadas sem apagar guias',()=> {
   assert.ok(r.source.state().guides.some(x=>x.axis==='H'&&x.p===400));
 });
 test('PS: cancelamento e margem inválida não criam guias',()=> {
-  for(const cfg of [{cancel:true},{value:100,unit:'px',mode:1}]) {
+  for(const cfg of [{cancel:true},{value:1000,unit:'px'}]) {
     const r=runPS('selection',cfg); assert.equal(r.source.state().guides.length,0);
     assert.equal(r.app.preferences.rulerUnits,'mm');
   }
@@ -209,6 +251,95 @@ test('PS: falha na cópia remove apenas a cópia temporária',()=> {
 test('PS: documentos com pranchetas são recusados antes de alterar a tela',()=> {
   const r=runPS('bleed',{seed:{layerSets:[{id:99,layerSets:[]}]}});
   assert.equal(r.docs.length,1); assert.equal(r.source.state().width,1000); assert.ok(r.alerts[0].includes('pranchetas'));
+});
+
+test('Remendo: guias → seleção total → duplicata mesclada → recorte',()=> {
+  const r=runPS('selection',{value:10,unit:'px'});
+  const ops=r.events.map(e=>e.op);
+  const selection=ops.indexOf('select'),duplicate=ops.indexOf('duplicate'),crop=ops.indexOf('crop');
+  assert.ok(selection>0&&duplicate>selection&&crop>duplicate);
+  assert.ok(r.events.slice(0,selection).every(e=>e.op==='guide'&&e.doc===r.source.id));
+  assert.equal(r.events[duplicate].merge,true);
+  const out=r.app.activeDocument.state();
+  assert.equal(out.width,420); assert.equal(out.height,220); assert.equal(out.layers.length,1);
+  assert.equal(out.selection,null); assert.equal(r.source.state().layers.length,3);
+});
+test('Remendo: recorte copia os pixels da composição e mantém transparência',()=> {
+  const raster=Array.from({length:6},(_,y)=>Array.from({length:8},(_,x)=>[x*30,y*30,100,x===1?0:255]));
+  const r=runPS('selection',{value:1,unit:'px',seed:{width:8,height:6,selection:[2,2,5,4],raster}});
+  assert.equal(r.docs.length,2);
+  assert.deepEqual(r.app.activeDocument.state().raster,raster.slice(1,5).map(row=>row.slice(1,6)));
+  assert.deepEqual(r.source.state().raster,raster);
+  assert.deepEqual(r.source.state().selection,[1,1,6,5]);
+});
+test('Remendo: modo, resolução, bits, perfil e proporção de pixel são herdados',()=> {
+  const attributes={mode:'CMYK',resolution:150,bitsPerChannel:'16',pixelAspectRatio:1.2,colorProfileType:'CUSTOM',
+    colorProfileName:'ISO Coated v2 300% (ECI)',channels:[{name:'Cyan',kind:'component'},{name:'Magenta',kind:'component'},
+      {name:'Yellow',kind:'component'},{name:'Black',kind:'component'},{name:'Branco',kind:'spot'}]};
+  const r=runPS('selection',{value:10,unit:'px',seed:attributes});
+  assert.equal(r.docs.length,2);
+  for(const key of Object.keys(attributes)) assert.deepEqual(r.app.activeDocument.state()[key],attributes[key]);
+});
+test('Remendo: não atribui um perfil a um original sem perfil',()=> {
+  const r=runPS('selection',{value:0,unit:'px',seed:{colorProfileType:'NONE',colorProfileName:null}});
+  assert.equal(r.docs.length,2); assert.equal(r.app.activeDocument.state().colorProfileType,'NONE');
+  assert.equal(r.app.activeDocument.state().colorProfileName,null);
+});
+test('Remendo: 3 mm a 300 ppi inclui 36 px por lado e guias locais corretas',()=> {
+  const r=runPS('selection',{value:3,unit:'mm'});
+  const out=r.app.activeDocument.state();
+  assert.equal(out.width,472); assert.equal(out.height,272);
+  assert.deepEqual(r.source.state().selection,[64,64,536,336]);
+  assert.deepEqual(out.guides.filter(g=>g.axis==='V').map(g=>g.p).sort((a,b)=>a-b),[0,36,436,472]);
+  assert.deepEqual(out.guides.filter(g=>g.axis==='H').map(g=>g.p).sort((a,b)=>a-b),[0,36,236,272]);
+});
+test('Remendo: coordenadas fracionárias são expandidas sem reamostrar pixels',()=> {
+  const r=runPS('selection',{value:0.2,unit:'px',seed:{selection:[100.25,100.5,500.1,300.1]}});
+  assert.deepEqual(r.source.state().selection,[99,99,502,302]);
+  assert.equal(r.app.activeDocument.state().width,403); assert.equal(r.app.activeDocument.state().height,203);
+});
+test('Remendo: margem zero extrai só a seleção; margem fora da arte é recusada',()=> {
+  const zero=runPS('selection',{value:0,unit:'px'});
+  assert.equal(zero.app.activeDocument.state().width,400); assert.equal(zero.app.activeDocument.state().height,200);
+  const outside=runPS('selection',{value:101,unit:'px'});
+  assert.equal(outside.docs.length,1); assert.equal(outside.source.state().guides.length,0);
+  assert.deepEqual(outside.source.state().selection,[100,100,500,300]);
+});
+test('Remendo: divergência de características na duplicata aborta e reverte',()=> {
+  for(const mismatch of [{resolution:72},{bitsPerChannel:'8'},{mode:'CMYK'},{pixelAspectRatio:1.1},
+    {colorProfileName:'Adobe RGB (1998)'},{colorProfileType:'NONE'},{channels:[]}]) {
+    const r=runPS('selection',{value:10,unit:'px',duplicateMismatch:mismatch});
+    assert.equal(r.docs.length,1); assert.equal(r.app.activeDocument,r.source);
+    assert.equal(r.source.state().guides.length,0); assert.deepEqual(r.source.state().selection,[100,100,500,300]);
+    assert.ok(r.alerts[0].includes('interrompido'));
+  }
+});
+test('Remendo: mudança de resolução ou dimensão durante o recorte aborta',()=> {
+  for(const mismatch of [{resolution:72},{width:419},{height:219}]) {
+    const r=runPS('selection',{value:10,unit:'px',cropMismatch:mismatch});
+    assert.equal(r.docs.length,1); assert.equal(r.source.state().guides.length,0);
+    assert.deepEqual(r.source.state().selection,[100,100,500,300]);
+  }
+});
+test('Remendo: falhas ao duplicar, recortar ou criar guias locais desfazem o original',()=> {
+  for(const failure of [{failDuplicate:true},{failCrop:true},{failTargetGuide:true}]) {
+    const r=runPS('selection',{value:10,unit:'px',...failure,seed:{guides:[{axis:'H',p:77}]}});
+    assert.equal(r.docs.length,1); assert.equal(r.app.activeDocument,r.source);
+    assert.deepEqual(r.source.state().guides,[{axis:'H',p:77}]);
+    assert.deepEqual(r.source.state().selection,[100,100,500,300]);
+    assert.equal(r.app.preferences.rulerUnits,'mm');
+  }
+});
+test('Remendo: nomes distintos e apenas guias do remendo no novo documento',()=> {
+  const r=runPS('selection',{value:10,unit:'px',existingName:'Teste_remendo',seed:{guides:[{axis:'V',p:777}]}});
+  assert.equal(r.app.activeDocument.name,'Teste_remendo_2');
+  assert.equal(r.app.activeDocument.state().guides.length,8);
+  assert.ok(r.source.state().guides.some(g=>g.p===777));
+});
+test('Remendo: pranchetas são recusadas antes de alterar guias ou seleção',()=> {
+  const r=runPS('selection',{seed:{layerSets:[{id:99,layerSets:[]}]}});
+  assert.equal(r.docs.length,1); assert.equal(r.source.state().guides.length,0);
+  assert.ok(r.alerts[0].includes('pranchetas'));
 });
 
 function item(type, geometric, visible=geometric) {
@@ -280,7 +411,7 @@ for(const f of scriptFiles) {
     assert.ok(!code.includes('=>'));
   });
 }
-const report={date:'2026-09-21',kind:'Cálculos reais; contratos dos aplicativos simulados em Node.js. Não executado no Photoshop/Illustrator.',
+const report={date:new Date().toISOString().slice(0,10),kind:'Cálculos reais; contratos dos aplicativos simulados em Node.js. Não executado no Photoshop/Illustrator.',
   passed:results.filter(x=>x.ok).length,total:results.length,results};
 console.log(JSON.stringify(report,null,2));
 if(report.passed!==report.total) process.exit(1);

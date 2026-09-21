@@ -75,16 +75,17 @@
     },
     {
       "id": "photoshop/guias-selecao-margem",
-      "titulo": "Guias da seleção e margem",
-      "descricao": "Cria guias nos limites da seleção de pixels e margens internas, externas ou ambas.",
+      "titulo": "Remendo de adesivo — seleção e margem",
+      "descricao": "Cria guias, seleciona a área total com margem e gera um novo documento mesclado na escala e nas cores do original.",
       "app": "photoshop",
       "tipo": "script",
       "arquivo": "apps/photoshop/scripts/guias-selecao-margem.jsx",
-      "versao": "1.0.0",
+      "versao": "1.1.0",
       "tags": [
+        "remendo",
+        "adesivo",
         "guias",
         "margem",
-        "selecao",
         "arte-final"
       ]
     },

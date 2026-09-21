@@ -1,12 +1,12 @@
-# Kit de guias e sangria — Photoshop e Illustrator
+# Remendos de adesivos, guias e sangria — Photoshop e Illustrator
 
-Versão 1.0 · 21/09/2026 · Caixas de diálogo em português.
+Remendos de adesivos 1.1.0 · Sangria e Illustrator 1.0.0 · 21/09/2026 · Caixas de diálogo em português.
 
 Três scripts `.jsx` independentes para os aplicativos Adobe de desktop. Cada arquivo funciona sozinho, sem instalar plugin ou copiar outros arquivos junto dele.
 
 **Estado desta entrega:** código e cálculos verificados localmente; a execução e a aparência dos diálogos dentro do Photoshop e do Illustrator ainda precisam ser validadas. Não há garantia de compatibilidade com uma versão específica sem esse teste.
 
-A [primeira entrega em ZIP](../downloads/kit-guias-e-sangria-v1.zip) também está preservada. Dentro dela, os nomes originais e o `LEIA-ME.md` continuam correspondentes entre si. Neste repositório, os nomes seguem a convenção em minúsculas e os scripts incluem os metadados `@ibd-*` para o catálogo.
+Baixe o [kit atualizado v1.1](../downloads/kit-remendos-guias-e-sangria-v1.1.zip). A [primeira entrega v1.0](../downloads/kit-guias-e-sangria-v1.zip) permanece como histórico e **não gera documentos de remendos**. O nome do arquivo e o identificador do script no repositório foram mantidos para preservar lançadores e atalhos; o título no catálogo passou a **Remendo de adesivo — seleção e margem**.
 
 ## Comece por aqui
 
@@ -16,7 +16,7 @@ A [primeira entrega em ZIP](../downloads/kit-guias-e-sangria-v1.zip) também est
 
 | Aplicativo | Arquivo | Resultado |
 |---|---|---|
-| Photoshop | `apps/photoshop/scripts/guias-selecao-margem.jsx` | Guias nos limites da seleção e na margem escolhida. |
+| Photoshop | `apps/photoshop/scripts/guias-selecao-margem.jsx` | Guias, seleção total com margem e novo documento mesclado do remendo. |
 | Photoshop | `apps/photoshop/scripts/sangria-guias-canvas.jsx` | Aumenta a tela e cria guias do corte e da borda da sangria. |
 | Illustrator | `apps/illustrator/scripts/guias-selecao-margem.jsx` | Guias nos limites do conjunto selecionado e na margem escolhida. |
 
@@ -24,26 +24,55 @@ A [primeira entrega em ZIP](../downloads/kit-guias-e-sangria-v1.zip) também est
 
 **Illustrator:** Arquivo → Scripts → Outro script… → escolha o `.jsx`. Veja a [orientação da Adobe para scripts do Illustrator](https://helpx.adobe.com/illustrator/desktop/automate-visualize-data/automate-actions/install-and-run-scripts.html).
 
-## 1. Photoshop — seleção + margem
+## 1. Photoshop — remendo de adesivo a partir da arte existente
 
-1. Faça uma seleção com o Letreiro (`M`). Para usar a área ocupada por uma camada, use **Ctrl/Cmd + clique na miniatura da camada**.
-2. Execute `guias-selecao-margem.jsx`.
-3. Digite a margem de cada lado, escolha a unidade e a direção. Clique em **Criar guias**.
+Use `apps/photoshop/scripts/guias-selecao-margem.jsx` para extrair a parte da arte que será impressa como adesivo de remendo.
 
-| Opção | Guias previstas |
+1. Na arte original, selecione a **área que o adesivo precisa cobrir** com o Letreiro (`M`).
+2. Execute o script e informe a **margem de sobreposição por lado** em mm, cm, px ou pt.
+3. Confira o tamanho final e clique em **Criar remendo**.
+4. Salve o novo documento em PSD para conservar os atributos de cor e a profundidade de bits suportados pelo formato.
+
+O script executa esta sequência:
+
+1. Cria quatro guias na área inicial e quatro no limite externo da margem. Guias já existentes na mesma posição são reutilizadas.
+2. **Seleciona, no original, toda a área retangular delimitada pelas guias externas, incluindo a margem.** A seleção anterior é substituída, sem suavização das bordas.
+3. Duplica a composição visível mesclada de toda a arte e, na cópia, recorta somente o retângulo selecionado. A composição é mesclada **antes** do recorte para manter a aparência dos efeitos e ajustes.
+4. Abre o remendo como documento independente, na escala original. O novo documento recebe guias da área inicial e da borda, em suas próprias coordenadas.
+
+**Exemplo:** seleção de 400 × 200 px e margem de 10 px por lado → novo documento de **420 × 220 px**. A imagem da margem vem da região vizinha que já existe na arte.
+
+### Fidelidade ao original
+
+A criação usa uma duplicata nativa com as camadas mescladas. O resultado é a composição visível da área, incluindo fundos, textos e efeitos; não é somente a camada ativa. O remendo não mantém camadas editáveis. A transparência existente deve ser conservada pela composição mesclada, sem acrescentar fundo branco.
+
+O script não redimensiona, não reamostra, não converte o modo de cor, não converte o perfil e não passa pela área de transferência. Confere estes atributos tanto depois da duplicação quanto depois do recorte:
+
+| Atributo | Comportamento |
 |---|---|
-| Externa | 4 nos limites originais + 4 para fora. |
-| Interna | 4 nos limites originais + 4 para dentro. |
-| Interna e externa | 4 originais + 4 internas + 4 externas. |
-| Margem zero | Apenas as 4 originais. |
+| Resolução em ppi | Igual ao original. |
+| Modo de cor | Conserva o modo original, como RGB ou CMYK. |
+| Profundidade de bits | Igual ao original. |
+| Perfil de cor e condição de perfil atribuído | Conserva o perfil; um original sem perfil continua sem perfil. |
+| Proporção dos pixels | Igual ao original. |
+| Canais | Confere quantidade, nomes e tipos, incluindo canais auxiliares. |
+| Largura e altura em pixels | Correspondem exatamente ao retângulo total selecionado. |
 
-Aceita **mm, cm, px e pt**, com vírgula ou ponto decimal. A margem é uniforme nos quatro lados. No Photoshop, as medidas físicas consideram a resolução atual do documento.
+Se o Photoshop devolver características diferentes, dimensões incorretas ou mais de uma camada, o script fecha a cópia incompleta e tenta restaurar as guias e a seleção do original. A conferência de atributos não substitui um teste visual dentro do Photoshop.
 
-Guias que já ocupam a mesma posição são reutilizadas. As demais guias são preservadas. Uma margem interna que eliminaria a área útil é recusada antes de aplicar.
+### Medidas e limites
 
-O script usa o retângulo que envolve toda a seleção, inclusive quando ela é circular, irregular ou tem várias partes. As guias são horizontais e verticais; não acompanham um contorno. Selecionar somente o nome de uma camada no painel não cria uma seleção de pixels.
+A margem é sempre **externa**: trata-se da sobreposição do adesivo. Margem zero recorta apenas a seleção. Aceita vírgula ou ponto decimal. As opções de margem interna e de ambas as direções continuam disponíveis no script de guias do Illustrator.
 
-Se a margem externa sair do documento, as guias poderão ficar fora da tela. Esse script não aumenta o documento. Para visualizar as guias: **Exibir → Mostrar → Guias**.
+Para copiar os pixels existentes sem interpolação, o retângulo da seleção é alinhado para fora à grade de pixels e a margem é arredondada para cima ao pixel inteiro. **3 mm a 300 ppi → 36 px = 3,048 mm por lado.** O diálogo informa a dimensão efetiva antes de executar.
+
+A seleção pode ter qualquer formato, mas o remendo gerado é **retangular**. Seleções com suavização são usadas apenas para medir a área: o recorte final não aplica essa suavização à imagem.
+
+A seleção com a margem precisa caber inteiramente na tela original. Se ultrapassar a imagem, reduza a margem ou ajuste a seleção. O script não inventa, estica ou preenche conteúdo externo. Esta versão trabalha com uma tela única e recusa documentos com pranchetas.
+
+O original continua aberto e conserva sua imagem e suas camadas. Nele são alteradas apenas as guias e a seleção total, agrupadas no Histórico. A cópia fica ativa e ainda não salva, com um nome como `Arte_remendo`; remendos já abertos recebem um sufixo numérico para diferenciar os documentos.
+
+Para mostrar as guias no Photoshop: **Exibir → Mostrar → Guias**.
 
 ## 2. Photoshop — sangria por guias e tamanho da tela
 
@@ -84,7 +113,7 @@ Para visualizar: **Exibir → Guias → Mostrar guias**. Para remover o conjunto
 
 No Photoshop, você pode copiar os dois arquivos para **Presets/Scripts** dentro da pasta do aplicativo e reiniciar o programa para exibi-los no menu. O uso por **Procurar…** dispensa essa instalação.
 
-No Photoshop, as alterações são agrupadas no Histórico com o nome da operação, permitindo desfazer o conjunto. Em caso de erro, o script tenta restaurar o estado anterior; na sangria feita em cópia, tenta fechar somente a cópia temporária.
+No Photoshop, as guias e a seleção do original são agrupadas no Histórico. Desfazer essa etapa restaura o original, mas não fecha um remendo já criado: ele é um documento independente. Em caso de erro na criação, o script tenta restaurar o original e fechar a cópia incompleta. A sangria mantém seu próprio agrupamento no Histórico.
 
 No Illustrator, a recuperação de erro remove a camada de guias que estava sendo criada. O script restaura o sistema de coordenadas e a seleção anteriores.
 
@@ -99,4 +128,4 @@ npm run catalog
 npm test
 ```
 
-Os três scripts continuam independentes, com os auxiliares incorporados em cada arquivo. `tools/test-guias.cjs` lê os arquivos reais em `apps/`, executa os cálculos e simula os contratos dos aplicativos. Ele não substitui a conferência no Photoshop e no Illustrator.
+Os três scripts continuam independentes, com os auxiliares incorporados em cada arquivo. `tools/test-guias.cjs` lê os arquivos reais em `apps/`, executa os cálculos e simula os contratos dos aplicativos. São 40 verificações locais, incluindo as de extração de remendos. Elas não substituem a conferência no Photoshop e no Illustrator.
