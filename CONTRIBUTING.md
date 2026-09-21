@@ -3,10 +3,10 @@
 ## Antes do commit
 
 ```bash
-npm run catalog && npm run validate
+npm run catalog && npm test
 ```
 
-O CI roda a mesma coisa. Metadado incompleto, catálogo desatualizado, `#include` quebrado ou manifest inválido reprovam o push.
+O CI roda a mesma coisa, incluindo os 28 testes locais de guias e sangria com contratos dos aplicativos simulados. Metadado incompleto, catálogo desatualizado, `#include` quebrado ou manifest inválido reprovam o push.
 
 ## Convenções
 

@@ -1,0 +1,260 @@
+/**
+ * @ibd-id photoshop/guias-selecao-margem
+ * @ibd-titulo Guias da seleção e margem
+ * @ibd-descricao Cria guias nos limites da seleção de pixels e margens internas, externas ou ambas.
+ * @ibd-app photoshop
+ * @ibd-versao 1.0.0
+ * @ibd-tags guias, margem, selecao, arte-final
+ *
+ * Script independente do Kit Guias e Sangria v1.0.
+ * Guia: docs/guias-e-sangria.md. Testes locais: npm run test:guias.
+ * A execução dentro dos aplicativos Adobe ainda precisa ser validada.
+ */
+
+#target photoshop
+/* Kit Guias e Sangria | v1.0 | 21/09/2026
+ * ExtendScript/JSX independente, ES3. Windows e macOS desktop.
+ * Abra pelo menu Arquivo > Scripts. Consulte docs/guias-e-sangria.md.
+ * Valida\u00e7\u00e3o local de l\u00f3gica; execu\u00e7\u00e3o no aplicativo Adobe ainda necess\u00e1ria.
+ */
+(function () {
+// Core geom\u00e9trico ES3. Incorporado em cada JSX: n\u00e3o requer arquivos auxiliares.
+var G = (function () {
+    function number(text) {
+        var s = String(text).replace(/^\s+|\s+$/g, "").replace(",", ".");
+        if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(s)) {
+            throw new Error("Digite um n\u00famero positivo ou zero, sem separador de milhar.");
+        }
+        var v = Number(s);
+        if (!isFinite(v)) { throw new Error("O valor informado \u00e9 muito grande."); }
+        return v;
+    }
+    function toBase(v, unit, resolution) {
+        var f = unit === "mm" ? resolution / 25.4 :
+            unit === "cm" ? resolution / 2.54 :
+            unit === "pt" ? resolution / 72 : 1;
+        var result = v * f;
+        if (!isFinite(result)) { throw new Error("A medida ultrapassa o limite num\u00e9rico."); }
+        return result;
+    }
+    function fmt(v, decimals) {
+        return Number(v).toFixed(decimals === undefined ? 2 : decimals).replace(".", ",");
+    }
+    // Todos os ret\u00e2ngulos internos usam [esquerda, topo, direita, base], y para baixo.
+    function validRect(b) {
+        var i;
+        if (!b || b.length !== 4) { throw new Error("N\u00e3o foi poss\u00edvel medir a \u00e1rea."); }
+        for (i = 0; i < 4; i++) {
+            if (!isFinite(b[i])) { throw new Error("A \u00e1rea cont\u00e9m uma coordenada inv\u00e1lida."); }
+        }
+        if (b[2] <= b[0] || b[3] <= b[1]) {
+            throw new Error("A \u00e1rea precisa ter largura e altura maiores que zero.");
+        }
+        return b;
+    }
+    function rectangles(b, m, mode) {
+        validRect(b);
+        if (!isFinite(m) || m < 0) { throw new Error("A margem precisa ser positiva ou zero."); }
+        var rects = [{name: "Limite original", b: b.slice(0)}];
+        if (m === 0) { return rects; }
+        if (mode === 1 || mode === 2) {
+            if (2 * m >= b[2] - b[0] || 2 * m >= b[3] - b[1]) {
+                throw new Error("A margem interna deve ser menor que metade da largura e da altura.");
+            }
+            rects.push({name: "Margem interna", b: [b[0]+m, b[1]+m, b[2]-m, b[3]-m]});
+        }
+        if (mode === 0 || mode === 2) {
+            rects.push({name: "Margem externa", b: [b[0]-m, b[1]-m, b[2]+m, b[3]+m]});
+        }
+        var i;
+        for (i = 0; i < rects.length; i++) { validRect(rects[i].b); }
+        return rects;
+    }
+    function plan(rects) {
+        var out = [], i, j, k, b, candidates, match;
+        for (i = 0; i < rects.length; i++) {
+            b = rects[i].b;
+            candidates = [{axis:"V",p:b[0]}, {axis:"V",p:b[2]},
+                {axis:"H",p:b[1]}, {axis:"H",p:b[3]}];
+            for (j = 0; j < candidates.length; j++) {
+                match = false;
+                for (k = 0; k < out.length; k++) {
+                    if (out[k].axis === candidates[j].axis &&
+                        Math.abs(out[k].p - candidates[j].p) < 0.000001) { match = true; break; }
+                }
+                if (!match) {
+                    candidates[j].name = rects[i].name;
+                    out.push(candidates[j]);
+                }
+            }
+        }
+        return out;
+    }
+    function bleed(w, h, value, unit, resolution) {
+        if (!isFinite(w) || !isFinite(h) || w <= 0 || h <= 0 ||
+            !isFinite(resolution) || resolution <= 0 || !isFinite(value) || value <= 0) {
+            throw new Error("Informe uma sangria maior que zero.");
+        }
+        var raw = toBase(value, unit, resolution);
+        // Subtrai apenas ru\u00eddo de ponto flutuante pr\u00f3ximo a um inteiro.
+        var px = Math.max(1, Math.ceil(raw - 0.000000001));
+        var nw = w + 2 * px, nh = h + 2 * px;
+        if (!isFinite(nw) || !isFinite(nh)) { throw new Error("O tamanho final \u00e9 muito grande."); }
+        return {px:px, width:nw, height:nh, mm:px * 25.4 / resolution,
+            rects:[{name:"Corte", b:[px, px, px+w, px+h]},
+                   {name:"Borda da sangria", b:[0, 0, nw, nh]}]};
+    }
+    function union(a, b) {
+        if (!a) { return b.slice(0); }
+        return [Math.min(a[0],b[0]), Math.min(a[1],b[1]),
+                Math.max(a[2],b[2]), Math.max(a[3],b[3])];
+    }
+    function message(parent, text, height) {
+        var c = parent.add("statictext", undefined, text, {multiline:true});
+        c.preferredSize = [460, height || 42];
+        return c;
+    }
+    function marginDialog(title, boundsProvider, resolution, isAI, canvas) {
+        var w = new Window("dialog", title);
+        w.orientation = "column"; w.alignChildren = "fill"; w.spacing = 12; w.margins = 18;
+        message(w, isAI ? "Cria guias nos quatro limites do conjunto selecionado e na margem escolhida." :
+            "Cria guias nos quatro limites da sele\u00e7\u00e3o de pixels e na margem escolhida.", 38);
+        var row = w.add("group");
+        row.add("statictext", undefined, "Margem em cada lado:");
+        var value = row.add("edittext", undefined, "3"); value.characters = 9;
+        var unit = row.add("dropdownlist", undefined, ["mm", "cm", "px", "pt"]); unit.selection = 0;
+        var modes = w.add("dropdownlist", undefined,
+            ["Externa \u2014 para fora", "Interna \u2014 para dentro", "Interna e externa"]);
+        modes.selection = 0;
+        var stroke = null;
+        if (isAI) {
+            stroke = w.add("checkbox", undefined, "Incluir a espessura dos tra\u00e7os"); stroke.value = true;
+            message(w, "Grupos com m\u00e1scara de recorte usam os limites da m\u00e1scara.\nObjetos girados usam o ret\u00e2ngulo horizontal/vertical que os envolve.", 40);
+        } else {
+            message(w, "Sele\u00e7\u00f5es irregulares usam o ret\u00e2ngulo que as envolve.\nA margem em mm, cm ou pt considera os " + fmt(resolution, 2) + " ppi do documento.", 40);
+        }
+        var preview = message(w, "", 48);
+        var status = message(w, "", 48);
+        var buttons = w.add("group"); buttons.alignment = "right";
+        buttons.add("button", undefined, "Cancelar", {name:"cancel"});
+        var ok = buttons.add("button", undefined, "Criar guias", {name:"ok"});
+        var result = null;
+        function read() {
+            var b = boundsProvider(stroke ? stroke.value : false);
+            var m = toBase(number(value.text), unit.selection.text, resolution);
+            var rects = rectangles(b, m, modes.selection.index);
+            return {b:b, rects:rects, guides:plan(rects), margin:m};
+        }
+        function update() {
+            try {
+                var c = read(), outside = false, i, b;
+                preview.text = "\u00c1rea: " + fmt(c.b[2]-c.b[0]) + " \u00d7 " + fmt(c.b[3]-c.b[1]) +
+                    (isAI ? " pt" : " px") + "\n" + c.guides.length + " posi\u00e7\u00f5es de guia. As guias existentes ser\u00e3o preservadas.";
+                if (canvas) {
+                    for (i = 0; i < c.rects.length; i++) {
+                        b = c.rects[i].b;
+                        if (b[0] < 0 || b[1] < 0 || b[2] > canvas[0] || b[3] > canvas[1]) { outside = true; }
+                    }
+                }
+                status.text = outside ? "Algumas guias ficar\u00e3o fora da tela. Este script n\u00e3o aumenta a tela." :
+                    "Margem zero cria apenas as guias dos limites originais.";
+                ok.enabled = true;
+            } catch (e) { preview.text = ""; status.text = e.message; ok.enabled = false; }
+        }
+        value.onChanging = update; unit.onChange = update; modes.onChange = update;
+        if (stroke) { stroke.onClick = update; }
+        ok.onClick = function () {
+            try { result = read(); w.close(1); } catch (e) { alert(e.message); }
+        };
+        update(); w.center(); value.active = true;
+        return w.show() === 1 ? result : null;
+    }
+    return {number:number, toBase:toBase, fmt:fmt, validRect:validRect, rectangles:rectangles,
+        plan:plan, bleed:bleed, union:union, message:message, marginDialog:marginDialog};
+}());
+
+var PS = (function () {
+    function pixels(doc, fn) {
+        var oldUnits = app.preferences.rulerUnits;
+        try {
+            app.preferences.rulerUnits = Units.PIXELS;
+            // O DOM do Photoshop usa coordenadas da imagem. Document.rulerOrigin
+            // pertence ao Illustrator e n\u00e3o \u00e9 uma propriedade do DOM legado do PS.
+            return fn();
+        } finally { app.preferences.rulerUnits = oldUnits; }
+    }
+    function history(doc, label, fn) {
+        var before = doc.activeHistoryState, failure = null;
+        var key = "__ICARO_GUIAS_" + new Date().getTime();
+        $.global[key] = function () { try { fn(); } catch (e) { failure = e; } };
+        try {
+            doc.suspendHistory(label, "$.global." + key + "();");
+            if (failure) { throw failure; }
+        } catch (e) {
+            try { doc.activeHistoryState = before; }
+            catch (rollbackError) {
+                throw new Error(e.message + "\nN\u00e3o foi poss\u00edvel reverter automaticamente. Verifique o painel Hist\u00f3rico.");
+            }
+            throw e;
+        } finally { delete $.global[key]; }
+    }
+    function addGuides(doc, guides) {
+        var i, j, axis, existing, count = 0;
+        for (i = 0; i < guides.length; i++) {
+            axis = guides[i].axis === "V" ? Direction.VERTICAL : Direction.HORIZONTAL;
+            existing = false;
+            for (j = 0; j < doc.guides.length; j++) {
+                if (doc.guides[j].direction === axis &&
+                    Math.abs(doc.guides[j].coordinate.as("px") - guides[i].p) < 0.000001) {
+                    existing = true; break;
+                }
+            }
+            if (!existing) { doc.guides.add(axis, UnitValue(guides[i].p, "px")); count++; }
+        }
+        return count;
+    }
+    function hasArtboards(doc) {
+        if (parseFloat(app.version) < 16) { return false; }
+        function scan(sets) {
+            var i, ref, desc, key = stringIDToTypeID("artboardEnabled");
+            for (i = 0; i < sets.length; i++) {
+                ref = new ActionReference();
+                ref.putIdentifier(stringIDToTypeID("layer"), sets[i].id);
+                desc = executeActionGet(ref);
+                if (desc.hasKey(key) && desc.getBoolean(key)) { return true; }
+                if (scan(sets[i].layerSets)) { return true; }
+            }
+            return false;
+        }
+        return scan(doc.layerSets);
+    }
+    function error(e) {
+        alert("N\u00e3o foi poss\u00edvel concluir.\n\n" + e.message +
+            (e.line ? "\nLinha: " + e.line : "") + "\n\nAplicativo: Photoshop " + app.version);
+    }
+    return {pixels:pixels, history:history, addGuides:addGuides, hasArtboards:hasArtboards, error:error};
+}());
+
+if (!app.documents.length) { alert("Abra um documento e fa\u00e7a uma sele\u00e7\u00e3o de pixels."); return; }
+var doc = app.activeDocument;
+try {
+    var bounds, canvas;
+    PS.pixels(doc, function () {
+        var raw;
+        try { raw = doc.selection.bounds; }
+        catch (e) { throw new Error("Fa\u00e7a uma sele\u00e7\u00e3o com a ferramenta Letreiro (M).\nPara selecionar o conte\u00fado de uma camada, use Ctrl/Cmd + clique na miniatura dela."); }
+        bounds = G.validRect([raw[0].as("px"), raw[1].as("px"), raw[2].as("px"), raw[3].as("px")]);
+        canvas = [doc.width.as("px"), doc.height.as("px")];
+    });
+    var config = G.marginDialog("Guias da sele\u00e7\u00e3o + margem | Photoshop", function () { return bounds; },
+        doc.resolution, false, canvas);
+    if (!config) { return; }
+    var count = 0;
+    PS.history(doc, "Guias da sele\u00e7\u00e3o + margem", function () {
+        PS.pixels(doc, function () { count = PS.addGuides(doc, config.guides); });
+    });
+    alert(count + " guia(s) criada(s).\n" + (config.guides.length-count) +
+        " posi\u00e7\u00e3o(\u00f5es) j\u00e1 tinha(m) guia.\n\nSe estiverem ocultas: Exibir > Mostrar > Guias.");
+} catch (e) { PS.error(e); }
+
+}());

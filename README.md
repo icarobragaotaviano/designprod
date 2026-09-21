@@ -24,6 +24,7 @@ O painel do plugin **não** tem lista de ferramentas escrita em código: ele lê
 
 ```bash
 npm run validate        # checa metadados, catálogo, includes e manifest
+npm test                # valida estrutura e executa os 28 testes de guias/sangria
 npm run catalog         # regenera catalog.json a partir dos scripts
 npm run install:dev     # instala os scripts nos menus dos apps Adobe
 npm run build:plugin    # empacota o plugin UXP do Photoshop
@@ -41,6 +42,11 @@ Não há dependências externas — só Node 18+.
 | Exportar páginas em PDFs separados | InDesign | Um PDF por página, usando um preset existente |
 | Organizar projeto | After Effects | Estrutura de pastas padrão, itens classificados automaticamente |
 | Renomear camadas / Limpar nomes | Photoshop (UXP) | Ferramentas nativas do painel, sem ExtendScript |
+| Guias da seleção e margem | Photoshop | Guias nos limites da seleção e margem interna, externa ou ambas |
+| Sangria por guias e tela | Photoshop | Amplia a tela e marca corte e borda, com opção de criar uma cópia |
+| Guias da seleção e margem | Illustrator | Guias do conjunto selecionado e margem em uma camada separada |
+
+O [kit de guias e sangria](docs/guias-e-sangria.md) inclui instruções e exemplos. O [ZIP da primeira entrega](downloads/kit-guias-e-sangria-v1.zip) está disponível para download. Os cálculos passaram em 28 testes locais com contratos simulados; a execução dentro dos aplicativos Adobe ainda precisa ser validada.
 
 ## Estrutura
 
@@ -67,6 +73,8 @@ Detalhes em [docs/guia-script.md](docs/guia-script.md).
 
 ## Documentação
 
+- [docs/guias-e-sangria.md](docs/guias-e-sangria.md) — uso dos três scripts e download do kit
+- [docs/guias-e-sangria-validacao.md](docs/guias-e-sangria-validacao.md) — testes locais e conferência nos apps
 - [docs/instalacao.md](docs/instalacao.md) — instalar scripts e plugin
 - [docs/arquitetura.md](docs/arquitetura.md) — decisões estruturais e por quê
 - [docs/guia-script.md](docs/guia-script.md) — padrão de script e API do core

@@ -15,8 +15,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Validar metadados, catálogo e manifest
-        run: npm run validate
+      - name: Validar estrutura e testar guias e sangria
+        run: npm test
 
       - name: Conferir se o catálogo está sincronizado
         run: |

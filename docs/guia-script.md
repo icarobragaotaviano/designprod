@@ -108,7 +108,7 @@ Tipos de campo: `texto`, `numero`, `booleano`, `escolha` (usa `opcoes`), `pasta`
 
 ## Testar
 
-ExtendScript não tem suíte de teste automatizada — o CI valida estrutura, não comportamento. Antes de marcar um script como pronto:
+O CI valida a estrutura do repositório. Para o kit de guias e sangria, `npm run test:guias` também executa 28 verificações de lógica com os contratos dos aplicativos simulados em Node.js. Esses testes não executam ExtendScript dentro dos aplicativos Adobe. Antes de marcar um script como pronto:
 
 1. Rode com 1 item.
 2. Rode com 30 itens e cancele no meio.

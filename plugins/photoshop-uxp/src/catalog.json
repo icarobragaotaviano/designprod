@@ -31,6 +31,21 @@
       ]
     },
     {
+      "id": "illustrator/guias-selecao-margem",
+      "titulo": "Guias da seleção e margem",
+      "descricao": "Cria guias nos limites do conjunto selecionado e na margem escolhida, em uma camada separada.",
+      "app": "illustrator",
+      "tipo": "script",
+      "arquivo": "apps/illustrator/scripts/guias-selecao-margem.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "guias",
+        "margem",
+        "selecao",
+        "arte-final"
+      ]
+    },
+    {
       "id": "indesign/exportar-paginas-pdf",
       "titulo": "Exportar paginas em PDFs separados",
       "descricao": "Gera um PDF por pagina do documento usando um preset de exportacao existente.",
@@ -59,6 +74,21 @@
       ]
     },
     {
+      "id": "photoshop/guias-selecao-margem",
+      "titulo": "Guias da seleção e margem",
+      "descricao": "Cria guias nos limites da seleção de pixels e margens internas, externas ou ambas.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/guias-selecao-margem.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "guias",
+        "margem",
+        "selecao",
+        "arte-final"
+      ]
+    },
+    {
       "id": "photoshop/redimensionar-lote",
       "titulo": "Redimensionar em lote",
       "descricao": "Abre os arquivos de uma pasta, reduz para um lado maximo e salva em JPG ou PNG na pasta de saida. Nao altera os originais.",
@@ -70,6 +100,21 @@
         "lote",
         "redimensionar",
         "export"
+      ]
+    },
+    {
+      "id": "photoshop/sangria-guias-canvas",
+      "titulo": "Sangria por guias e tela",
+      "descricao": "Acrescenta sangria uniforme à tela, com guias do corte e da borda externa, sem redimensionar a arte.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/sangria-guias-canvas.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "sangria",
+        "guias",
+        "canvas",
+        "arte-final"
       ]
     }
   ]
