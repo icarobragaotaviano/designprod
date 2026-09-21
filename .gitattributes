@@ -1,0 +1,12 @@
+* text=auto eol=lf
+*.atn binary
+*.asl binary
+*.grd binary
+*.abr binary
+*.tpl binary
+*.ai binary
+*.psd binary
+*.png binary
+*.jpg binary
+*.icc binary
+*.jsxbin binary

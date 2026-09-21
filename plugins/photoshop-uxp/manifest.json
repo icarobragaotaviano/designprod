@@ -1,0 +1,59 @@
+{
+  "manifestVersion": 5,
+  "id": "com.ibd.photoshop.ferramentas",
+  "name": "IBD Ferramentas",
+  "version": "0.1.0",
+  "main": "src/index.html",
+  "host": [
+    {
+      "app": "PS",
+      "minVersion": "24.0.0"
+    }
+  ],
+  "entrypoints": [
+    {
+      "type": "panel",
+      "id": "ibd.painel",
+      "label": {
+        "default": "IBD Ferramentas"
+      },
+      "minimumSize": {
+        "width": 260,
+        "height": 240
+      },
+      "maximumSize": {
+        "width": 2000,
+        "height": 2000
+      },
+      "preferredDockedSize": {
+        "width": 320,
+        "height": 520
+      },
+      "preferredFloatingSize": {
+        "width": 380,
+        "height": 620
+      }
+    }
+  ],
+  "requiredPermissions": {
+    "localFileSystem": "fullAccess"
+  },
+  "icons": [
+    {
+      "width": 48,
+      "height": 48,
+      "path": "src/icons/icone-48.png",
+      "scale": [
+        1,
+        2
+      ],
+      "theme": [
+        "darkest",
+        "dark",
+        "medium",
+        "lightest",
+        "light"
+      ]
+    }
+  ]
+}

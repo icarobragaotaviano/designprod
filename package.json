@@ -1,0 +1,20 @@
+{
+  "name": "designprod",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Scripts, actions e plugins Adobe do estudio IBD",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "validate": "node tools/validate.mjs",
+    "catalog": "node tools/build-catalog.mjs",
+    "new": "node tools/new-script.mjs",
+    "install:dev": "node tools/install-dev.mjs",
+    "uninstall:dev": "node tools/install-dev.mjs --remove",
+    "build:plugin": "node tools/build-plugin.mjs photoshop-uxp",
+    "test": "npm run validate"
+  },
+  "license": "MIT"
+}

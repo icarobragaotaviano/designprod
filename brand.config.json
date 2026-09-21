@@ -1,0 +1,23 @@
+{
+  "$schema": "./tools/schema/brand.schema.json",
+  "id": "ibd",
+  "nome": "IBD",
+  "nomeCompleto": "Ícaro Braga Design",
+  "prefixoNamespace": "IBD",
+  "autor": "Ícaro Braga",
+  "site": "",
+  "suporte": "",
+  "cores": {
+    "fundo": "#0E0E10",
+    "superficie": "#1A1A1E",
+    "texto": "#F4F4F5",
+    "textoSecundario": "#A1A1AA",
+    "acento": "#FFD21E",
+    "acentoTexto": "#0E0E10",
+    "borda": "#2A2A31",
+    "erro": "#F87171",
+    "sucesso": "#4ADE80"
+  },
+  "menuScripts": "IBD",
+  "versao": "0.1.0"
+}
