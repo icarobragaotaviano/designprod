@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{MARCA}} — Ferramentas de produção Adobe</title>
+    <meta name="description" content="Catálogo de scripts, actions e plugins Adobe do estúdio {{NOME_COMPLETO}}." />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="data:image/svg+xml,{{FAVICON}}" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="pular" href="#lista">Pular para a lista</a>
+
+    <header class="topo">
+      <div class="topo-marca">
+        <span class="sigla" aria-hidden="true">{{MARCA}}</span>
+        <div>
+          <h1>Ferramentas de produção Adobe</h1>
+          <p class="subtitulo">
+            Scripts, actions e plugins do estúdio {{NOME_COMPLETO}}.
+            <span class="ponto">·</span>
+            <span id="contagem"></span>
+          </p>
+        </div>
+      </div>
+      <nav class="topo-acoes" id="acoes-repo" aria-label="Downloads"></nav>
+    </header>
+
+    <div class="controles">
+      <div class="campo-busca">
+        <input
+          id="busca"
+          type="search"
+          autocomplete="off"
+          placeholder="Buscar por nome, descrição ou tag"
+          aria-label="Buscar ferramentas"
+        />
+        <kbd aria-hidden="true">/</kbd>
+      </div>
+      <div class="filtros" id="filtros" role="group" aria-label="Filtrar por aplicativo"></div>
+    </div>
+
+    <main id="lista" class="grade" aria-live="polite"></main>
+
+    <section class="instalar">
+      <h2>Como instalar</h2>
+      <div class="instalar-grade">
+        <article>
+          <h3>O jeito recomendado</h3>
+          <p>
+            Clone o repositório e deixe o instalador gravar os lançadores nos menus dos apps.
+            Editar um script aqui já vale na próxima execução dentro do Adobe.
+          </p>
+          <pre><code>git clone {{CLONE}}
+cd designprod
+npm run install:dev</code></pre>
+        </article>
+        <article>
+          <h3>Um script avulso</h3>
+          <p>
+            As ferramentas marcadas com <span class="etiqueta">precisa do core/</span>
+            usam a biblioteca comum por <code>#include</code> e não rodam sozinhas —
+            baixe o repositório inteiro. As demais são independentes: salve o
+            <code>.jsx</code> e abra por <em>Arquivo&nbsp;&gt;&nbsp;Scripts&nbsp;&gt;&nbsp;Procurar</em>.
+          </p>
+        </article>
+        <article>
+          <h3>Painel dentro do Photoshop</h3>
+          <p>
+            O plugin UXP mostra esta mesma lista dentro do app, sem sair para o menu de scripts.
+            Gere o pacote com <code>npm run build:plugin</code> e carregue pelo
+            Adobe UXP Developer Tool.
+          </p>
+        </article>
+      </div>
+      <p class="ressalva">
+        <strong>Antes de usar em produção:</strong> os scripts foram escritos contra as APIs
+        documentadas de cada app e passam nos testes locais, mas ainda não foram executados
+        dentro dos aplicativos Adobe. Rode cada um uma vez antes de confiar neles em um job.
+      </p>
+    </section>
+
+    <footer class="rodape">
+      <span>{{NOME_COMPLETO}} · catálogo v{{VERSAO}}</span>
+      <span class="gerado">Gerado de <code>catalog.json</code> por <code>tools/build-site.mjs</code></span>
+    </footer>
+
+    <script id="dados" type="application/json">{{DADOS}}</script>
+    <script src="app.js"></script>
+  </body>
+</html>

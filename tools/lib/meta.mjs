@@ -91,7 +91,7 @@ export async function montarCatalogo(raiz) {
         problemas.push(`${relativo}: @ibd-descricao passa de 200 caracteres.`);
       }
 
-      ferramentas.push({
+      const ferramenta = {
         id: meta.id,
         titulo: meta.titulo,
         descricao: meta.descricao,
@@ -100,7 +100,11 @@ export async function montarCatalogo(raiz) {
         arquivo: relativo,
         versao: meta.versao,
         tags: meta.tags || []
-      });
+      };
+      // Opcional: pagina de documentacao da ferramenta. A chave so entra no
+      // catalogo quando existe, para nao encher o arquivo de nulos.
+      if (meta.doc) ferramenta.doc = meta.doc;
+      ferramentas.push(ferramenta);
     }
 
     const dirActions = path.join(raiz, 'apps', appId, 'actions');

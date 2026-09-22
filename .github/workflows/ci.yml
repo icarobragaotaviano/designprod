@@ -18,6 +18,9 @@ jobs:
       - name: Validar estrutura e testar guias, sangria e auto layout
         run: npm test
 
+      - name: Gerar a vitrine do catálogo
+        run: npm run build:site
+
       - name: Conferir se o catálogo está sincronizado
         run: |
           npm run catalog

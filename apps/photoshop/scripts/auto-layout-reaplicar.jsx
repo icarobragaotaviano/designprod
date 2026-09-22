@@ -5,6 +5,7 @@
  * @ibd-app photoshop
  * @ibd-versao 1.0.0
  * @ibd-tags auto-layout, layout, camadas, atualizar
+ * @ibd-doc docs/auto-layout.md
  *
  * Família Auto Layout. Guia: docs/auto-layout.md. Testes: npm run test:layout.
  * A execução dentro do Photoshop ainda precisa ser validada.

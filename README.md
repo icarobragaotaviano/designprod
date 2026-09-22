@@ -18,7 +18,7 @@ script .jsx com cabeçalho @ibd-*
   (install:dev)        (build:plugin)
 ```
 
-O painel do plugin **não** tem lista de ferramentas escrita em código: ele lê `catalog.json`. Ferramenta nova entra no painel só por existir no repositório com o cabeçalho certo.
+O painel do plugin **não** tem lista de ferramentas escrita em código: ele lê `catalog.json`. Ferramenta nova entra no painel só por existir no repositório com o cabeçalho certo. A [vitrine web](docs/site.md) é o terceiro leitor do mesmo catálogo.
 
 ## Começando
 
@@ -28,6 +28,7 @@ npm test                # valida estrutura e executa os 91 testes de guias, sang
 npm run catalog         # regenera catalog.json a partir dos scripts
 npm run install:dev     # instala os scripts nos menus dos apps Adobe
 npm run build:plugin    # empacota o plugin UXP do Photoshop
+npm run build:site      # gera a vitrine do catálogo publicada na Vercel
 ```
 
 Não há dependências externas — só Node 18+.
@@ -60,6 +61,7 @@ apps/<app>/scripts/     scripts ExtendScript, um arquivo por ferramenta
 apps/<app>/actions/     .atn e presets binários
 core/extendscript/      biblioteca comum (IBD.fs, IBD.ui, IBD.prefs, IBD.layout, IBD.ps)
 plugins/<app>-uxp/      painéis de marca
+site/src/               vitrine do catálogo publicada na Vercel
 tools/                  catálogo, validação, scaffold, instalação
 docs/                   instalação, arquitetura, guias
 brand.config.json       nome, cores e versão da marca — fonte única
@@ -79,6 +81,7 @@ Detalhes em [docs/guia-script.md](docs/guia-script.md).
 ## Documentação
 
 - [docs/auto-layout.md](docs/auto-layout.md) — família auto layout: modelo, parâmetros e etiqueta `@auto`
+- [docs/site.md](docs/site.md) — vitrine do catálogo: como é montada e como publicar na Vercel
 - [docs/guias-e-sangria.md](docs/guias-e-sangria.md) — uso dos três scripts e download do kit
 - [docs/guias-e-sangria-validacao.md](docs/guias-e-sangria-validacao.md) — testes locais e conferência nos apps
 - [docs/instalacao.md](docs/instalacao.md) — instalar scripts e plugin

@@ -1,7 +1,7 @@
 /**
  * @ibd-id photoshop/exportar-camadas
  * @ibd-titulo Exportar camadas
- * @ibd-descricao Exporta cada camada ou grupo do topo do documento como arquivo separado, com opcao de aparar area transparente.
+ * @ibd-descricao Exporta cada camada ou grupo do topo do documento como arquivo separado, com opção de aparar área transparente.
  * @ibd-app photoshop
  * @ibd-versao 1.0.0
  * @ibd-tags export, camadas, lote

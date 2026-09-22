@@ -62,9 +62,20 @@ No nome, a regra viaja junto com o documento, aparece no painel Camadas, pode se
 
 **Consequência prática:** etiqueta escrita errado é recusada com mensagem, nunca adivinhada. Um quadro com etiqueta corrompida entra no relatório e não impede a reaplicação dos outros.
 
+## 9. A vitrine web é mais um leitor do catálogo
+
+**Decisão:** o site publicado na Vercel monta a lista a partir de `catalog.json`, como o painel UXP. A pasta de saída sai do `outputDirectory` do `vercel.json`, e não de uma constante no builder.
+
+Uma página com a lista de ferramentas escrita à mão seria a quarta cópia da mesma informação — depois do menu do app, do painel e do README — e a primeira a desatualizar, porque ninguém roda o site no dia a dia. Lendo o catálogo, publicar uma ferramenta nova é `npm run catalog` e um push.
+
+O mesmo raciocínio vale para a pasta de saída: se o builder tivesse a sua e o `vercel.json` a dele, o deploy quebraria em silêncio no dia em que uma das duas mudasse. Hoje `npm run validate` ainda confere se o `buildCommand` do `vercel.json` existe no `package.json`.
+
+**Consequência:** o site precisa de dados que não são do catálogo — se a ferramenta depende de `core/`, qual é a sua documentação. O primeiro é descoberto lendo o arquivo no momento do build; o segundo virou o campo opcional `@ibd-doc`, validado no CI. Nada disso é escrito duas vezes.
+
 ## Limites conhecidos
 
 - A ponte UXP → ExtendScript usa um evento não documentado do batchPlay. Ela falha de forma explícita e o painel cai no modo manual. Detalhes em [guia-uxp.md](guia-uxp.md).
 - `install:dev` precisa de permissão de escrita na pasta do app. No macOS, a pasta do Photoshop costuma exigir administrador.
 - Os scripts foram escritos contra as APIs documentadas de cada app, mas ainda **não foram executados dentro dos apps**. Rode cada um uma vez antes de confiar em produção.
+- A vitrine leva a documentação para o GitHub em vez de renderizá-la: Markdown no site exigiria uma dependência, e o repositório não tem nenhuma. Detalhes em [site.md](site.md).
 - A leitura da seleção múltipla de camadas depende do Action Manager (`targetLayers`), e a conversão de índice para camada muda conforme o documento tenha ou não Plano de Fundo. Quando falha, `IBD.ps.selecionadas` cai na camada ativa em vez de devolver lista vazia. Detalhes em [auto-layout.md](auto-layout.md).

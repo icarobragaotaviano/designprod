@@ -5,6 +5,7 @@
  * @ibd-app illustrator
  * @ibd-versao 1.0.0
  * @ibd-tags guias, margem, selecao, arte-final
+ * @ibd-doc docs/guias-e-sangria.md
  *
  * Script independente do Kit Guias e Sangria v1.0.
  * Guia: docs/guias-e-sangria.md. Testes locais: npm run test:guias.

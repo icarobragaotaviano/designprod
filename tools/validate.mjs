@@ -56,7 +56,34 @@ for (const arquivo of scripts) {
   }
 }
 
-/* 3. Manifest do plugin UXP -------------------------------------------- */
+/* 3. Documentacao apontada pelos metadados ----------------------------- */
+
+for (const ferramenta of catalogo.ferramentas) {
+  if (!ferramenta.doc) continue;
+  await access(path.join(RAIZ, ferramenta.doc)).catch(() =>
+    erros.push(`${ferramenta.arquivo}: @ibd-doc aponta para arquivo inexistente (${ferramenta.doc})`)
+  );
+}
+
+/* 4. Deploy: vercel.json coerente com o package.json ------------------- */
+
+try {
+  const vercel = JSON.parse(await readFile(path.join(RAIZ, 'vercel.json'), 'utf8'));
+  const pacote = JSON.parse(await readFile(path.join(RAIZ, 'package.json'), 'utf8'));
+
+  const comando = String(vercel.buildCommand || '');
+  const script = comando.replace(/^npm run /, '');
+  if (!comando.startsWith('npm run') || !pacote.scripts[script]) {
+    erros.push(`vercel.json: buildCommand "${comando}" nao corresponde a um script do package.json.`);
+  }
+  if (!vercel.outputDirectory) {
+    erros.push('vercel.json: outputDirectory ausente — e dele que tools/build-site.mjs tira a pasta de saida.');
+  }
+} catch (e) {
+  erros.push(`vercel.json ilegivel: ${e.message}`);
+}
+
+/* 5. Manifest do plugin UXP -------------------------------------------- */
 
 const manifestPath = path.join(RAIZ, 'plugins', 'photoshop-uxp', 'manifest.json');
 try {
