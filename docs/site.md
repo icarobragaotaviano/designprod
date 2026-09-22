@@ -55,7 +55,7 @@ Não há variáveis de ambiente para configurar. O builder descobre o repositór
 - **Filtro por aplicativo**, com a contagem de cada um.
 - **Cartão por ferramenta**: título, aplicativo, descrição, tags, versão, link para o código e, quando houver `@ibd-doc`, link para a documentação.
 - **Botão `Baixar` em cada cartão**, entregando o `.jsx` com a biblioteca já embutida. O arquivo sai com o mesmo nome que `install:dev` grava na pasta do app (`IBD <Título>.jsx`), então a ferramenta aparece no menu com o rótulo de sempre. O botão `Ver código` continua abrindo o fonte do repositório, sem as inclusões resolvidas.
-- **Botão de download do painel** em "Como instalar", com versão e tamanho do pacote, mais o mesmo arquivo em `.zip` para quem vai pelo UXP Developer Tool. Detalhes de instalação e assinatura em [guia-uxp.md](guia-uxp.md).
+- **Botão de download do painel** em "Como instalar", com versão e tamanho do pacote, mais o mesmo arquivo em `.zip` para quem vai pelo UXP Developer Tool. Ao lado dele, um bloco recolhível com o passo a passo dos dois caminhos de instalação — o mesmo de [guia-uxp.md](guia-uxp.md), repetido ali porque é onde a pessoa está quando baixa.
 - **Filtro no endereço**: `#app=photoshop&q=layout` reabre a página já filtrada, então dá para mandar um link pronto.
 - Atalho `/` para focar a busca, `Esc` para limpar.
 

@@ -416,6 +416,57 @@ code, pre, kbd { font-family: var(--mono); }
   text-underline-offset: 2px;
 }
 
+.passos {
+  margin-top: 16px;
+  border-top: 1px solid var(--borda);
+  padding-top: 14px;
+}
+
+.passos summary {
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--texto);
+  list-style: none;
+}
+.passos summary::-webkit-details-marker { display: none; }
+.passos summary::before {
+  content: '▸';
+  color: var(--acento);
+  display: inline-block;
+  width: 1.1em;
+  transition: transform 0.12s ease;
+}
+.passos[open] summary::before { transform: rotate(90deg); }
+.passos summary:hover { color: var(--acento); }
+
+.passos h4 {
+  margin: 16px 0 6px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--texto-secundario);
+}
+
+.passos ol {
+  margin: 0;
+  padding-left: 19px;
+  color: var(--texto-secundario);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.passos ol li { margin-bottom: 7px; }
+.passos ol li::marker { color: var(--acento); font-variant-numeric: tabular-nums; }
+.passos strong { color: var(--texto); }
+.passos em { font-style: normal; color: var(--texto); }
+
+.miudo {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--texto-secundario);
+}
+
 .ressalva {
   margin: 26px 0 0;
   padding: 14px 16px;

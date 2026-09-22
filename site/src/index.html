@@ -74,6 +74,52 @@ npm run install:dev</code></pre>
             O pacote é montado a cada publicação, então vem sempre com as ferramentas acima.
           </p>
           <div id="baixar-painel"></div>
+
+          <details class="passos">
+            <summary>Como instalar no Photoshop</summary>
+
+            <h4>Pelo Creative Cloud — arquivo <code>.ccx</code></h4>
+            <ol>
+              <li>
+                Guarde o <code>.ccx</code> <strong>no mesmo drive</strong> onde o Photoshop
+                está instalado: o instalador procura só no drive em que o arquivo estiver.
+              </li>
+              <li>
+                Dê um duplo clique. Se não acontecer nada, clique com o botão direito e use
+                <em>Abrir com&nbsp;&gt;&nbsp;Unified Plugin Installer Agent</em>.
+              </li>
+              <li>O painel passa a aparecer no menu <em>Plugins</em> do Photoshop.</li>
+            </ol>
+
+            <h4>Pelo UXP Developer Tool — arquivo <code>.zip</code></h4>
+            <p class="miudo">
+              É o caminho para usar quando o Creative Cloud recusa o pacote por ele não ser assinado.
+            </p>
+            <ol>
+              <li>
+                No Photoshop, abra <em>Preferências&nbsp;&gt;&nbsp;Plugins</em> e marque
+                <strong>Ativar modo de desenvolvedor</strong>. No Windows o caminho é
+                <em>Editar&nbsp;&gt;&nbsp;Preferências&nbsp;&gt;&nbsp;Plugins</em>. Reinicie o Photoshop.
+              </li>
+              <li>
+                Instale o <strong>Adobe UXP Developer Tool</strong> pelo aplicativo
+                Creative Cloud no seu computador.
+              </li>
+              <li>
+                Descompacte o <code>.zip</code> numa pasta definitiva — o UDT aponta para ela,
+                e apagar a pasta tira o painel do Photoshop.
+              </li>
+              <li>
+                No UDT, clique em <em>Add Plugin</em> e escolha o <code>manifest.json</code>
+                que está na raiz da pasta descompactada.
+              </li>
+              <li>Na linha do plugin, abra <em>Actions</em> e escolha <strong>Load</strong>.</li>
+              <li>O painel abre no Photoshop. Se você fechar, reabra pelo menu <em>Plugins</em>.</li>
+            </ol>
+            <p class="miudo">
+              Se o painel não estiver lá depois de reiniciar o Photoshop, carregue de novo pelo UDT.
+            </p>
+          </details>
         </article>
       </div>
       <p class="ressalva">

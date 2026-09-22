@@ -82,6 +82,33 @@ Mais estável que a ponte, e o caminho padrão para lógica nova de Photoshop qu
 
 Toda alteração no documento precisa estar dentro de `core.executeAsModal`. O retorno vira o texto do rodapé do painel.
 
+## Instalar no Photoshop
+
+Dois caminhos. O primeiro é o de uso normal; o segundo é o que funciona quando o Creative Cloud recusa o pacote por ele não ser assinado.
+
+### Pelo Creative Cloud — arquivo `.ccx`
+
+1. Guarde o `.ccx` **no mesmo drive** onde o Photoshop está instalado. O instalador procura só no drive em que o arquivo estiver — é a causa mais comum de "dei duplo clique e não aconteceu nada".
+2. Duplo clique. Se nada acontecer, clique com o botão direito e use **Abrir com > Unified Plugin Installer Agent**: a associação do tipo de arquivo costuma se perder.
+3. O painel passa a aparecer no menu **Plugins** do Photoshop.
+
+Se o Creative Cloud disser que o plugin não é compatível, confira no aplicativo Creative Cloud se o Photoshop aparece em *Aplicativos instalados* — sem isso ele não reconhece nenhum plugin como compatível.
+
+### Pelo UXP Developer Tool — arquivo `.zip`
+
+1. No Photoshop, abra **Preferências > Plugins** e marque **Ativar modo de desenvolvedor**. No Windows: **Editar > Preferências > Plugins**. Reinicie o Photoshop.
+2. Instale o **Adobe UXP Developer Tool** pelo aplicativo Creative Cloud.
+3. Descompacte o `.zip` numa pasta definitiva. O UDT aponta para a pasta, não copia o conteúdo: apagar ou mover a pasta tira o painel do Photoshop.
+4. No UDT: **Add Plugin** e escolha o `manifest.json` na raiz da pasta descompactada.
+5. Na linha do plugin, **Actions > Load**.
+6. O painel abre no Photoshop. Fechou? Reabra pelo menu **Plugins**.
+
+Se o painel não estiver lá depois de reiniciar o Photoshop, carregue de novo pelo UDT.
+
+**Menu Plugins inteiro desabilitado** é sintoma de outro plugin quebrando o subsistema UXP na inicialização, não deste. O diagnóstico é tirar os plugins da pasta, reiniciar, e devolver um a um.
+
+Durante o desenvolvimento, **Actions > Watch** recarrega o painel a cada alteração no disco.
+
 ## Distribuir
 
 `npm run build:plugin` já deixa o pacote pronto em `dist/`:
