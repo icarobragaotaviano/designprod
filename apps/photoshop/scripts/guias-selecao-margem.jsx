@@ -5,6 +5,7 @@
  * @ibd-app photoshop
  * @ibd-versao 1.1.0
  * @ibd-tags remendo, adesivo, guias, margem, arte-final
+ * @ibd-doc docs/guias-e-sangria.md
  *
  * Remendos v1.1.0: duplicata mesclada e recorte sem reamostragem.
  * Guia: docs/guias-e-sangria.md. Testes locais: npm run test:guias.

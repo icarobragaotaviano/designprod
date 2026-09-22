@@ -1,7 +1,7 @@
 /**
  * @ibd-id indesign/exportar-paginas-pdf
- * @ibd-titulo Exportar paginas em PDFs separados
- * @ibd-descricao Gera um PDF por pagina do documento usando um preset de exportacao existente.
+ * @ibd-titulo Exportar páginas em PDFs separados
+ * @ibd-descricao Gera um PDF por página do documento usando um preset de exportação existente.
  * @ibd-app indesign
  * @ibd-versao 1.0.0
  * @ibd-tags export, pdf, paginas

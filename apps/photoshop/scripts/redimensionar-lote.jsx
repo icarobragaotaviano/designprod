@@ -1,7 +1,7 @@
 /**
  * @ibd-id photoshop/redimensionar-lote
  * @ibd-titulo Redimensionar em lote
- * @ibd-descricao Abre os arquivos de uma pasta, reduz para um lado maximo e salva em JPG ou PNG na pasta de saida. Nao altera os originais.
+ * @ibd-descricao Abre os arquivos de uma pasta, reduz para um lado máximo e salva em JPG ou PNG na pasta de saída. Não altera os originais.
  * @ibd-app photoshop
  * @ibd-versao 1.0.0
  * @ibd-tags lote, redimensionar, export

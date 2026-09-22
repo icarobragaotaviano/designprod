@@ -82,13 +82,73 @@ Mais estável que a ponte, e o caminho padrão para lógica nova de Photoshop qu
 
 Toda alteração no documento precisa estar dentro de `core.executeAsModal`. O retorno vira o texto do rodapé do painel.
 
+## Instalar no Photoshop
+
+Dois caminhos. O primeiro é o de uso normal; o segundo é o que funciona quando o Creative Cloud recusa o pacote por ele não ser assinado.
+
+### Pelo Creative Cloud — arquivo `.ccx`
+
+1. Guarde o `.ccx` **no mesmo drive** onde o Photoshop está instalado. O instalador procura só no drive em que o arquivo estiver — é a causa mais comum de "dei duplo clique e não aconteceu nada".
+2. Duplo clique. Se nada acontecer, clique com o botão direito e use **Abrir com > Unified Plugin Installer Agent**: a associação do tipo de arquivo costuma se perder.
+3. O painel passa a aparecer no menu **Plugins** do Photoshop.
+
+Se o Creative Cloud disser que o plugin não é compatível, confira no aplicativo Creative Cloud se o Photoshop aparece em *Aplicativos instalados* — sem isso ele não reconhece nenhum plugin como compatível.
+
+### Pela linha de comando — arquivo `.ccx`
+
+Instala sem abrir o Creative Cloud nem o UDT. Exige o aplicativo Creative Cloud 5.7 ou mais novo, que é quem traz o UPIA (Unified Plugin Installer Agent).
+
+**macOS**
+
+```bash
+"/Library/Application Support/Adobe/Adobe Desktop Common/RemoteComponents/UPI/UnifiedPluginInstallerAgent/UnifiedPluginInstallerAgent.app/Contents/MacOS/UnifiedPluginInstallerAgent" --install /caminho/do/arquivo.ccx
+```
+
+**Windows**
+
+```
+"C:\Program Files\Common Files\Adobe\Adobe Desktop Common\RemoteComponents\UPI\UnifiedPluginInstallerAgent\UnifiedPluginInstallerAgent.exe" /install C:\caminho\do\arquivo.ccx
+```
+
+O mesmo cuidado do duplo clique vale aqui: o `.ccx` precisa estar no drive onde o Photoshop está.
+
+### Pelo UXP Developer Tool — arquivo `.zip`
+
+1. No Photoshop, abra **Preferências > Plugins** e marque **Ativar modo de desenvolvedor**. No Windows: **Editar > Preferências > Plugins**. Reinicie o Photoshop.
+2. Instale o **Adobe UXP Developer Tool** pelo aplicativo Creative Cloud.
+3. Descompacte o `.zip` numa pasta definitiva. O UDT aponta para a pasta, não copia o conteúdo: apagar ou mover a pasta tira o painel do Photoshop.
+4. No UDT: **Add Plugin** e escolha o `manifest.json` na raiz da pasta descompactada.
+5. Na linha do plugin, **Actions > Load**.
+6. O painel abre no Photoshop. Fechou? Reabra pelo menu **Plugins**.
+
+Se o painel não estiver lá depois de reiniciar o Photoshop, carregue de novo pelo UDT.
+
+### Copiar a pasta não instala
+
+**Copiar a pasta do plugin para dentro dos arquivos do Photoshop não funciona.** Era assim que se instalava painel CEP na mão, e a expectativa vem de lá. Um plugin UXP também precisa de um registro em banco de dados que só o instalador da Adobe grava — a pasta sozinha, em `~/Library/Application Support/Adobe/UXP/Plugins` ou no equivalente do Windows, é ignorada.
+
+Use um dos três caminhos acima. Para os scripts `.jsx`, ao contrário, colar o arquivo na pasta é o caminho certo: veja `install:dev` em [instalacao.md](instalacao.md), que faz exatamente isso.
+
+**Menu Plugins inteiro desabilitado** é sintoma de outro plugin quebrando o subsistema UXP na inicialização, não deste. O diagnóstico é tirar os plugins da pasta, reiniciar, e devolver um a um.
+
+Durante o desenvolvimento, **Actions > Watch** recarrega o painel a cada alteração no disco.
+
 ## Distribuir
 
-1. `npm run build:plugin`
-2. No UDT: **Package** — gera o `.ccx` assinado
-3. O `.ccx` instala com duplo clique
+`npm run build:plugin` já deixa o pacote pronto em `dist/`:
 
-Publicar no Adobe Exchange exige conta de desenvolvedor e revisão da Adobe. Para uso próprio e de clientes, o `.ccx` direto basta.
+| Arquivo | Para quê |
+|---|---|
+| `ibd-ferramentas-<versao>.ccx` | Duplo clique, instalação pelo Creative Cloud |
+| `ibd-ferramentas-<versao>.zip` | Mesmo arquivo, para descompactar e carregar no UDT |
+
+Os dois são byte a byte idênticos — muda só a extensão, porque um `.ccx` é um ZIP com o `manifest.json` na raiz. Quem monta é `tools/lib/zip.mjs`, um escritor de ZIP escrito à mão para o repositório continuar sem nenhuma dependência. As datas dentro do pacote são fixas, então o mesmo conteúdo gera sempre os mesmos bytes e um rebuild só muda o arquivo quando o plugin mudou de verdade.
+
+O pacote também é publicado pela [vitrine](site.md), com um botão de download gerado a cada build.
+
+**O pacote não é assinado.** O Creative Cloud pode recusar um plugin sem assinatura; nesse caso o caminho é o UDT: descompacte o `.zip` e aponte para o `manifest.json`. Para um `.ccx` assinado, use o **Package** do próprio UDT, que assina com um certificado gerado na hora. Publicar no Adobe Exchange exige conta de desenvolvedor e revisão da Adobe.
+
+**Pendente:** confirmar se o Creative Cloud aceita o `.ccx` sem assinatura na sua máquina. É o único elo desta cadeia que não dá para verificar fora do seu computador — o resto (ZIP válido, `manifest.json` na raiz, painel completo dentro do pacote) está coberto por `npm run test:pacote`.
 
 ## Novo plugin para outro app
 

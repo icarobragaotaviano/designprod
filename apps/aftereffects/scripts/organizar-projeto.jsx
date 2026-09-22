@@ -1,11 +1,13 @@
 /**
  * @ibd-id aftereffects/organizar-projeto
  * @ibd-titulo Organizar projeto
- * @ibd-descricao Cria a estrutura de pastas padrao do estudio e move composicoes, solidos, imagens, videos e audio para os lugares certos.
+ * @ibd-descricao Cria a estrutura de pastas padrão do estúdio e move composições, sólidos, imagens, vídeos e áudio para os lugares certos.
  * @ibd-app aftereffects
  * @ibd-versao 1.0.0
  * @ibd-tags organizacao, projeto
  */
+
+#target aftereffects
 
 #include "../../../core/extendscript/ibd-ui.jsx"
 

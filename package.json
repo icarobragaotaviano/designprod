@@ -14,8 +14,12 @@
     "install:dev": "node tools/install-dev.mjs",
     "uninstall:dev": "node tools/install-dev.mjs --remove",
     "build:plugin": "node tools/build-plugin.mjs photoshop-uxp",
-    "test": "npm run validate && npm run test:guias",
-    "test:guias": "node tools/test-guias.cjs"
+    "build:site": "node tools/build-site.mjs",
+    "test": "npm run validate && npm run test:guias && npm run test:layout && npm run test:pacote && npm run test:standalone",
+    "test:guias": "node tools/test-guias.cjs",
+    "test:layout": "node tools/test-layout.cjs",
+    "test:pacote": "node tools/test-pacote.cjs",
+    "test:standalone": "node tools/test-standalone.cjs"
   },
   "license": "MIT"
 }

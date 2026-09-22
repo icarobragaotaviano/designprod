@@ -6,7 +6,7 @@
     {
       "id": "aftereffects/organizar-projeto",
       "titulo": "Organizar projeto",
-      "descricao": "Cria a estrutura de pastas padrao do estudio e move composicoes, solidos, imagens, videos e audio para os lugares certos.",
+      "descricao": "Cria a estrutura de pastas padrão do estúdio e move composições, sólidos, imagens, vídeos e áudio para os lugares certos.",
       "app": "aftereffects",
       "tipo": "script",
       "arquivo": "apps/aftereffects/scripts/organizar-projeto.jsx",
@@ -43,12 +43,13 @@
         "margem",
         "selecao",
         "arte-final"
-      ]
+      ],
+      "doc": "docs/guias-e-sangria.md"
     },
     {
       "id": "indesign/exportar-paginas-pdf",
-      "titulo": "Exportar paginas em PDFs separados",
-      "descricao": "Gera um PDF por pagina do documento usando um preset de exportacao existente.",
+      "titulo": "Exportar páginas em PDFs separados",
+      "descricao": "Gera um PDF por página do documento usando um preset de exportação existente.",
       "app": "indesign",
       "tipo": "script",
       "arquivo": "apps/indesign/scripts/exportar-paginas-pdf.jsx",
@@ -60,9 +61,59 @@
       ]
     },
     {
+      "id": "photoshop/alinhar-distribuir",
+      "titulo": "Alinhar e distribuir camadas",
+      "descricao": "Alinha as camadas selecionadas pela seleção, pela tela ou por uma camada de referência e distribui o espaço entre elas.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/alinhar-distribuir.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "auto-layout",
+        "alinhar",
+        "distribuir",
+        "camadas",
+        "espacamento"
+      ],
+      "doc": "docs/auto-layout.md"
+    },
+    {
+      "id": "photoshop/auto-layout",
+      "titulo": "Auto layout do quadro",
+      "descricao": "Distribui as camadas de um grupo em linha ou coluna com espaçamento, preenchimento e alinhamento, e guarda a regra no nome do grupo.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/auto-layout.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "auto-layout",
+        "layout",
+        "camadas",
+        "espacamento",
+        "alinhamento"
+      ],
+      "doc": "docs/auto-layout.md"
+    },
+    {
+      "id": "photoshop/auto-layout-reaplicar",
+      "titulo": "Reaplicar auto layout",
+      "descricao": "Reorganiza os grupos que já têm regra de auto layout no nome, do mais interno para o mais externo, depois de editar o conteúdo.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/auto-layout-reaplicar.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "auto-layout",
+        "layout",
+        "camadas",
+        "atualizar"
+      ],
+      "doc": "docs/auto-layout.md"
+    },
+    {
       "id": "photoshop/exportar-camadas",
       "titulo": "Exportar camadas",
-      "descricao": "Exporta cada camada ou grupo do topo do documento como arquivo separado, com opcao de aparar area transparente.",
+      "descricao": "Exporta cada camada ou grupo do topo do documento como arquivo separado, com opção de aparar área transparente.",
       "app": "photoshop",
       "tipo": "script",
       "arquivo": "apps/photoshop/scripts/exportar-camadas.jsx",
@@ -87,12 +138,13 @@
         "guias",
         "margem",
         "arte-final"
-      ]
+      ],
+      "doc": "docs/guias-e-sangria.md"
     },
     {
       "id": "photoshop/redimensionar-lote",
       "titulo": "Redimensionar em lote",
-      "descricao": "Abre os arquivos de uma pasta, reduz para um lado maximo e salva em JPG ou PNG na pasta de saida. Nao altera os originais.",
+      "descricao": "Abre os arquivos de uma pasta, reduz para um lado máximo e salva em JPG ou PNG na pasta de saída. Não altera os originais.",
       "app": "photoshop",
       "tipo": "script",
       "arquivo": "apps/photoshop/scripts/redimensionar-lote.jsx",
@@ -116,7 +168,8 @@
         "guias",
         "canvas",
         "arte-final"
-      ]
+      ],
+      "doc": "docs/guias-e-sangria.md"
     }
   ]
 }

@@ -1,0 +1,507 @@
+/* Tokens vindos de brand.config.json. Regerar com: npm run build:site */
+:root {
+  --fundo: #0E0E10;
+  --superficie: #1A1A1E;
+  --texto: #F4F4F5;
+  --texto-secundario: #A1A1AA;
+  --acento: #FFD21E;
+  --acento-texto: #0E0E10;
+  --borda: #2A2A31;
+  --erro: #F87171;
+  --sucesso: #4ADE80;
+
+  --largura: 1180px;
+  --raio: 10px;
+  --fonte: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+code, pre, kbd { font-family: var(--mono); }
+
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.pular {
+  position: absolute;
+  left: -9999px;
+}
+.pular:focus {
+  left: 16px;
+  top: 16px;
+  z-index: 10;
+  background: var(--acento);
+  color: var(--acento-texto);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Topo ---------------------------------------------------------------- */
+
+.topo {
+  max-width: var(--largura);
+  margin: 0 auto;
+  padding: 40px 24px 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.topo-marca {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.sigla {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: var(--acento);
+  color: var(--acento-texto);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: 0.04em;
+}
+
+.topo h1 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.subtitulo {
+  margin: 3px 0 0;
+  color: var(--texto-secundario);
+  font-size: 14px;
+}
+
+.ponto { opacity: 0.45; margin: 0 2px; }
+
+.topo-acoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.botao {
+  display: inline-block;
+  background: var(--acento);
+  color: var(--acento-texto);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  transition: filter 0.12s ease;
+}
+.botao:hover { filter: brightness(1.08); }
+
+.botao.secundario {
+  background: transparent;
+  color: var(--texto);
+  border-color: var(--borda);
+}
+.botao.secundario:hover {
+  background: var(--superficie);
+  filter: none;
+}
+
+/* Controles ----------------------------------------------------------- */
+
+.controles {
+  max-width: var(--largura);
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: center;
+  border-top: 1px solid var(--borda);
+  padding-top: 22px;
+}
+
+.campo-busca {
+  position: relative;
+  flex: 1 1 280px;
+}
+
+.campo-busca input {
+  width: 100%;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  color: var(--texto);
+  font: inherit;
+  font-size: 15px;
+  padding: 10px 40px 10px 13px;
+}
+.campo-busca input::placeholder { color: var(--texto-secundario); }
+.campo-busca input::-webkit-search-cancel-button { filter: invert(0.6); }
+
+.campo-busca kbd {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--texto-secundario);
+  border: 1px solid var(--borda);
+  border-radius: 5px;
+  font-size: 11px;
+  padding: 1px 6px;
+  pointer-events: none;
+}
+
+.filtros { display: flex; gap: 7px; flex-wrap: wrap; }
+
+.filtro {
+  background: transparent;
+  color: var(--texto-secundario);
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+.filtro:hover { color: var(--texto); border-color: var(--texto-secundario); }
+
+.filtro[aria-pressed='true'] {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--acento-texto);
+  font-weight: 600;
+}
+
+.filtro .quantos { opacity: 0.6; margin-left: 5px; font-variant-numeric: tabular-nums; }
+
+/* Lista --------------------------------------------------------------- */
+
+.grade {
+  max-width: var(--largura);
+  margin: 0 auto;
+  padding: 26px 24px 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(324px, 1fr));
+  gap: 16px;
+}
+
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.14s ease;
+}
+.cartao:hover { border-color: #3A3A44; }
+
+.cartao-topo {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.cartao h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.app {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--texto-secundario);
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  padding: 2px 9px;
+  white-space: nowrap;
+}
+
+.descricao {
+  margin: 0;
+  color: var(--texto-secundario);
+  font-size: 14px;
+}
+
+.tags {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.tags li {
+  font-size: 11.5px;
+  color: var(--texto-secundario);
+  background: rgba(255, 255, 255, 0.045);
+  border-radius: 5px;
+  padding: 2px 7px;
+}
+
+.tags .etiqueta { background: none; padding: 1px 7px; }
+
+.etiqueta {
+  font-size: 11.5px;
+  color: var(--texto-secundario);
+  border: 1px dashed var(--borda);
+  border-radius: 5px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+
+.cartao-pe {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--borda);
+  padding-top: 12px;
+}
+
+.elo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto);
+  text-decoration: none;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  padding: 5px 11px;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+.elo:hover { border-color: var(--acento); color: var(--acento); }
+
+.elo.principal {
+  border-color: rgba(255, 210, 30, 0.45);
+  color: var(--acento);
+}
+.elo.principal:hover {
+  border-color: var(--acento);
+  background: rgba(255, 210, 30, 0.08);
+}
+
+.versao {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--texto-secundario);
+  font-variant-numeric: tabular-nums;
+}
+
+.vazio {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--texto-secundario);
+  padding: 56px 0;
+}
+.vazio button {
+  background: none;
+  border: none;
+  color: var(--acento);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+/* Instalação ---------------------------------------------------------- */
+
+.instalar {
+  max-width: var(--largura);
+  margin: 40px auto 0;
+  padding: 32px 24px 8px;
+  border-top: 1px solid var(--borda);
+}
+
+.instalar h2 {
+  margin: 0 0 20px;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.instalar-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.instalar h3 {
+  margin: 0 0 7px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--acento);
+}
+
+.instalar p {
+  margin: 0;
+  color: var(--texto-secundario);
+  font-size: 14px;
+}
+
+.instalar code {
+  font-size: 13px;
+  color: var(--texto);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.instalar pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 12px 0 0;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 13px 15px;
+  overflow-x: auto;
+}
+.instalar pre code {
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--texto-secundario);
+}
+
+#baixar-painel {
+  margin-top: 14px;
+}
+
+.nota-painel {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.nota-painel a {
+  color: var(--acento);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.passos {
+  margin-top: 16px;
+  border-top: 1px solid var(--borda);
+  padding-top: 14px;
+}
+
+.passos summary {
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--texto);
+  list-style: none;
+}
+.passos summary::-webkit-details-marker { display: none; }
+.passos summary::before {
+  content: '▸';
+  color: var(--acento);
+  display: inline-block;
+  width: 1.1em;
+  transition: transform 0.12s ease;
+}
+.passos[open] summary::before { transform: rotate(90deg); }
+.passos summary:hover { color: var(--acento); }
+
+.passos h4 {
+  margin: 16px 0 6px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--texto-secundario);
+}
+
+.passos ol {
+  margin: 0;
+  padding-left: 19px;
+  color: var(--texto-secundario);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.passos ol li { margin-bottom: 7px; }
+.passos ol li::marker { color: var(--acento); font-variant-numeric: tabular-nums; }
+.passos strong { color: var(--texto); }
+.passos em { font-style: normal; color: var(--texto); }
+
+.miudo {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--texto-secundario);
+}
+
+.ressalva {
+  margin: 26px 0 0;
+  padding: 14px 16px;
+  border: 1px solid var(--borda);
+  border-left: 3px solid var(--acento);
+  border-radius: 0 8px 8px 0;
+  background: var(--superficie);
+  color: var(--texto-secundario);
+  font-size: 13.5px;
+}
+.ressalva strong { color: var(--texto); }
+
+/* Rodapé -------------------------------------------------------------- */
+
+.rodape {
+  max-width: var(--largura);
+  margin: 44px auto 0;
+  padding: 20px 24px 40px;
+  border-top: 1px solid var(--borda);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  justify-content: space-between;
+  color: var(--texto-secundario);
+  font-size: 12.5px;
+}
+.rodape code { font-size: 12px; }
+.gerado { opacity: 0.75; }
+
+@media (max-width: 640px) {
+  .topo { padding-top: 28px; }
+  .topo h1 { font-size: 21px; }
+  .grade { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
