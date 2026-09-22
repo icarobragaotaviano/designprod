@@ -70,7 +70,9 @@ Uma página com a lista de ferramentas escrita à mão seria a quarta cópia da 
 
 O mesmo raciocínio vale para a pasta de saída: se o builder tivesse a sua e o `vercel.json` a dele, o deploy quebraria em silêncio no dia em que uma das duas mudasse. Hoje `npm run validate` ainda confere se o `buildCommand` do `vercel.json` existe no `package.json`.
 
-**Consequência:** o site precisa de dados que não são do catálogo — se a ferramenta depende de `core/`, qual é a sua documentação. O primeiro é descoberto lendo o arquivo no momento do build; o segundo virou o campo opcional `@ibd-doc`, validado no CI. Nada disso é escrito duas vezes.
+**Consequência:** o site precisa de dados que não são do catálogo — o arquivo pronto para baixar e qual é a documentação da ferramenta. O primeiro é derivado no build, resolvendo os `#include` do script; o segundo virou o campo opcional `@ibd-doc`, validado no CI. Nada disso é escrito duas vezes.
+
+A decisão 4 continua valendo dentro do repositório: `install:dev` grava lançadores, não cópias. O arquivo com a biblioteca embutida existe só na saída do site, para quem não tem o repositório — e é gerado, nunca versionado, então não vira uma segunda cópia para manter.
 
 ## Limites conhecidos
 

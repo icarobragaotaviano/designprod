@@ -24,7 +24,7 @@ O painel do plugin **não** tem lista de ferramentas escrita em código: ele lê
 
 ```bash
 npm run validate        # checa metadados, catálogo, includes e manifest
-npm test                # valida estrutura e executa os 103 testes de guias, sangria, auto layout e pacote
+npm test                # valida estrutura e executa os 130 testes do repositório
 npm run catalog         # regenera catalog.json a partir dos scripts
 npm run install:dev     # instala os scripts nos menus dos apps Adobe
 npm run build:plugin    # empacota o plugin UXP do Photoshop em dist/*.ccx

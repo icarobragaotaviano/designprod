@@ -308,6 +308,15 @@ code, pre, kbd { font-family: var(--mono); }
 }
 .elo:hover { border-color: var(--acento); color: var(--acento); }
 
+.elo.principal {
+  border-color: rgba(255, 210, 30, 0.45);
+  color: var(--acento);
+}
+.elo.principal:hover {
+  border-color: var(--acento);
+  background: rgba(255, 210, 30, 0.08);
+}
+
 .versao {
   margin-left: auto;
   font-size: 12px;

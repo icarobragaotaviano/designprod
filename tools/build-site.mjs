@@ -4,7 +4,8 @@
  *
  *  1. le catalog.json — a mesma fonte que o painel UXP usa
  *  2. enriquece cada ferramenta com o que so existe no disco: caminho do
- *     codigo servido, link da documentacao no GitHub e se ela depende de core/
+ *     codigo servido, link da documentacao no GitHub e o arquivo pronto
+ *     para baixar, com os #include ja resolvidos
  *  3. aplica os tokens de brand.config.json no CSS e no HTML
  *  4. gera o pacote do painel UXP e o serve junto, para o site entregar o
  *     plugin pronto em vez de mandar o visitante rodar um build
@@ -20,6 +21,7 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { APPS } from './lib/meta.mjs';
+import { resolverIncludes, cabecalho } from './lib/incluir.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(RAIZ, 'site', 'src');
@@ -59,22 +61,49 @@ const repo = origem();
 
 /* 2. Enriquecer as ferramentas ----------------------------------------- */
 
-async function dependeDoCore(relativo) {
-  try {
-    const conteudo = await readFile(path.join(RAIZ, relativo), 'utf8');
-    return /^[ \t]*#include\s+"/m.test(conteudo);
-  } catch {
-    return false;
-  }
+/**
+ * Versao de cada ferramenta pronta para usar no app: os #include viram o
+ * proprio conteudo, entao o arquivo baixado roda sozinho por
+ * Arquivo > Scripts > Procurar — sem precisar do repositorio na maquina.
+ *
+ * O nome do arquivo baixado e o mesmo que tools/install-dev.mjs grava na
+ * pasta do app, para a ferramenta aparecer no menu com o rotulo de sempre.
+ */
+const prontos = [];
+
+async function prepararDownload(f) {
+  const { conteudo, embutidos } = await resolverIncludes(RAIZ, f.arquivo);
+  const texto = cabecalho(f, marca, embutidos) + conteudo;
+  // O id ja e unico no catalogo (<app>/<nome>), entao serve de endereco.
+  const destino = `downloads/ferramentas/${f.id}.jsx`;
+
+  prontos.push({ destino, texto });
+  return {
+    baixar: destino,
+    baixarNome: `${marca.nome} ${f.titulo}.jsx`,
+    baixarTamanho: Math.max(1, Math.round(Buffer.byteLength(texto, 'utf8') / 1024)),
+    coreEmbutido: embutidos.length
+  };
 }
 
 const ferramentas = [];
+const nomesUsados = new Set();
 for (const f of catalogo.ferramentas) {
   const item = { ...f };
   item.codigo = 'arquivos/' + f.arquivo;
   item.codigoRotulo = f.tipo === 'action' ? 'Baixar action' : 'Ver código';
-  if (f.tipo === 'script') item.precisaCore = await dependeDoCore(f.arquivo);
   if (f.doc && repo && repo.ref) item.docUrl = `${repo.url}/blob/${repo.ref}/${f.doc}`;
+
+  if (f.tipo === 'script') {
+    const pronto = await prepararDownload(f);
+    if (nomesUsados.has(pronto.baixar)) {
+      console.error(`Dois scripts disputariam o mesmo endereco de download: ${pronto.baixar}`);
+      process.exit(1);
+    }
+    nomesUsados.add(pronto.baixar);
+    Object.assign(item, pronto);
+  }
+
   ferramentas.push(item);
 }
 
@@ -210,6 +239,13 @@ await writeFile(path.join(SAIDA, 'index.html'), html, 'utf8');
 
 await cp(path.join(SRC, 'app.js'), path.join(SAIDA, 'app.js'));
 
+// Os arquivos prontos para usar no app, um por ferramenta.
+for (const { destino, texto } of prontos) {
+  const caminho = path.join(SAIDA, destino);
+  await mkdir(path.dirname(caminho), { recursive: true });
+  await writeFile(caminho, texto, 'utf8');
+}
+
 // Os arquivos servidos: o codigo de cada ferramenta e a biblioteca comum.
 await cp(path.join(RAIZ, 'apps'), path.join(SAIDA, 'arquivos', 'apps'), { recursive: true });
 await cp(path.join(RAIZ, 'core'), path.join(SAIDA, 'arquivos', 'core'), { recursive: true });
@@ -220,6 +256,6 @@ if (await access(downloads).then(() => true, () => false)) {
 }
 
 const relativa = path.relative(RAIZ, SAIDA);
-console.log(`Site pronto em ${relativa}: ${ferramentas.length} ferramentas.`);
+console.log(`Site pronto em ${relativa}: ${ferramentas.length} ferramentas, ${prontos.length} prontas para baixar.`);
 console.log(`Painel UXP: ${dados.painel.nome} (${dados.painel.tamanho} KB) pronto para download.`);
 console.log(repo ? `Origem: ${repo.url}${repo.ref ? ' (' + repo.ref + ')' : ' — branch desconhecida'}` : 'Sem origem git: links do GitHub omitidos.');

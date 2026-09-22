@@ -7,6 +7,8 @@
  * @ibd-tags organizacao, projeto
  */
 
+#target aftereffects
+
 #include "../../../core/extendscript/ibd-ui.jsx"
 
 (function () {

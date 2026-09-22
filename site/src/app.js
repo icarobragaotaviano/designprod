@@ -174,7 +174,7 @@
     p.textContent = f.descricao;
     cartao.appendChild(p);
 
-    if ((f.tags && f.tags.length) || f.precisaCore) {
+    if (f.tags && f.tags.length) {
       var ul = document.createElement('ul');
       ul.className = 'tags';
       (f.tags || []).forEach(function (tag) {
@@ -182,19 +182,22 @@
         li.textContent = tag;
         ul.appendChild(li);
       });
-      if (f.precisaCore) {
-        // Junto das tags, e nao no rodape: la ela quebrava a linha dos botoes.
-        var nota = document.createElement('li');
-        nota.className = 'etiqueta';
-        nota.textContent = 'precisa do core/';
-        nota.title = 'Usa a biblioteca comum por #include: baixe o repositório inteiro.';
-        ul.appendChild(nota);
-      }
       cartao.appendChild(ul);
     }
 
     var pe = document.createElement('div');
     pe.className = 'cartao-pe';
+
+    if (f.baixar) {
+      var baixar = elo(f.baixar, 'Baixar', false);
+      baixar.className = 'elo principal';
+      baixar.setAttribute('download', f.baixarNome);
+      baixar.title = f.baixarNome + ' · ' + f.baixarTamanho + ' KB' +
+        (f.coreEmbutido
+          ? ' · com a biblioteca do estúdio embutida, roda sozinho'
+          : ' · arquivo independente');
+      pe.appendChild(baixar);
+    }
 
     if (f.codigo) {
       pe.appendChild(elo(f.codigo, f.codigoRotulo || 'Ver código', false));
