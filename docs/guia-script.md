@@ -102,13 +102,48 @@ Tipos de campo: `texto`, `numero`, `booleano`, `escolha` (usa `opcoes`), `pasta`
 
 `IBD.ui.resumo(titulo, linhas)` mostra o relatório final.
 
+### `IBD.layout` (ibd-layout.jsx)
+
+Motor de auto layout. Só contas — não chama nenhuma API da Adobe, e por isso roda no Node em `npm run test:layout`. Coordenadas com origem no canto superior esquerdo, y para baixo. Guia completo em [auto-layout.md](auto-layout.md).
+
+| | |
+|---|---|
+| `calcular(spec, itens, caixa)` | posiciona `[{id, ref, x, y, w, h}]`; devolve `{itens, caixa, linhas, avisos, spec}` |
+| `alinhar(itens, caixa, modoH, modoV)` | alinha preservando o outro eixo (`nenhum`, `inicio`, `centro`, `fim`) |
+| `distribuir(itens, eixo, modo, valor)` | `bordas`, `centros` ou `fixo`; mantém a primeira e a última peça |
+| `envolver(itens)` | retângulo que contém todos os itens |
+| `normalizar(spec)` | completa com os padrões e recusa valor incoerente |
+| `lerPadding('24 40')` | formato curto no estilo CSS: 1, 2 ou 4 valores |
+| `lerTag(nome)` / `escreverTag(nome, spec)` | a regra guardada em `@auto[...]` no nome do grupo |
+| `temTag(nome)` / `nomeLimpo(nome)` / `montarTag(spec)` | auxiliares da etiqueta |
+| `descrever(spec)` | uma linha legível, para o relatório final |
+
+Cada item do resultado traz `dx`, `dy`, `escalaX`, `escalaY`, `moveu`, `redimensionou`, `linha` e `anterior` — o script só precisa aplicar.
+
+### `IBD.ps` (ibd-ps-camadas.jsx)
+
+O lado Photoshop do motor. Requer `ibd-layout.jsx`.
+
+| | |
+|---|---|
+| `emPixels(fn)` | executa com a régua em pixels e devolve a preferência anterior |
+| `emPx(valor, unidade, resolucao)` / `dePx(...)` | conversão mm, cm, pt ↔ px |
+| `limites(camada, comEfeitos)` | `{x, y, w, h}` ou `null` se a camada estiver vazia |
+| `impedimento(camada)` | motivo pelo qual não dá para mover, ou `null` |
+| `medir(camadas, opcoes)` | `{itens, descartadas}` pronto para o motor |
+| `selecionadas(doc)` | seleção múltipla via Action Manager, com queda para a camada ativa |
+| `quadros(doc)` | grupos com etiqueta `@auto`, na ordem da varredura |
+| `aplicar(itens, opcoes)` | move e redimensiona; uma falha não derruba o lote |
+| `historico(doc, rotulo, fn)` | um único passo de histórico, com reversão se falhar |
+| `percorrer(camadas, fn)` | visita camadas e grupos recursivamente |
+
 ### `IBD.prefs` (ibd-prefs.jsx)
 
 `ler(ID)` e `gravar(ID, valores)`. Grava JSON em `Folder.userData/IBD/`. `Folder` e `File` viram caminho de texto automaticamente.
 
 ## Testar
 
-O CI valida a estrutura do repositório. Para o kit de guias e sangria, `npm run test:guias` também executa 40 verificações de lógica com os contratos dos aplicativos simulados em Node.js. Esses testes não executam ExtendScript dentro dos aplicativos Adobe. Antes de marcar um script como pronto:
+O CI valida a estrutura do repositório. Além disso, `npm run test:guias` executa 40 verificações do kit de guias e sangria e `npm run test:layout` outras 51 da família auto layout — contas reais, contratos dos aplicativos simulados em Node.js. Esses testes não executam ExtendScript dentro dos aplicativos Adobe. Antes de marcar um script como pronto:
 
 1. Rode com 1 item.
 2. Rode com 30 itens e cancele no meio.

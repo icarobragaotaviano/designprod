@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Validar estrutura e testar guias e sangria
+      - name: Validar estrutura e testar guias, sangria e auto layout
         run: npm test
 
       - name: Conferir se o catálogo está sincronizado

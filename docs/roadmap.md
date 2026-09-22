@@ -10,16 +10,21 @@ Ordem pensada para entregar valor cedo e só depois investir em empacotamento.
 - [x] Instalador de scripts nos menus dos apps
 - [x] Painel UXP do Photoshop lendo o catálogo
 - [x] Cinco scripts de produção + duas ferramentas UXP nativas
+- [x] Kit de guias, remendos e sangria
+- [x] Família Auto layout: motor app-agnóstico, três scripts e etiqueta `@auto`
 
 ## Próximo — provar em uso real
 
 1. **Rodar cada script dentro do app.** Nenhum foi executado em um app Adobe ainda; foram escritos contra a API documentada. É o primeiro passo antes de qualquer coisa nova.
 2. **Validar a ponte UXP → ExtendScript** na sua versão do Photoshop ([guia-uxp.md](guia-uxp.md)).
 3. **Adicionar as ferramentas que você já usa na mão.** O repositório só se paga quando substitui trabalho repetitivo real — comece pelo que você faz toda semana.
-4. **Ícone e identidade do painel** no lugar do placeholder em `plugins/photoshop-uxp/src/icons/`.
+4. **Conferir o auto layout em um job real.** O ponto mais provável de divergência é a leitura da seleção múltipla ([auto-layout.md](auto-layout.md)). Use um grupo com camadas de alturas diferentes e um documento com Plano de Fundo.
+5. **Ícone e identidade do painel** no lugar do placeholder em `plugins/photoshop-uxp/src/icons/`.
 
 ## Depois — expandir
 
+- **Auto layout no Illustrator e no InDesign.** O motor (`ibd-layout.jsx`) já é app-agnóstico: falta o adaptador de cada app, no molde de `ibd-ps-camadas.jsx`
+- **Fundo do quadro** — retângulo ou guias desenhados na medida do quadro calculado
 - Plugin UXP do InDesign (mesma base, filtro trocado)
 - Actions `.atn` versionadas em `apps/photoshop/actions/`
 - Presets (paletas, estilos, pincéis) em `apps/<app>/presets/`

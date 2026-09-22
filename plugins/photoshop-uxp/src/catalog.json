@@ -60,6 +60,53 @@
       ]
     },
     {
+      "id": "photoshop/alinhar-distribuir",
+      "titulo": "Alinhar e distribuir camadas",
+      "descricao": "Alinha as camadas selecionadas pela seleção, pela tela ou por uma camada de referência e distribui o espaço entre elas.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/alinhar-distribuir.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "auto-layout",
+        "alinhar",
+        "distribuir",
+        "camadas",
+        "espacamento"
+      ]
+    },
+    {
+      "id": "photoshop/auto-layout",
+      "titulo": "Auto layout do quadro",
+      "descricao": "Distribui as camadas de um grupo em linha ou coluna com espaçamento, preenchimento e alinhamento, e guarda a regra no nome do grupo.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/auto-layout.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "auto-layout",
+        "layout",
+        "camadas",
+        "espacamento",
+        "alinhamento"
+      ]
+    },
+    {
+      "id": "photoshop/auto-layout-reaplicar",
+      "titulo": "Reaplicar auto layout",
+      "descricao": "Reorganiza os grupos que já têm regra de auto layout no nome, do mais interno para o mais externo, depois de editar o conteúdo.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/auto-layout-reaplicar.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "auto-layout",
+        "layout",
+        "camadas",
+        "atualizar"
+      ]
+    },
+    {
       "id": "photoshop/exportar-camadas",
       "titulo": "Exportar camadas",
       "descricao": "Exporta cada camada ou grupo do topo do documento como arquivo separado, com opcao de aparar area transparente.",
