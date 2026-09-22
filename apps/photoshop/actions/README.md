@@ -1,19 +1,37 @@
 # Actions do Photoshop
 
-Arquivos `.atn` versionados aqui entram no catálogo automaticamente e aparecem no painel como item do tipo `action`.
+Arquivos `.atn` versionados nesta pasta entram no catálogo (`catalog.json`) e aparecem no painel UXP e na vitrine web como itens do tipo `action`.
 
-## Exportar do Photoshop
+## Arquivos Versionados
 
-Painel Actions › selecione o **conjunto** (a pasta, não a action solta) › menu do painel › **Salvar ações**. Salve como `nome-do-conjunto.atn` nesta pasta e rode `npm run catalog`.
+- `ibd-producao.atn` — Pacote consolidado contendo todas as rotinas em um único conjunto de actions do Photoshop.
+- `150-dpi.atn` — Converte resolução para 150 DPI mantendo proporções.
+- `atualizar-vinculos.atn` — Atualiza todos os objetos inteligentes modificados e salva.
+- `sangria-canvas.atn` — Expande a tela com a cor de fundo para área de corte.
+- `place-holder.atn` — Cria elemento visual de produto com forma e texto "IMAGEM".
+- `revincular.atn` — Fluxo rápido de revinculação de Smart Object vinculado.
+- `exportar-jpeg-impressao.atn` — Exporta JPEG em qualidade máxima.
+- `exportar-png.atn` — Exporta PNG transparente.
+- `salvar-pdf-x1a.atn` — Salva PDF/X-1a para gráfica comercial em CMYK.
+- `salvar-pdf-leitura.atn` — Salva PDF leve para aprovação e leitura de cliente.
 
-## Instalar
+## Metadados
 
-Painel Actions › menu do painel › **Carregar ações** › selecione o `.atn`.
+Os metadados (títulos, descrições ricas, tags e páginas de documentação) são controlados pelo arquivo [actions.meta.json](actions.meta.json).
+Ao adicionar uma action nova, registre suas propriedades no JSON e execute:
 
-## Limites
+```bash
+npm run catalog
+```
 
-`.atn` é binário: o Git versiona, mas não mostra diferença entre versões. Na prática:
+## Empacotamento Automático
 
-- **Um conjunto por arquivo**, com nome descritivo.
-- **Descreva a mudança na mensagem do commit** — é o único registro legível do que mudou.
-- Se a lógica for complexa ou precisar de condicional, **prefira um script** em `../scripts/`: dá para ler, revisar e corrigir.
+Para atualizar o conjunto consolidado `ibd-producao.atn` e gerar o kit ZIP de distribuição em `downloads/kit-actions-photoshop-v1.0.zip`:
+
+```bash
+node tools/pack-actions.mjs
+```
+
+## Instalação no Photoshop
+
+Veja o guia detalhado em [docs/actions-photoshop.md](../../../docs/actions-photoshop.md).

@@ -1,0 +1,136 @@
+{
+  "$schema": "../../../tools/schema/actions.schema.json",
+  "actions": {
+    "ibd-producao": {
+      "titulo": "Kit de Produção (Todas as Actions)",
+      "descricao": "Conjunto consolidado contendo as 9 actions de produção do estúdio: 150 DPI, atualizar vínculos, sangria, placeholder, revincular, exportações JPEG/PNG e PDFs.",
+      "versao": "1.0.0",
+      "tags": [
+        "action",
+        "kit",
+        "producao",
+        "arte-final",
+        "lote",
+        "fechamento"
+      ],
+      "doc": "docs/actions-photoshop.md"
+    },
+    "150-dpi": {
+      "titulo": "150 DPI — Ajustar resolução",
+      "descricao": "Converte a resolução da imagem para 150 DPI mantendo proporções e interpolação automática, ideal para impressos grandes e mídias digitais.",
+      "versao": "1.0.0",
+      "tags": [
+        "action",
+        "resolucao",
+        "dpi",
+        "imagem",
+        "producao"
+      ],
+      "doc": "docs/actions-photoshop.md"
+    },
+    "atualizar-vinculos": {
+      "titulo": "Atualizar vínculos modificados",
+      "descricao": "Atualiza automaticamente todos os objetos inteligentes vinculados que sofreram alteração no disco e salva o documento.",
+      "versao": "1.0.0",
+      "tags": [
+        "action",
+        "smart-object",
+        "vinculos",
+        "atualizar",
+        "producao"
+      ],
+      "doc": "docs/actions-photoshop.md"
+    },
+    "sangria-canvas": {
+      "titulo": "Sangria rápida por tela",
+      "descricao": "Expande o canvas (tela de pintura) uniformemente nas bordas com a cor de fundo para criar área de corte e sangria gráfica.",
+      "versao": "1.0.0",
+      "tags": [
+        "action",
+        "sangria",
+        "canvas",
+        "arte-final",
+        "corte"
+      ],
+      "doc": "docs/actions-photoshop.md"
+    },
+    "place-holder": {
+      "titulo": "Placeholder de produto",
+      "descricao": "Insere demarcador visual padronizado com camada de preenchimento, elipse e texto condicional 'IMAGEM' para layout de encartes.",
+      "versao": "1.0.0",
+      "tags": [
+        "action",
+        "placeholder",
+        "diagramacao",
+        "ofertas",
+        "layout"
+      ],
+      "doc": "docs/actions-photoshop.md"
+    },
+    "revincular": {
+      "titulo": "Revincular objeto inteligente",
+      "descricao": "Abre o fluxo rápido para substituir e revincular o arquivo fonte de um objeto inteligente vinculado e salvar.",
+      "versao": "1.0.0",
+      "tags": [
+        "action",
+        "smart-object",
+        "vinculos",
+        "revincular"
+      ],
+      "doc": "docs/actions-photoshop.md"
+    },
+    "exportar-jpeg-impressao": {
+      "titulo": "Exportar JPEG para impressão",
+      "descricao": "Exporta rapidamente uma cópia plana em JPEG de alta resolução para aprovação física, prova e conferência gráfica.",
+      "versao": "1.0.0",
+      "tags": [
+        "action",
+        "export",
+        "jpeg",
+        "impressao",
+        "arte-final"
+      ],
+      "doc": "docs/actions-photoshop.md"
+    },
+    "exportar-png": {
+      "titulo": "Exportar PNG transparente",
+      "descricao": "Exporta rapidamente o documento em formato PNG otimizado mantendo canal alfa e transparência de recorte.",
+      "versao": "1.0.0",
+      "tags": [
+        "action",
+        "export",
+        "png",
+        "transparencia",
+        "web"
+      ],
+      "doc": "docs/actions-photoshop.md"
+    },
+    "salvar-pdf-x1a": {
+      "titulo": "Salvar PDF/X-1a (Gráfica)",
+      "descricao": "Gera PDF normatizado PDF/X-1a:2001 em CMYK de trabalho para envio seguro a gráficas comerciais e offset.",
+      "versao": "1.0.0",
+      "tags": [
+        "action",
+        "pdf",
+        "pdfx1a",
+        "cmyk",
+        "grafica",
+        "fechamento"
+      ],
+      "doc": "docs/actions-photoshop.md"
+    },
+    "salvar-pdf-leitura": {
+      "titulo": "Salvar PDF para aprovação / leitura",
+      "descricao": "Gera versão em PDF leve e compacta para envio rápido via WhatsApp, e-mail e conferência com clientes.",
+      "versao": "1.0.0",
+      "tags": [
+        "action",
+        "pdf",
+        "aprovacao",
+        "baixa",
+        "leitura"
+      ],
+      "doc": "docs/actions-photoshop.md"
+    }
+  }
+}

@@ -189,13 +189,16 @@
     pe.className = 'cartao-pe';
 
     if (f.baixar) {
-      var baixar = elo(f.baixar, 'Baixar', false);
+      var rotuloBaixar = f.tipo === 'action' ? 'Baixar action' : 'Baixar';
+      var baixar = elo(f.baixar, rotuloBaixar, false);
       baixar.className = 'elo principal';
       baixar.setAttribute('download', f.baixarNome);
       baixar.title = f.baixarNome + ' · ' + f.baixarTamanho + ' KB' +
-        (f.coreEmbutido
-          ? ' · com a biblioteca do estúdio embutida, roda sozinho'
-          : ' · arquivo independente');
+        (f.tipo === 'action'
+          ? ' · conjunto de ações para carregar no Photoshop'
+          : (f.coreEmbutido
+              ? ' · com a biblioteca do estúdio embutida, roda sozinho'
+              : ' · arquivo independente'));
       pe.appendChild(baixar);
     }
 

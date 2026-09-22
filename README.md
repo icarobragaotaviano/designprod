@@ -49,10 +49,13 @@ Não há dependências externas — só Node 18+.
 | Auto layout do quadro | Photoshop | Arruma as camadas de um grupo em linha ou coluna e guarda a regra no nome do grupo |
 | Reaplicar auto layout | Photoshop | Recalcula todos os quadros etiquetados depois que o conteúdo mudou |
 | Alinhar e distribuir camadas | Photoshop | Alinha pela seleção, pela tela ou por uma camada de referência, com espaço fixo em mm |
+| Kit de Produção (Actions) | Photoshop | Suíte de 9 actions (.atn): 150 DPI, atualizar vínculos, sangria, placeholder, revinculação, exportações JPEG/PNG e PDFs |
 
 A [família Auto layout](docs/auto-layout.md) traz para o Photoshop o que o auto layout do Figma faz: o grupo é o quadro, as camadas de dentro são os itens, e a regra de arrumação fica guardada no nome do grupo para ser reaplicada quando o conteúdo mudar. As contas ficam em `core/extendscript/ibd-layout.jsx`, sem nenhuma chamada de app — o mesmo motor vai servir Illustrator e InDesign.
 
 O [kit de guias e sangria](docs/guias-e-sangria.md) inclui instruções e exemplos. O [ZIP atualizado v1.1](downloads/kit-remendos-guias-e-sangria-v1.1.zip) inclui a criação de documentos de remendo; o [ZIP v1.0](downloads/kit-guias-e-sangria-v1.zip) fica como histórico. A lógica passou em 40 testes locais com contratos simulados; a execução dentro dos aplicativos Adobe ainda precisa ser validada.
+
+A [suíte de actions do Photoshop](docs/actions-photoshop.md) organiza rotinas ágeis de fechamento e manipulação de arquivos. O [ZIP do kit de actions v1.0](downloads/kit-actions-photoshop-v1.0.zip) entrega o conjunto unificado `ibd-producao.atn` e todos os arquivos avulsos prontos para importação.
 
 ## Estrutura
 
@@ -80,6 +83,7 @@ Detalhes em [docs/guia-script.md](docs/guia-script.md).
 
 ## Documentação
 
+- [docs/actions-photoshop.md](docs/actions-photoshop.md) — suíte de actions: rotinas, instalação, modo de botão e kit
 - [docs/auto-layout.md](docs/auto-layout.md) — família auto layout: modelo, parâmetros e etiqueta `@auto`
 - [docs/site.md](docs/site.md) — vitrine do catálogo: como é montada e como publicar na Vercel
 - [docs/guias-e-sangria.md](docs/guias-e-sangria.md) — uso dos três scripts e download do kit

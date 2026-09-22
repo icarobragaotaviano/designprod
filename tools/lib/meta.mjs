@@ -108,19 +108,30 @@ export async function montarCatalogo(raiz) {
     }
 
     const dirActions = path.join(raiz, 'apps', appId, 'actions');
+    let metaActions = null;
+    try {
+      metaActions = JSON.parse(await readFile(path.join(dirActions, 'actions.meta.json'), 'utf8'));
+    } catch {
+      metaActions = null;
+    }
+
     for (const arquivo of await listarArquivos(dirActions, 'atn')) {
       const relativo = path.relative(raiz, arquivo).split(path.sep).join('/');
       const nome = path.basename(arquivo, '.atn');
-      ferramentas.push({
+      const customMeta = (metaActions && metaActions.actions && metaActions.actions[nome]) || {};
+
+      const ferramenta = {
         id: `${appId}/actions/${nome}`,
-        titulo: nome.replace(/[-_]/g, ' '),
-        descricao: 'Conjunto de actions do Photoshop. Instale pelo painel Actions.',
+        titulo: customMeta.titulo || nome.replace(/[-_]/g, ' '),
+        descricao: customMeta.descricao || 'Conjunto de actions do Photoshop. Instale pelo painel Actions.',
         app: appId,
         tipo: 'action',
         arquivo: relativo,
-        versao: '1.0.0',
-        tags: ['action']
-      });
+        versao: customMeta.versao || '1.0.0',
+        tags: customMeta.tags || ['action']
+      };
+      if (customMeta.doc) ferramenta.doc = customMeta.doc;
+      ferramentas.push(ferramenta);
     }
   }
 

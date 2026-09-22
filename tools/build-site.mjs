@@ -102,6 +102,13 @@ for (const f of catalogo.ferramentas) {
     }
     nomesUsados.add(pronto.baixar);
     Object.assign(item, pronto);
+  } else if (f.tipo === 'action') {
+    const dadosAction = await readFile(path.join(RAIZ, f.arquivo));
+    const kb = Math.max(1, Math.round(dadosAction.length / 1024));
+    item.baixar = 'arquivos/' + f.arquivo;
+    item.baixarNome = `${marca.nome} ${f.titulo}.atn`;
+    item.baixarTamanho = kb;
+    item.codigo = null; // download direto pelo botao principal
   }
 
   ferramentas.push(item);

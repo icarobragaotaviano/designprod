@@ -87,9 +87,26 @@ function padroesPorApp() {
   return { photoshop: [], illustrator: [], indesign: [], aftereffects: [], bridge: [] };
 }
 
+function padroesActionsPorApp() {
+  if (process.platform === 'darwin') {
+    return {
+      photoshop: ['/Applications/Adobe Photoshop */Presets/Actions']
+    };
+  }
+  if (process.platform === 'win32') {
+    const programas = process.env['ProgramFiles'] || 'C:\\Program Files';
+    return {
+      photoshop: [path.join(programas, 'Adobe', 'Adobe Photoshop *', 'Presets', 'Actions')]
+    };
+  }
+  return { photoshop: [] };
+}
+
 const padroes = padroesPorApp();
+const padroesActions = padroesActionsPorApp();
 const { catalogo } = await montarCatalogo(RAIZ);
 const scripts = catalogo.ferramentas.filter((f) => f.tipo === 'script');
+const actions = catalogo.ferramentas.filter((f) => f.tipo === 'action');
 
 let instalados = 0;
 let removidos = 0;
@@ -103,12 +120,12 @@ for (const [appId, lista] of Object.entries(padroes)) {
   for (const padrao of lista) pastas.push(...(await expandir(padrao)));
 
   if (!pastas.length) {
-    semPasta.push(appId);
+    semPasta.push(appId + ' (scripts)');
     continue;
   }
 
   for (const pasta of pastas) {
-    console.log(`${appId}: ${pasta}`);
+    console.log(`${appId} (scripts): ${pasta}`);
     if (apenasListar) continue;
 
     for (const ferramenta of doApp) {
@@ -147,15 +164,58 @@ for (const [appId, lista] of Object.entries(padroes)) {
   }
 }
 
+/* Actions do Photoshop ------------------------------------------------ */
+
+for (const [appId, lista] of Object.entries(padroesActions)) {
+  const doApp = actions.filter((f) => f.app === appId);
+  if (!doApp.length) continue;
+
+  const pastas = [];
+  for (const padrao of lista) pastas.push(...(await expandir(padrao)));
+
+  if (!pastas.length) {
+    semPasta.push(appId + ' (actions)');
+    continue;
+  }
+
+  for (const pasta of pastas) {
+    console.log(`${appId} (actions): ${pasta}`);
+    if (apenasListar) continue;
+
+    for (const ferramenta of doApp) {
+      const origem = path.join(RAIZ, ferramenta.arquivo);
+      const destino = path.join(pasta, `${marca.nome} ${path.basename(ferramenta.arquivo)}`);
+
+      if (remover) {
+        if (await existe(destino)) {
+          await unlink(destino);
+          removidos++;
+        }
+        continue;
+      }
+
+      try {
+        const dados = await readFile(origem);
+        await writeFile(destino, dados);
+        instalados++;
+      } catch (e) {
+        console.error(`  falhou ao copiar action ${path.basename(destino)}: ${e.code === 'EACCES' || e.code === 'EPERM'
+          ? 'sem permissao de escrita. Copie manualmente ou rode com administrador.'
+          : e.message}`);
+      }
+    }
+  }
+}
+
 if (semPasta.length) {
-  console.warn(`\nPasta de scripts nao encontrada para: ${semPasta.join(', ')}.`);
+  console.warn(`\nPasta nao encontrada para: ${semPasta.join(', ')}.`);
   console.warn('O app pode nao estar instalado, ou usar caminho diferente. Veja docs/instalacao.md.');
 }
 
 if (apenasListar) {
   console.log('\nModo --list: nada foi escrito.');
 } else if (remover) {
-  console.log(`\nRemovidos ${removidos} lancador(es).`);
+  console.log(`\nRemovidos ${removidos} item(ns).`);
 } else {
-  console.log(`\nInstalados ${instalados} lancador(es). Reinicie os apps abertos.`);
+  console.log(`\nInstalados ${instalados} item(ns). Reinicie os apps abertos.`);
 }

@@ -85,16 +85,21 @@ function montarCartao(ferramenta) {
   acoes.className = 'cartao-acoes';
 
   if (ferramenta.tipo === 'action') {
-    const etiqueta = document.createElement('span');
-    etiqueta.className = 'etiqueta';
-    etiqueta.textContent = 'action .atn';
-    acoes.appendChild(etiqueta);
+    const botaoAjuda = document.createElement('button');
+    botaoAjuda.textContent = 'Como carregar';
+    botaoAjuda.onclick = () => mostrarAjudaAction(ferramenta);
+    acoes.appendChild(botaoAjuda);
 
     const botaoCaminho = document.createElement('button');
     botaoCaminho.className = 'secundario';
     botaoCaminho.textContent = 'Ver caminho';
     botaoCaminho.onclick = () => mostrarCaminho(ferramenta);
     acoes.appendChild(botaoCaminho);
+
+    const etiqueta = document.createElement('span');
+    etiqueta.className = 'etiqueta';
+    etiqueta.textContent = 'Action .atn';
+    acoes.appendChild(etiqueta);
   } else {
     const botao = document.createElement('button');
     botao.textContent = 'Executar';
@@ -145,6 +150,11 @@ async function mostrarCaminho(ferramenta) {
   } else {
     status('Arquivo nao encontrado no pacote do plugin.', 'erro');
   }
+}
+
+async function mostrarAjudaAction(ferramenta) {
+  const caminho = await caminhoNoDisco('bundle/' + ferramenta.arquivo);
+  status('Para carregar esta action: abra Janela > Ações (Alt+F9) > menu do painel > Carregar Ações (ou dê duplo clique no arquivo: ' + (caminho || ferramenta.arquivo) + ').');
 }
 
 elFiltro.addEventListener('input', render);
