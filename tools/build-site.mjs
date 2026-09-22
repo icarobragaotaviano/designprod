@@ -6,14 +6,16 @@
  *  2. enriquece cada ferramenta com o que so existe no disco: caminho do
  *     codigo servido, link da documentacao no GitHub e se ela depende de core/
  *  3. aplica os tokens de brand.config.json no CSS e no HTML
- *  4. escreve tudo na pasta que o proprio vercel.json declara como saida
+ *  4. gera o pacote do painel UXP e o serve junto, para o site entregar o
+ *     plugin instalado em vez de mandar o visitante rodar um build
+ *  5. escreve tudo na pasta que o proprio vercel.json declara como saida
  *
  * A pasta de saida vem de vercel.json justamente para nao haver duas
  * verdades sobre onde o site nasce.
  *
  * Uso: npm run build:site
  */
-import { readFile, writeFile, cp, rm, mkdir, access } from 'node:fs/promises';
+import { readFile, writeFile, cp, rm, mkdir, access, stat } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -98,12 +100,48 @@ if (repo) {
 const nomesApps = {};
 for (const [id, info] of Object.entries(APPS)) nomesApps[id] = info.nome;
 
+/* 3b. Pacote do painel UXP ---------------------------------------------- */
+
+/**
+ * O pacote e gerado a cada build do site: assim o botao de download nunca
+ * entrega um painel mais velho que o catalogo que ele mostra. Se a geracao
+ * falhar, o site sai sem o botao em vez de sair com um link quebrado.
+ */
+async function empacotarPainel() {
+  const base = `${marca.id}-ferramentas-${marca.versao}`;
+  try {
+    execFileSync(process.execPath, [path.join(RAIZ, 'tools', 'build-plugin.mjs'), 'photoshop-uxp'], {
+      cwd: RAIZ,
+      stdio: 'pipe'
+    });
+
+    const origem = path.join(RAIZ, 'dist', `${base}.ccx`);
+    const tamanho = (await stat(origem)).size;
+    await mkdir(path.join(SAIDA, 'downloads'), { recursive: true });
+    await cp(origem, path.join(SAIDA, 'downloads', `${base}.ccx`));
+    await cp(path.join(RAIZ, 'dist', `${base}.zip`), path.join(SAIDA, 'downloads', `${base}.zip`));
+
+    return {
+      ccx: `downloads/${base}.ccx`,
+      zip: `downloads/${base}.zip`,
+      nome: `${base}.ccx`,
+      versao: marca.versao,
+      tamanho: Math.round(tamanho / 1024)
+    };
+  } catch (e) {
+    console.warn(`aviso: o pacote do painel nao pode ser gerado (${e.message.split('\n')[0]}); o site sai sem o botao.`);
+    return null;
+  }
+}
+
 const dados = { marca: catalogo.marca, versao: catalogo.versao, nomesApps, acoes, ferramentas };
 
 /* 4. Escrever a saida --------------------------------------------------- */
 
 await rm(SAIDA, { recursive: true, force: true });
 await mkdir(SAIDA, { recursive: true });
+
+dados.painel = await empacotarPainel();
 
 // CSS: mesmos tokens do painel, mesma fonte unica.
 const mapaTokens = {
@@ -165,4 +203,7 @@ if (await access(downloads).then(() => true, () => false)) {
 
 const relativa = path.relative(RAIZ, SAIDA);
 console.log(`Site pronto em ${relativa}: ${ferramentas.length} ferramentas.`);
+console.log(dados.painel
+  ? `Painel UXP: ${dados.painel.nome} (${dados.painel.tamanho} KB) pronto para download.`
+  : 'Painel UXP: pacote ausente — o botao de download nao aparece.');
 console.log(repo ? `Origem: ${repo.url}${repo.ref ? ' (' + repo.ref + ')' : ' — branch desconhecida'}` : 'Sem origem git: links do GitHub omitidos.');

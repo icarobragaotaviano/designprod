@@ -84,11 +84,20 @@ Toda alteração no documento precisa estar dentro de `core.executeAsModal`. O r
 
 ## Distribuir
 
-1. `npm run build:plugin`
-2. No UDT: **Package** — gera o `.ccx` assinado
-3. O `.ccx` instala com duplo clique
+`npm run build:plugin` já deixa o pacote pronto em `dist/`:
 
-Publicar no Adobe Exchange exige conta de desenvolvedor e revisão da Adobe. Para uso próprio e de clientes, o `.ccx` direto basta.
+| Arquivo | Para quê |
+|---|---|
+| `ibd-ferramentas-<versao>.ccx` | Duplo clique, instalação pelo Creative Cloud |
+| `ibd-ferramentas-<versao>.zip` | Mesmo arquivo, para descompactar e carregar no UDT |
+
+Os dois são byte a byte idênticos — muda só a extensão, porque um `.ccx` é um ZIP com o `manifest.json` na raiz. Quem monta é `tools/lib/zip.mjs`, um escritor de ZIP escrito à mão para o repositório continuar sem nenhuma dependência. As datas dentro do pacote são fixas, então o mesmo conteúdo gera sempre os mesmos bytes e um rebuild só muda o arquivo quando o plugin mudou de verdade.
+
+O pacote também é publicado pela [vitrine](site.md), com um botão de download gerado a cada build.
+
+**O pacote não é assinado.** O Creative Cloud pode recusar um plugin sem assinatura; nesse caso o caminho é o UDT: descompacte o `.zip` e aponte para o `manifest.json`. Para um `.ccx` assinado, use o **Package** do próprio UDT, que assina com um certificado gerado na hora. Publicar no Adobe Exchange exige conta de desenvolvedor e revisão da Adobe.
+
+**Pendente:** confirmar se o Creative Cloud aceita o `.ccx` sem assinatura na sua máquina. É o único elo desta cadeia que não dá para verificar fora do seu computador — o resto (ZIP válido, `manifest.json` na raiz, painel completo dentro do pacote) está coberto por `npm run test:pacote`.
 
 ## Novo plugin para outro app
 

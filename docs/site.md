@@ -26,12 +26,13 @@ brand.config ─┼─→ tools/build-site.mjs ─→ site/publico/  ─→ Verc
 site/src/     ┘                            (gerado, fora do git)
 ```
 
-O builder faz quatro coisas:
+O builder faz cinco coisas:
 
 1. **Lê `catalog.json`** e acrescenta o que só existe no disco: o caminho do código servido pelo site, o link da documentação no GitHub (vindo de `@ibd-doc`) e se a ferramenta depende da pasta `core/` — descoberto procurando `#include` no arquivo.
 2. **Aplica os tokens de `brand.config.json`** no CSS e no HTML, como o `build:plugin` já fazia com o painel.
 3. **Embute os dados no HTML** em vez de buscá-los por `fetch`. Uma requisição a menos, e a página abre até do sistema de arquivos.
-4. **Copia `apps/`, `core/` e `downloads/`** para a saída, para os links "Ver código" servirem o arquivo de verdade.
+4. **Gera o pacote do painel UXP** chamando `tools/build-plugin.mjs` e serve o `.ccx` junto. Assim o botão de download nunca entrega um painel mais velho que o catálogo que a página mostra. Se a geração falhar, o build avisa e a página sai sem o botão, em vez de sair com um link quebrado.
+5. **Copia `apps/`, `core/` e `downloads/`** para a saída, para os links "Ver código" servirem o arquivo de verdade.
 
 A pasta de saída vem do `outputDirectory` do próprio `vercel.json`. É intencional: assim não existem duas verdades sobre onde o site nasce, e mudar o destino é editar um arquivo só.
 
@@ -52,6 +53,7 @@ Não há variáveis de ambiente para configurar. O builder descobre o repositór
 - **Filtro por aplicativo**, com a contagem de cada um.
 - **Cartão por ferramenta**: título, aplicativo, descrição, tags, versão, link para o código e, quando houver `@ibd-doc`, link para a documentação.
 - **Etiqueta `precisa do core/`** nas ferramentas que usam `#include`, porque baixar só o `.jsx` delas não funciona.
+- **Botão de download do painel** em "Como instalar", com versão e tamanho do pacote, mais o mesmo arquivo em `.zip` para quem vai pelo UXP Developer Tool. Detalhes de instalação e assinatura em [guia-uxp.md](guia-uxp.md).
 - **Filtro no endereço**: `#app=photoshop&q=layout` reabre a página já filtrada, então dá para mandar um link pronto.
 - Atalho `/` para focar a busca, `Esc` para limpar.
 

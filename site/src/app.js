@@ -42,6 +42,35 @@
     elAcoes.appendChild(a);
   });
 
+  /* Download do painel UXP ------------------------------------------- */
+
+  var elPainel = document.getElementById('baixar-painel');
+  if (elPainel && dados.painel) {
+    var botao = document.createElement('a');
+    botao.className = 'botao';
+    botao.href = dados.painel.ccx;
+    botao.setAttribute('download', dados.painel.nome);
+    botao.textContent = 'Baixar o painel · v' + dados.painel.versao + ' · ' + dados.painel.tamanho + ' KB';
+    elPainel.appendChild(botao);
+
+    var nota = document.createElement('p');
+    nota.className = 'nota-painel';
+    nota.appendChild(document.createTextNode(
+      'Duplo clique instala pelo Creative Cloud. O pacote não é assinado pela Adobe: se o Creative Cloud recusar, baixe o '
+    ));
+
+    var alternativo = document.createElement('a');
+    alternativo.href = dados.painel.zip;
+    alternativo.setAttribute('download', '');
+    alternativo.textContent = 'mesmo pacote em .zip';
+    nota.appendChild(alternativo);
+
+    nota.appendChild(document.createTextNode(
+      ', descompacte e aponte o Adobe UXP Developer Tool para o manifest.json.'
+    ));
+    elPainel.appendChild(nota);
+  }
+
   /* Filtros ---------------------------------------------------------- */
 
   function contarNoApp(app) {

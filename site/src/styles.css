@@ -392,6 +392,21 @@ code, pre, kbd { font-family: var(--mono); }
   color: var(--texto-secundario);
 }
 
+#baixar-painel {
+  margin-top: 14px;
+}
+
+.nota-painel {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.nota-painel a {
+  color: var(--acento);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .ressalva {
   margin: 26px 0 0;
   padding: 14px 16px;

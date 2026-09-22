@@ -29,7 +29,7 @@ Ordem pensada para entregar valor cedo e só depois investir em empacotamento.
 - Actions `.atn` versionadas em `apps/photoshop/actions/`
 - Presets (paletas, estilos, pincéis) em `apps/<app>/presets/`
 - Painel ScriptUI para After Effects, enquanto não houver UXP
-- Empacotamento `.ccx` assinado para instalar em outra máquina
+- Assinatura do `.ccx` — o pacote já é gerado a cada build e baixável pela vitrine, mas sem assinatura; falta confirmar se o Creative Cloud o aceita assim ([guia-uxp.md](guia-uxp.md))
 
 ## Mais adiante — só se justificar
 
