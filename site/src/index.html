@@ -61,11 +61,19 @@ npm run install:dev</code></pre>
           <p>
             O botão <strong>Baixar</strong> de cada cartão entrega um <code>.jsx</code>
             pronto, com a biblioteca do estúdio já embutida — nada de instalar o
-            repositório. Abra por
-            <em>Arquivo&nbsp;&gt;&nbsp;Scripts&nbsp;&gt;&nbsp;Procurar</em>, ou salve
-            na pasta <code>Presets/Scripts</code> do app para ele aparecer no menu
-            com o mesmo nome que o instalador usaria.
+            repositório. Para usar uma vez, abra por
+            <em>Arquivo&nbsp;&gt;&nbsp;Scripts&nbsp;&gt;&nbsp;Procurar</em>.
           </p>
+          <p>
+            Para deixar no menu, <strong>cole o arquivo na pasta de scripts</strong> do
+            Photoshop e reinicie o app. Ele aparece em
+            <em>Arquivo&nbsp;&gt;&nbsp;Scripts</em> com o mesmo nome que o instalador usaria.
+          </p>
+          <pre><code>macOS
+/Applications/Adobe Photoshop [versão]/Presets/Scripts/
+
+Windows
+C:\Program Files\Adobe\Adobe Photoshop [versão]\Presets\Scripts\</code></pre>
         </article>
         <article>
           <h3>Painel dentro do Photoshop</h3>
@@ -90,6 +98,17 @@ npm run install:dev</code></pre>
               </li>
               <li>O painel passa a aparecer no menu <em>Plugins</em> do Photoshop.</li>
             </ol>
+
+            <h4>Pela linha de comando — arquivo <code>.ccx</code></h4>
+            <p class="miudo">
+              Instala sem abrir o Creative Cloud nem o UDT. Precisa do aplicativo
+              Creative Cloud 5.7 ou mais novo instalado.
+            </p>
+            <pre><code>macOS
+"/Library/Application Support/Adobe/Adobe Desktop Common/RemoteComponents/UPI/UnifiedPluginInstallerAgent/UnifiedPluginInstallerAgent.app/Contents/MacOS/UnifiedPluginInstallerAgent" --install /caminho/do/arquivo.ccx
+
+Windows
+"C:\Program Files\Common Files\Adobe\Adobe Desktop Common\RemoteComponents\UPI\UnifiedPluginInstallerAgent\UnifiedPluginInstallerAgent.exe" /install C:\caminho\do\arquivo.ccx</code></pre>
 
             <h4>Pelo UXP Developer Tool — arquivo <code>.zip</code></h4>
             <p class="miudo">
@@ -118,6 +137,16 @@ npm run install:dev</code></pre>
             </ol>
             <p class="miudo">
               Se o painel não estiver lá depois de reiniciar o Photoshop, carregue de novo pelo UDT.
+            </p>
+
+            <h4>O que não funciona</h4>
+            <p class="miudo">
+              <strong>Copiar a pasta do plugin para dentro dos arquivos do Photoshop não
+              instala o painel.</strong> Isso valia para os painéis CEP antigos; um plugin
+              UXP também precisa de um registro que só o instalador da Adobe grava. Use
+              um dos três caminhos acima. Para as ferramentas em <code>.jsx</code>, ao
+              contrário, colar o arquivo na pasta é justamente o caminho certo — veja
+              <em>Uma ferramenta só</em>.
             </p>
           </details>
         </article>

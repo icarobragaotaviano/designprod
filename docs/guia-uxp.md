@@ -94,6 +94,24 @@ Dois caminhos. O primeiro é o de uso normal; o segundo é o que funciona quando
 
 Se o Creative Cloud disser que o plugin não é compatível, confira no aplicativo Creative Cloud se o Photoshop aparece em *Aplicativos instalados* — sem isso ele não reconhece nenhum plugin como compatível.
 
+### Pela linha de comando — arquivo `.ccx`
+
+Instala sem abrir o Creative Cloud nem o UDT. Exige o aplicativo Creative Cloud 5.7 ou mais novo, que é quem traz o UPIA (Unified Plugin Installer Agent).
+
+**macOS**
+
+```bash
+"/Library/Application Support/Adobe/Adobe Desktop Common/RemoteComponents/UPI/UnifiedPluginInstallerAgent/UnifiedPluginInstallerAgent.app/Contents/MacOS/UnifiedPluginInstallerAgent" --install /caminho/do/arquivo.ccx
+```
+
+**Windows**
+
+```
+"C:\Program Files\Common Files\Adobe\Adobe Desktop Common\RemoteComponents\UPI\UnifiedPluginInstallerAgent\UnifiedPluginInstallerAgent.exe" /install C:\caminho\do\arquivo.ccx
+```
+
+O mesmo cuidado do duplo clique vale aqui: o `.ccx` precisa estar no drive onde o Photoshop está.
+
 ### Pelo UXP Developer Tool — arquivo `.zip`
 
 1. No Photoshop, abra **Preferências > Plugins** e marque **Ativar modo de desenvolvedor**. No Windows: **Editar > Preferências > Plugins**. Reinicie o Photoshop.
@@ -104,6 +122,12 @@ Se o Creative Cloud disser que o plugin não é compatível, confira no aplicati
 6. O painel abre no Photoshop. Fechou? Reabra pelo menu **Plugins**.
 
 Se o painel não estiver lá depois de reiniciar o Photoshop, carregue de novo pelo UDT.
+
+### Copiar a pasta não instala
+
+**Copiar a pasta do plugin para dentro dos arquivos do Photoshop não funciona.** Era assim que se instalava painel CEP na mão, e a expectativa vem de lá. Um plugin UXP também precisa de um registro em banco de dados que só o instalador da Adobe grava — a pasta sozinha, em `~/Library/Application Support/Adobe/UXP/Plugins` ou no equivalente do Windows, é ignorada.
+
+Use um dos três caminhos acima. Para os scripts `.jsx`, ao contrário, colar o arquivo na pasta é o caminho certo: veja `install:dev` em [instalacao.md](instalacao.md), que faz exatamente isso.
 
 **Menu Plugins inteiro desabilitado** é sintoma de outro plugin quebrando o subsistema UXP na inicialização, não deste. O diagnóstico é tirar os plugins da pasta, reiniciar, e devolver um a um.
 
