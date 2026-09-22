@@ -31,7 +31,7 @@ O builder faz cinco coisas:
 1. **Lê `catalog.json`** e acrescenta o que só existe no disco: o caminho do código servido pelo site, o link da documentação no GitHub (vindo de `@ibd-doc`) e se a ferramenta depende da pasta `core/` — descoberto procurando `#include` no arquivo.
 2. **Aplica os tokens de `brand.config.json`** no CSS e no HTML, como o `build:plugin` já fazia com o painel.
 3. **Embute os dados no HTML** em vez de buscá-los por `fetch`. Uma requisição a menos, e a página abre até do sistema de arquivos.
-4. **Gera o pacote do painel UXP** chamando `tools/build-plugin.mjs` e serve o `.ccx` junto. Assim o botão de download nunca entrega um painel mais velho que o catálogo que a página mostra. Se a geração falhar, o build avisa e a página sai sem o botão, em vez de sair com um link quebrado.
+4. **Gera o pacote do painel UXP** chamando `tools/build-plugin.mjs` e serve o `.ccx` junto. Assim o botão de download nunca entrega um painel mais velho que o catálogo que a página mostra. Se a geração falhar, **o build inteiro falha**: publicar uma página verde e sem o botão esconderia o problema, e o download do painel é uma promessa da página, não um extra.
 5. **Copia `apps/`, `core/` e `downloads/`** para a saída, para os links "Ver código" servirem o arquivo de verdade.
 
 A pasta de saída vem do `outputDirectory` do próprio `vercel.json`. É intencional: assim não existem duas verdades sobre onde o site nasce, e mudar o destino é editar um arquivo só.
