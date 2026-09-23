@@ -1,5 +1,7 @@
 # Auto layout no Photoshop
 
+> O motor já faz mais do que os scripts mostram — Preencher por filho, limites, itens absolutos, linha de base. Isso chega às ferramentas nas próximas fases: veja [auto-layout-v2.md](auto-layout-v2.md).
+
 Família de ferramentas que traz para o Photoshop o que o auto layout do Figma faz: **o grupo é o quadro, as camadas de dentro são os itens, e a regra de arrumação fica guardada** para ser reaplicada quando o conteúdo mudar.
 
 O Photoshop não tem motor de layout. Ele alinha camadas pela barra de opções e distribui espaço igual — e para por aí. Trocar um texto por um mais longo desalinha a fila inteira, e refazer é trabalho manual a cada rodada de alteração. Esta família fecha essa lacuna.
@@ -96,11 +98,12 @@ Fica no fim do nome do grupo e guarda só o que foge do padrão. Valores sempre 
 | `gapl` | espaço entre linhas, em px | igual a `gap` |
 | `pad` | preenchimento: um valor, ou `topo,direita,base,esquerda` | `0` |
 | `dist` | `inicio`, `centro`, `fim`, `entre`, `aoredor`, `uniforme` | `inicio` |
-| `al` | `inicio`, `centro`, `fim`, `esticar` | `inicio` |
+| `al` | `inicio`, `centro`, `fim`, `esticar`, `base` (linha de base do texto) | `inicio` |
 | `quebra` | medida da quebra em px; `0` não quebra | `0` |
 | `ordem` | `doc` ou `inv` | `doc` |
 | `ajuste` | `conteudo` ou `caixa` | `conteudo` |
 | `un` | unidade do formulário | `px` |
+| `minw`, `maxw`, `minh`, `maxh` | limites do quadro, em px | sem limite |
 
 Editar a etiqueta à mão funciona. Apagá-la tira o grupo da reaplicação, sem desfazer nada. Etiqueta escrita errado é recusada com mensagem — o script não adivinha.
 

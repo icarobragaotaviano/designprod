@@ -43,7 +43,7 @@ A pasta de saída vem do `outputDirectory` do próprio `vercel.json`. É intenci
 1. Em [vercel.com](https://vercel.com), **Add New → Project** e importe o repositório.
 2. Em **Framework Preset**, escolha **Other**. Não preencha Build Command nem Output Directory: a Vercel lê os dois do `vercel.json`.
 3. **Deploy**.
-4. Em **Settings → Git → Production Branch**, escolha a branch que deve virar o endereço de produção. Este repositório ainda não tem `main` — sem esse ajuste, a Vercel usa a branch padrão do GitHub e os deploys das outras branches ficam como pré-visualização.
+4. Em **Settings → Git → Production Branch**, selecione `main`, que reúne as alterações consolidadas do projeto. Confira essa opção mesmo se o GitHub ainda indicar outra branch como padrão. Os deploys das outras branches ficam como pré-visualização.
 
 Não há variáveis de ambiente para configurar. O builder descobre o repositório e a branch pelas variáveis que a própria Vercel injeta (`VERCEL_GIT_REPO_OWNER`, `VERCEL_GIT_REPO_SLUG`, `VERCEL_GIT_COMMIT_REF`) e, fora dela, pelo `git remote` local.
 

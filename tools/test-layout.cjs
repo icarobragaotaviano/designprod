@@ -359,6 +359,194 @@ test('Distribuir vertical usa o eixo certo e exige dois itens', () => {
 });
 
 /* ------------------------------------------------------------------ *
+ * 7b. Fase 1 — comportamento do Figma no motor
+ * ------------------------------------------------------------------ */
+
+/** Item com propriedades de filho (o que na Fase 2 vem do XMP da camada). */
+function com(item, props) { return Object.assign({}, item, props); }
+function ws(r) { return puro(r.itens, (i) => i.w); }
+function hs(r) { return puro(r.itens, (i) => i.h); }
+const CAIXA = (l, a) => ({ x: 0, y: 0, largura: l, altura: a });
+
+test('Preencher: o filho ocupa a sobra do quadro fixo', () => {
+  const [a, b, c] = itens([[0, 0, 100, 50], [0, 0, 50, 50], [0, 0, 60, 50]]);
+  const r = L.calcular({ gap: 10, ajuste: 'caixa' }, [a, com(b, { largura: 'preencher' }), c], CAIXA(400, 50));
+  assert.deepEqual(ws(r), [100, 220, 60]);
+  assert.deepEqual(xs(r), [0, 110, 340]);
+  assert.equal(r.itens[1].redimensionou, true);
+  approx(r.itens[1].escalaX, 440);
+});
+
+test('Preencher: dois filhos dividem igual, descontando espaço e preenchimento', () => {
+  const [a, b] = itens([[0, 0, 50, 20], [0, 0, 50, 20]]);
+  const r = L.calcular({ gap: 20, padding: 10, ajuste: 'caixa' },
+    [com(a, { largura: 'preencher' }), com(b, { largura: 'preencher' })], CAIXA(300, 40));
+  assert.deepEqual(ws(r), [130, 130]);
+  assert.deepEqual(xs(r), [10, 160]);
+  assert.deepEqual(ys(r), [10, 10]);
+});
+
+test('Preencher: quem bate no máximo fica preso e o resto vai para os outros', () => {
+  const [a, b] = itens([[0, 0, 10, 10], [0, 0, 10, 10]]);
+  const r = L.calcular({ ajuste: 'caixa' },
+    [com(a, { largura: 'preencher', maxLargura: 100 }), com(b, { largura: 'preencher' })], CAIXA(400, 10));
+  assert.deepEqual(ws(r), [100, 300]);
+  assert.deepEqual(xs(r), [0, 100]);
+});
+
+test('Preencher: mínimo maior que a cota é respeitado e os outros encolhem', () => {
+  const [a, b, c] = itens([[0, 0, 10, 10], [0, 0, 10, 10], [0, 0, 10, 10]]);
+  const r = L.calcular({ ajuste: 'caixa' }, [
+    com(a, { largura: 'preencher', minLargura: 200 }),
+    com(b, { largura: 'preencher' }),
+    com(c, { largura: 'preencher' })
+  ], CAIXA(300, 10));
+  assert.deepEqual(ws(r), [200, 50, 50]);
+});
+
+test('Preencher em quadro que abraça o conteúdo avisa e não mexe na medida', () => {
+  const [a] = itens([[0, 0, 100, 20]]);
+  const r = L.calcular({}, [com(a, { largura: 'preencher' })]);
+  assert.deepEqual(ws(r), [100]);
+  assert.ok(r.avisos.join(' ').indexOf('Preencher') > -1);
+});
+
+test('Preencher no eixo transversal estica só aquele filho', () => {
+  const [a, b] = itens([[0, 0, 50, 20], [0, 0, 50, 20]]);
+  const r = L.calcular({ ajuste: 'caixa' }, [com(a, { altura: 'preencher' }), b], CAIXA(300, 100));
+  assert.deepEqual(hs(r), [100, 20]);
+  assert.deepEqual(ys(r), [0, 0]);
+});
+
+test('Esticar do quadro respeita o filho de altura fixa', () => {
+  const [a, b, c] = itens([[0, 0, 10, 20], [0, 0, 10, 20], [0, 0, 10, 60]]);
+  const r = L.calcular({ alinhamento: 'esticar' }, [a, com(b, { altura: 'fixo' }), c]);
+  assert.deepEqual(hs(r), [60, 20, 60]);
+});
+
+test('Abraçar obedece a mínimo e máximo do filho; Fixo ignora os dois', () => {
+  const [a, b] = itens([[0, 0, 300, 20], [0, 0, 50, 20]]);
+  const r = L.calcular({}, [com(a, { maxLargura: 200 }), com(b, { minLargura: 80 })]);
+  assert.deepEqual(ws(r), [200, 80]);
+  assert.deepEqual(xs(r), [0, 200]);
+
+  const fixo = L.calcular({}, [com(a, { largura: 'fixo', maxLargura: 200 })]);
+  assert.deepEqual(ws(fixo), [300]);
+});
+
+test('Mínimo do quadro que abraça: o Centro passa a ter espaço para trabalhar', () => {
+  const r = L.calcular({ minLargura: 400, distribuicao: 'centro' },
+    itens([[0, 0, 100, 50], [0, 0, 100, 50]]));
+  assert.equal(r.caixa.largura, 400);
+  assert.equal(r.caixa.altura, 50);
+  assert.deepEqual(xs(r), [100, 200]);
+});
+
+test('Máximo do quadro que abraça: a caixa para no limite e o excesso é avisado', () => {
+  const r = L.calcular({ maxLargura: 150 }, itens([[0, 0, 100, 50], [0, 0, 100, 50]]));
+  assert.equal(r.caixa.largura, 150);
+  assert.ok(r.avisos.join(' ').indexOf('passa do quadro') > -1);
+});
+
+test('Absoluto fica fora do fluxo, fora da caixa e parado por padrão', () => {
+  const [a, selo, b] = itens([[0, 0, 100, 50], [90, -10, 20, 20], [500, 0, 100, 50]]);
+  const r = L.calcular({ gap: 10 }, [a, com(selo, { absoluto: true }), b]);
+  const s = r.itens.find((i) => i.id === 'c2');
+  assert.deepEqual(puro(r.itens.filter((i) => !i.absoluto), (i) => i.x), [0, 110]);
+  assert.equal(s.absoluto, true);
+  assert.equal(s.linha, -1);
+  assert.deepEqual([s.x, s.y, s.moveu], [90, -10, false]);
+  assert.equal(r.caixa.largura, 210, 'o selo não pode alargar o quadro');
+  assert.equal(r.caixa.y, 0, 'o selo não pode subir o canto do quadro');
+});
+
+test('Absoluto ancorado no canto direito acompanha o quadro quando ele cresce', () => {
+  const selo = com({ id: 'selo', x: 0, y: 0, w: 20, h: 20 },
+    { absoluto: true, ancora: { h: 'direita', v: 'topo', dx: -5, dy: -5 } });
+  const estreito = L.calcular({ padding: 10 }, [{ id: 'a', x: 0, y: 0, w: 100, h: 50 }, selo]);
+  const largo = L.calcular({ padding: 10 }, [{ id: 'a', x: 0, y: 0, w: 200, h: 50 }, selo]);
+  const x = (r) => r.itens.find((i) => i.id === 'selo');
+  assert.deepEqual([x(estreito).x, x(estreito).y], [105, -5]);
+  assert.deepEqual([x(largo).x, x(largo).y], [205, -5]);
+});
+
+test('Espaço automático nunca fica negativo: sem folga, os itens encostam', () => {
+  const tres = itens([[0, 0, 100, 10], [0, 0, 100, 10], [0, 0, 100, 10]]);
+  for (const dist of ['entre', 'ao-redor', 'uniforme']) {
+    const r = L.calcular({ distribuicao: dist, ajuste: 'caixa' }, tres, CAIXA(150, 10));
+    assert.deepEqual(xs(r), [0, 100, 200], dist);
+    assert.ok(r.avisos.join(' ').indexOf('não cabe') > -1, dist);
+  }
+});
+
+test('Item único em "Espaço entre" encosta no início, como no Figma', () => {
+  const r = L.calcular({ distribuicao: 'entre', ajuste: 'caixa' }, itens([[50, 0, 100, 10]]), CAIXA(400, 10));
+  assert.deepEqual(xs(r), [0]);
+});
+
+test('Linha de base: textos de tamanhos diferentes assentam na mesma linha', () => {
+  const [a, b, c] = itens([[0, 0, 40, 40], [0, 0, 40, 20], [0, 0, 40, 30]]);
+  const r = L.calcular({ alinhamento: 'base' },
+    [com(a, { linhaBase: 30 }), com(b, { linhaBase: 16 }), c]);
+  assert.deepEqual(ys(r), [0, 14, 0]);
+  // A linha de base de cada um, lida do resultado, cai no mesmo y.
+  const bases = [30, 16, 30];
+  assert.deepEqual(puro(r.itens, (it, k) => it.y + bases[k]), [30, 30, 30]);
+  assert.equal(r.caixa.altura, 40);
+});
+
+test('Linha de base em fluxo vertical cai no início e avisa', () => {
+  const r = L.calcular({ direcao: 'vertical', alinhamento: 'base' },
+    itens([[0, 0, 40, 10], [30, 0, 20, 10]]));
+  assert.deepEqual(xs(r), [0, 0]);
+  assert.ok(r.avisos.join(' ').indexOf('linha de base') > -1);
+});
+
+test('Quebra com Preencher: cada linha reparte a própria sobra', () => {
+  const [a, b, c, d] = itens([[0, 0, 200, 10], [0, 0, 100, 10], [0, 0, 200, 10], [0, 0, 50, 10]]);
+  const r = L.calcular({ quebra: 300 },
+    [a, com(b, { largura: 'preencher' }), c, com(d, { largura: 'preencher' })]);
+  assert.deepEqual(puro(r.itens, (i) => i.linha), [0, 0, 1, 1]);
+  assert.deepEqual(ws(r), [200, 100, 200, 100]);
+  assert.deepEqual(xs(r), [0, 200, 0, 200]);
+});
+
+test('Etiqueta do quadro guarda limites e linha de base', () => {
+  const tag = L.montarTag({ minLargura: 200, maxLargura: 600, alinhamento: 'base' });
+  assert.ok(tag.indexOf('al=base') > -1 && tag.indexOf('minw=200') > -1 && tag.indexOf('maxw=600') > -1, tag);
+  const lido = L.lerTag('Cartão ' + tag).spec;
+  assert.deepEqual([lido.minLargura, lido.maxLargura, lido.alinhamento, lido.minAltura], [200, 600, 'base', null]);
+});
+
+test('Limites incoerentes e valores inventados são recusados com o item na mensagem', () => {
+  assert.throws(() => L.normalizar({ minLargura: 500, maxLargura: 100 }), /mínimo/);
+  assert.throws(() => L.normalizarItem({ largura: 'grande' }), /Largura do item/);
+  assert.throws(() => L.normalizarItem({ minAltura: 50, maxAltura: 10 }), /mínimo/);
+  assert.throws(() => L.calcular({}, [{ id: 'Título', x: 0, y: 0, w: 10, h: 10, altura: 'imenso' }]), /Título/);
+});
+
+test('Propriedades do filho: ida e volta pelo texto que vai para o XMP', () => {
+  const props = { largura: 'preencher', altura: 'fixo', maxLargura: 320, absoluto: true,
+    ancora: { h: 'direita', v: 'topo', dx: 8, dy: 8 } };
+  const texto = L.montarItem(props);
+  assert.equal(texto, 'w=preencher;h=fixo;maxw=320;abs=1;ancora=direita,topo,8,8');
+  const lido = L.lerItem(texto);
+  assert.deepEqual([lido.largura, lido.altura, lido.maxLargura, lido.absoluto, lido.minLargura],
+    ['preencher', 'fixo', 320, true, null]);
+  assert.deepEqual([lido.ancora.h, lido.ancora.v, lido.ancora.dx, lido.ancora.dy], ['direita', 'topo', 8, 8]);
+});
+
+test('Propriedades do filho: vazio é o padrão e texto torto é recusado', () => {
+  assert.equal(L.montarItem({}), '');
+  const padrao = L.lerItem('');
+  assert.deepEqual([padrao.largura, padrao.altura, padrao.absoluto], ['abracar', 'abracar', false]);
+  assert.equal(L.lerItem(null).largura, 'abracar');
+  assert.throws(() => L.lerItem('w=gigante'), /Largura do item/);
+  assert.throws(() => L.lerItem('ancora=direita,topo'), /4 partes/);
+  assert.throws(() => L.lerItem('lixo'), /inválida/);
+});
+
+/* ------------------------------------------------------------------ *
  * 8. Scripts completos, com o Photoshop simulado
  * ------------------------------------------------------------------ */
 

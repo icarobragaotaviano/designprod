@@ -3,7 +3,7 @@
  * @ibd-titulo Guias da seleção e margem
  * @ibd-descricao Cria guias nos limites do conjunto selecionado e na margem escolhida, em uma camada separada.
  * @ibd-app illustrator
- * @ibd-versao 1.0.0
+ * @ibd-versao 1.0.1
  * @ibd-tags guias, margem, selecao, arte-final
  * @ibd-doc docs/guias-e-sangria.md
  *
@@ -179,7 +179,21 @@ if (!app.documents.length) { alert("Abra um documento e selecione um ou mais obj
 var doc = app.activeDocument, rawSelection = doc.selection;
 if (!rawSelection || typeof rawSelection.length !== "number" || !rawSelection.length ||
     rawSelection.typename === "TextRange") {
-    alert("Selecione objetos inteiros com a ferramenta Sele\u00e7\u00e3o (V).\nSaia da edi\u00e7\u00e3o de texto antes de executar."); return;
+    // Relata o que chegou: dizer s\u00f3 "selecione objetos" deixa sem sa\u00edda
+    // quem tem objetos selecionados e mesmo assim cai aqui.
+    var recebido;
+    if (!rawSelection) { recebido = "nada (a sele\u00e7\u00e3o veio vazia do Illustrator)"; }
+    else if (rawSelection.typename === "TextRange") { recebido = "um trecho de texto em edi\u00e7\u00e3o"; }
+    else if (typeof rawSelection.length !== "number") { recebido = "um objeto de tipo inesperado: " + rawSelection.typename; }
+    else { recebido = "uma lista com " + rawSelection.length + " item(ns)"; }
+    alert("N\u00e3o h\u00e1 objetos para medir.\n\n" +
+        "O script recebeu: " + recebido + ".\n\n" +
+        "Selecione objetos inteiros com a ferramenta Sele\u00e7\u00e3o (V) e rode de novo.\n\n" +
+        "Se voc\u00ea TEM objetos selecionados e mesmo assim v\u00ea esta mensagem:\n" +
+        "\u2022 pressione Esc para sair do modo de isolamento ou da edi\u00e7\u00e3o de texto;\n" +
+        "\u2022 troque a ferramenta Prancheta pela Sele\u00e7\u00e3o (V);\n" +
+        "\u2022 confira se a camada dos objetos n\u00e3o est\u00e1 travada ou oculta.");
+    return;
 }
 var savedSelection = [], i;
 for (i = 0; i < rawSelection.length; i++) { savedSelection.push(rawSelection[i]); }

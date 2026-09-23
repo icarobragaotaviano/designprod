@@ -24,7 +24,7 @@ Ordem pensada para entregar valor cedo e só depois investir em empacotamento.
 ## Depois — expandir
 
 - **Auto layout no Illustrator e no InDesign.** O motor (`ibd-layout.jsx`) já é app-agnóstico: falta o adaptador de cada app, no molde de `ibd-ps-camadas.jsx`
-- **Fundo do quadro** — retângulo ou guias desenhados na medida do quadro calculado
+- **Auto layout v2 — o comportamento do Figma.** Motor pronto (Fase 1): Fixo/Abraçar/Preencher por filho, limites, itens absolutos, linha de base. Faltam o adaptador com XMP e quadro visível (Fase 2) e o painel ao vivo em UXP (Fase 3). Plano e critérios em [auto-layout-v2.md](auto-layout-v2.md)
 - Plugin UXP do InDesign (mesma base, filtro trocado)
 - Actions `.atn` versionadas em `apps/photoshop/actions/`
 - Presets (paletas, estilos, pincéis) em `apps/<app>/presets/`

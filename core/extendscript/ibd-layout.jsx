@@ -28,9 +28,14 @@
 
   layout.DIRECOES = ['horizontal', 'vertical'];
   layout.DISTRIBUICOES = ['inicio', 'centro', 'fim', 'entre', 'ao-redor', 'uniforme'];
-  layout.ALINHAMENTOS = ['inicio', 'centro', 'fim', 'esticar'];
+  layout.ALINHAMENTOS = ['inicio', 'centro', 'fim', 'esticar', 'base'];
   layout.ORDENS = ['documento', 'inversa'];
   layout.AJUSTES = ['conteudo', 'caixa'];
+
+  /** Como cada filho se comporta em cada eixo — Fixo, Abracar e Preencher do Figma. */
+  layout.MODOS_MEDIDA = ['fixo', 'abracar', 'preencher'];
+  layout.ANCORAS_H = ['esquerda', 'centro', 'direita'];
+  layout.ANCORAS_V = ['topo', 'centro', 'base'];
 
   layout.PADRAO = {
     direcao: 'horizontal',
@@ -42,8 +47,23 @@
     quebra: 0,
     ordem: 'documento',
     ajuste: 'conteudo',
+    minLargura: null,
+    maxLargura: null,
+    minAltura: null,
+    maxAltura: null,
     arredondar: true,
     unidade: 'px'
+  };
+
+  layout.PADRAO_ITEM = {
+    largura: 'abracar',
+    altura: 'abracar',
+    minLargura: null,
+    maxLargura: null,
+    minAltura: null,
+    maxAltura: null,
+    absoluto: false,
+    ancora: null
   };
 
   /* ---------------------------------------------------------------- *
@@ -61,6 +81,12 @@
     return n;
   }
 
+  /** Numero opcional: vazio vira null, que significa "sem limite". */
+  function opcional(valor, rotulo) {
+    if (valor === undefined || valor === null || valor === '') return null;
+    return numero(valor, rotulo);
+  }
+
   function escolha(valor, aceitos, rotulo, padrao) {
     if (valor === undefined || valor === null || valor === '') return padrao;
     var v = String(valor);
@@ -68,6 +94,12 @@
       throw new Error(rotulo + ': "' + v + '" não é um valor aceito (' + aceitos.join(', ') + ').');
     }
     return v;
+  }
+
+  function conferirLimites(min, max, rotulo) {
+    if (min !== null && max !== null && min > max) {
+      throw new Error(rotulo + ': o mínimo (' + min + ') é maior que o máximo (' + max + ').');
+    }
   }
 
   /** Aceita numero (todos os lados), array [t,d,b,e] ou objeto. */
@@ -102,7 +134,7 @@
   }
 
   /**
-   * Completa a especificacao com os padroes e recusa valor incoerente.
+   * Completa a especificacao do quadro com os padroes e recusa valor incoerente.
    * @param {object} spec
    * @returns {object} copia normalizada, segura para usar
    */
@@ -114,7 +146,7 @@
       ? gap
       : numero(s.gapLinha, 'Espaçamento entre linhas', true);
 
-    return {
+    var saida = {
       direcao: escolha(s.direcao, layout.DIRECOES, 'Direção', layout.PADRAO.direcao),
       gap: gap,
       gapLinha: gapLinha,
@@ -124,9 +156,50 @@
       quebra: numero(s.quebra === undefined ? 0 : s.quebra, 'Quebra'),
       ordem: escolha(s.ordem, layout.ORDENS, 'Ordem', layout.PADRAO.ordem),
       ajuste: escolha(s.ajuste, layout.AJUSTES, 'Ajuste', layout.PADRAO.ajuste),
+      minLargura: opcional(s.minLargura, 'Largura mínima do quadro'),
+      maxLargura: opcional(s.maxLargura, 'Largura máxima do quadro'),
+      minAltura: opcional(s.minAltura, 'Altura mínima do quadro'),
+      maxAltura: opcional(s.maxAltura, 'Altura máxima do quadro'),
       arredondar: s.arredondar === undefined ? true : !!s.arredondar,
       unidade: s.unidade || 'px'
     };
+    conferirLimites(saida.minLargura, saida.maxLargura, 'Largura do quadro');
+    conferirLimites(saida.minAltura, saida.maxAltura, 'Altura do quadro');
+    return saida;
+  };
+
+  /**
+   * Propriedades de um filho do quadro — o que no Figma fica no painel do
+   * item selecionado. No Photoshop elas moram no metadado XMP da camada
+   * (decisao 10 da arquitetura); aqui so se valida e completa.
+   *
+   * @param {object} props {largura, altura, minLargura, maxLargura,
+   *                 minAltura, maxAltura, absoluto, ancora: {h, v, dx, dy}}
+   */
+  layout.normalizarItem = function (props) {
+    var p = props || {};
+    var saida = {
+      largura: escolha(p.largura, layout.MODOS_MEDIDA, 'Largura do item', layout.PADRAO_ITEM.largura),
+      altura: escolha(p.altura, layout.MODOS_MEDIDA, 'Altura do item', layout.PADRAO_ITEM.altura),
+      minLargura: opcional(p.minLargura, 'Largura mínima do item'),
+      maxLargura: opcional(p.maxLargura, 'Largura máxima do item'),
+      minAltura: opcional(p.minAltura, 'Altura mínima do item'),
+      maxAltura: opcional(p.maxAltura, 'Altura máxima do item'),
+      absoluto: !!p.absoluto,
+      ancora: null
+    };
+    conferirLimites(saida.minLargura, saida.maxLargura, 'Largura do item');
+    conferirLimites(saida.minAltura, saida.maxAltura, 'Altura do item');
+
+    if (p.ancora) {
+      saida.ancora = {
+        h: escolha(p.ancora.h, layout.ANCORAS_H, 'Âncora horizontal', 'esquerda'),
+        v: escolha(p.ancora.v, layout.ANCORAS_V, 'Âncora vertical', 'topo'),
+        dx: numero(p.ancora.dx === undefined ? 0 : p.ancora.dx, 'Distância da âncora (x)', true),
+        dy: numero(p.ancora.dy === undefined ? 0 : p.ancora.dy, 'Distância da âncora (y)', true)
+      };
+    }
+    return saida;
   };
 
   /* ---------------------------------------------------------------- *
@@ -159,13 +232,33 @@
       if (!isFinite(it.w) || !isFinite(it.h) || it.w <= 0 || it.h <= 0) {
         throw new Error('Medida inválida em ' + rotulo + ': largura e altura precisam ser maiores que zero.');
       }
-      saida.push({ id: it.id, ref: it.ref, x: it.x, y: it.y, w: it.w, h: it.h });
+      var props;
+      try {
+        props = layout.normalizarItem(it);
+      } catch (e) {
+        throw new Error(rotulo + ': ' + e.message);
+      }
+      saida.push({
+        id: it.id, ref: it.ref, x: it.x, y: it.y, w: it.w, h: it.h,
+        // Distancia do topo do item ate a linha de base do texto, medida
+        // pelo adaptador. Sem ela, o item alinha pela propria base.
+        linhaBase: isFinite(it.linhaBase) && it.linhaBase >= 0 && it.linhaBase <= it.h ? it.linhaBase : null,
+        props: props
+      });
     }
     return saida;
   }
 
   function arredondar(v) {
     return Math.round(v * 1000000) / 1000000;
+  }
+
+  /** Prende o valor entre min e max; null em qualquer ponta e "sem limite". */
+  function limitar(valor, min, max) {
+    var v = valor;
+    if (max !== null && max !== undefined && v > max) v = max;
+    if (min !== null && min !== undefined && v < min) v = min;
+    return v;
   }
 
   /* ---------------------------------------------------------------- *
@@ -175,41 +268,191 @@
   /**
    * Posiciona os itens segundo a especificacao.
    *
-   * @param {object} spec especificacao (veja layout.PADRAO)
-   * @param {Array} itens [{id, ref, x, y, w, h}]
+   * Cada item pode trazer as propriedades de layout.normalizarItem (medida
+   * por eixo, limites, posicao absoluta) e, para o alinhamento pela linha
+   * de base, a distancia linhaBase. Item sem propriedade nenhuma se comporta
+   * como antes: mantem a medida e entra no fluxo.
+   *
+   * @param {object} spec especificacao do quadro (veja layout.PADRAO)
+   * @param {Array} itens [{id, ref, x, y, w, h, ...props, linhaBase}]
    * @param {object} [caixa] {x, y, largura, altura} do quadro. Quando ausente,
-   *                 usa o retangulo que envolve os itens. A ancora do resultado
-   *                 e sempre o canto superior esquerdo dessa caixa.
+   *                 usa o retangulo que envolve os itens do fluxo. A ancora do
+   *                 resultado e sempre o canto superior esquerdo dessa caixa.
    * @returns {{itens: Array, caixa: object, linhas: number, avisos: string[], spec: object}}
    */
   layout.calcular = function (spec, itens, caixa) {
     var s = layout.normalizar(spec);
     var lista = copiarItens(itens);
-    var avisos = [];
     var horizontal = s.direcao === 'horizontal';
-    var i, j;
+    var i;
 
-    if (s.ordem === 'inversa') lista.reverse();
+    var fluxo = [];
+    var absolutos = [];
+    for (i = 0; i < lista.length; i++) {
+      (lista[i].props.absoluto ? absolutos : fluxo).push(lista[i]);
+    }
+    if (s.ordem === 'inversa') fluxo.reverse();
 
+    // A caixa de referencia vem so do fluxo: um selo pendurado para fora do
+    // quadro nao pode empurrar o canto do quadro.
     var base = caixa && isFinite(caixa.x) && isFinite(caixa.y) &&
       isFinite(caixa.largura) && isFinite(caixa.altura)
       ? { x: caixa.x, y: caixa.y, largura: caixa.largura, altura: caixa.altura }
-      : layout.envolver(lista);
+      : layout.envolver(fluxo.length ? fluxo : lista);
+
+    var minP = horizontal ? s.minLargura : s.minAltura;
+    var maxP = horizontal ? s.maxLargura : s.maxAltura;
+    var minT = horizontal ? s.minAltura : s.minLargura;
+    var maxT = horizontal ? s.maxAltura : s.maxLargura;
+
+    // Eixo fixo: a quebra fixa o principal; o ajuste "caixa" fixa os dois.
+    var fixoP = null;
+    var fixoT = null;
+    if (s.quebra > 0) fixoP = s.quebra;
+    else if (s.ajuste === 'caixa') fixoP = horizontal ? base.largura : base.altura;
+    if (s.ajuste === 'caixa' && !(s.quebra > 0)) fixoT = horizontal ? base.altura : base.largura;
+    if (fixoP !== null) fixoP = limitar(fixoP, minP, maxP);
+    if (fixoT !== null) fixoT = limitar(fixoT, minT, maxT);
+
+    var r = executar(s, fluxo, base, fixoP, fixoT, horizontal);
+
+    // Quadro que abraca o conteudo mas fura o proprio minimo ou maximo:
+    // refaz com a medida limitada fixada naquele eixo. E o que faz um
+    // "Centro" funcionar dentro de uma largura minima, por exemplo.
+    var refazP = fixoP === null ? limitar(r.principal, minP, maxP) : fixoP;
+    var refazT = fixoT === null ? limitar(r.transversal, minT, maxT) : fixoT;
+    var mudouP = fixoP === null && Math.abs(refazP - r.principal) > EPS;
+    var mudouT = fixoT === null && Math.abs(refazT - r.transversal) > EPS;
+    if (mudouP || mudouT) {
+      r = executar(s, fluxo, base, mudouP ? refazP : fixoP, mudouT ? refazT : fixoT, horizontal);
+    }
+
+    var quadro = {
+      x: base.x,
+      y: base.y,
+      largura: horizontal ? r.principal : r.transversal,
+      altura: horizontal ? r.transversal : r.principal
+    };
+
+    var resultado = r.itens;
+    for (i = 0; i < absolutos.length; i++) {
+      resultado.push(posicionarAbsoluto(absolutos[i], quadro, base, s));
+    }
+
+    return {
+      itens: resultado,
+      caixa: quadro,
+      linhas: r.linhas,
+      avisos: r.avisos,
+      spec: s
+    };
+  };
+
+  /** Item pronto para o adaptador: posicao, medida e o que mudou. */
+  function montarSaida(item, x, y, w, h, linha, s) {
+    var novo = {
+      id: item.id,
+      ref: item.ref,
+      linha: linha,
+      absoluto: !!item.props.absoluto,
+      x: x, y: y, w: w, h: h,
+      anterior: { x: item.x, y: item.y, w: item.w, h: item.h }
+    };
+    var arred = s.arredondar ? Math.round : arredondar;
+    novo.x = arred(novo.x);
+    novo.y = arred(novo.y);
+    novo.w = arred(novo.w);
+    novo.h = arred(novo.h);
+
+    novo.dx = novo.x - item.x;
+    novo.dy = novo.y - item.y;
+    novo.escalaX = item.w ? (novo.w / item.w) * 100 : 100;
+    novo.escalaY = item.h ? (novo.h / item.h) * 100 : 100;
+    novo.moveu = Math.abs(novo.dx) > EPS || Math.abs(novo.dy) > EPS;
+    novo.redimensionou = Math.abs(novo.w - item.w) > EPS || Math.abs(novo.h - item.h) > EPS;
+    return novo;
+  }
+
+  /**
+   * Filho absoluto ("Ignorar auto layout"): fica fora do fluxo e preso a um
+   * canto do quadro. Sem ancora declarada, guarda a distancia que ja tem do
+   * canto superior esquerdo — como o canto nao se move, o item fica parado.
+   */
+  function posicionarAbsoluto(item, quadro, base, s) {
+    var a = item.props.ancora || { h: 'esquerda', v: 'topo', dx: item.x - base.x, dy: item.y - base.y };
+    var x, y;
+
+    if (a.h === 'direita') x = quadro.x + quadro.largura - a.dx - item.w;
+    else if (a.h === 'centro') x = quadro.x + (quadro.largura - item.w) / 2 + a.dx;
+    else x = quadro.x + a.dx;
+
+    if (a.v === 'base') y = quadro.y + quadro.altura - a.dy - item.h;
+    else if (a.v === 'centro') y = quadro.y + (quadro.altura - item.h) / 2 + a.dy;
+    else y = quadro.y + a.dy;
+
+    return montarSaida(item, x, y, item.w, item.h, -1, s);
+  }
+
+  /**
+   * Divide o espaco entre os filhos que preenchem, respeitando min e max de
+   * cada um. Mesmo algoritmo do flex-grow do CSS: quem estoura um limite
+   * fica preso nele, e o resto do espaco e redividido entre os demais.
+   */
+  function distribuirPreencher(itens, espaco, medida, minDe, maxDe) {
+    var ativos = itens.slice(0);
+    var resto = espaco;
+    var guarda = 0;
+
+    while (ativos.length && guarda++ < 100) {
+      var cota = resto / ativos.length;
+      var alvos = [];
+      var violacao = 0;
+      var k;
+
+      for (k = 0; k < ativos.length; k++) {
+        // Preencher nunca zera uma camada: abaixo de 1 px ela some do documento.
+        var minimo = Math.max(minDe(ativos[k]) === null ? 0 : minDe(ativos[k]), 1);
+        var alvo = limitar(cota, minimo, maxDe(ativos[k]));
+        alvos.push(alvo);
+        violacao += alvo - cota;
+      }
+
+      if (Math.abs(violacao) < EPS) {
+        for (k = 0; k < ativos.length; k++) medida(ativos[k], alvos[k]);
+        return;
+      }
+
+      // Congela so os que estouraram no sentido da violacao total.
+      var seguem = [];
+      for (k = 0; k < ativos.length; k++) {
+        var estourou = violacao > 0 ? alvos[k] > cota + EPS : alvos[k] < cota - EPS;
+        if (estourou) {
+          medida(ativos[k], alvos[k]);
+          resto -= alvos[k];
+        } else {
+          seguem.push(ativos[k]);
+        }
+      }
+      ativos = seguem;
+    }
+  }
+
+  /**
+   * Uma passada de layout com os eixos fixos ja decididos.
+   * @returns {{itens: Array, principal: number, transversal: number, linhas: number, avisos: string[]}}
+   */
+  function executar(s, fluxo, base, fixoP, fixoT, horizontal) {
+    var avisos = [];
+    var i, j, k;
 
     var padIni = horizontal ? s.padding.esquerda : s.padding.topo;
     var padFim = horizontal ? s.padding.direita : s.padding.base;
     var padCruzIni = horizontal ? s.padding.topo : s.padding.esquerda;
     var padCruzFim = horizontal ? s.padding.base : s.padding.direita;
 
-    // Espaco disponivel no eixo principal: a quebra fixa a medida do quadro;
-    // sem quebra, so o ajuste "caixa" fixa. Caso contrario o quadro abraca
-    // o conteudo e a distribuicao nao tem folga para trabalhar.
-    var mainDisp = null;
-    if (s.quebra > 0) {
-      mainDisp = s.quebra - padIni - padFim;
-    } else if (s.ajuste === 'caixa') {
-      mainDisp = (horizontal ? base.largura : base.altura) - padIni - padFim;
-    }
+    // Espaco disponivel no eixo principal: sem eixo fixo, o quadro abraca o
+    // conteudo e a distribuicao nao tem folga para trabalhar.
+    var mainDisp = fixoP === null ? null : fixoP - padIni - padFim;
 
     var espalha = s.distribuicao === 'entre' || s.distribuicao === 'ao-redor' || s.distribuicao === 'uniforme';
     if (espalha && mainDisp === null) {
@@ -221,45 +464,95 @@
       throw new Error('O preenchimento interno não deixa espaço no eixo principal. Reduza o preenchimento ou aumente o quadro.');
     }
 
-    var cruzDisp = null;
-    if (s.ajuste === 'caixa' && !(s.quebra > 0)) {
-      cruzDisp = (horizontal ? base.altura : base.largura) - padCruzIni - padCruzFim;
-      if (cruzDisp <= 0) {
-        throw new Error('O preenchimento interno não deixa espaço no eixo transversal. Reduza o preenchimento ou aumente o quadro.');
-      }
+    var cruzDisp = fixoT === null ? null : fixoT - padCruzIni - padCruzFim;
+    if (cruzDisp !== null && cruzDisp <= 0) {
+      throw new Error('O preenchimento interno não deixa espaço no eixo transversal. Reduza o preenchimento ou aumente o quadro.');
     }
 
-    /* Quebra em linhas ------------------------------------------------ */
+    var alinhamento = s.alinhamento;
+    if (alinhamento === 'base' && !horizontal) {
+      alinhamento = 'inicio';
+      avisos.push('O alinhamento pela linha de base só vale no fluxo horizontal; foi usado o início.');
+    }
 
-    function medidaPrincipal(item) { return horizontal ? item.w : item.h; }
-    function medidaTransversal(item) { return horizontal ? item.h : item.w; }
+    /* Medidas de trabalho de cada item, por eixo ---------------------- */
+
+    function modoP(it) { return horizontal ? it.props.largura : it.props.altura; }
+    function modoT(it) { return horizontal ? it.props.altura : it.props.largura; }
+    function minPDe(it) { return horizontal ? it.props.minLargura : it.props.minAltura; }
+    function maxPDe(it) { return horizontal ? it.props.maxLargura : it.props.maxAltura; }
+    function minTDe(it) { return horizontal ? it.props.minAltura : it.props.minLargura; }
+    function maxTDe(it) { return horizontal ? it.props.maxAltura : it.props.maxLargura; }
+
+    var trabalho = [];
+    for (i = 0; i < fluxo.length; i++) {
+      var it = fluxo[i];
+      var p0 = horizontal ? it.w : it.h;
+      var t0 = horizontal ? it.h : it.w;
+      // Fixo e a medida atual, sem conversa. Abracar e a medida do conteudo,
+      // mas obedece a min e max. Preencher comeca da medida atual e cresce
+      // depois, quando se sabe quanto espaco sobra.
+      trabalho.push({
+        item: it,
+        p: modoP(it) === 'abracar' ? limitar(p0, minPDe(it), maxPDe(it)) : p0,
+        t: modoT(it) === 'abracar' ? limitar(t0, minTDe(it), maxTDe(it)) : t0
+      });
+    }
+    function prop(fn) { return function (w) { return fn(w.item); }; }
+
+    /* Quebra em linhas ------------------------------------------------ */
 
     var linhas = [];
     var atual = [];
     var usado = 0;
 
-    for (i = 0; i < lista.length; i++) {
-      var m = medidaPrincipal(lista[i]);
+    for (i = 0; i < trabalho.length; i++) {
+      var m = trabalho[i].p;
       if (s.quebra > 0 && atual.length && usado + s.gap + m > mainDisp + EPS) {
         linhas.push(atual);
         atual = [];
         usado = 0;
       }
       if (atual.length) usado += s.gap;
-      atual.push(lista[i]);
+      atual.push(trabalho[i]);
       usado += m;
       if (s.quebra > 0 && m > mainDisp + EPS && atual.length === 1) {
-        avisos.push('"' + (lista[i].id === undefined ? 'um item' : lista[i].id) + '" é maior que a quebra e vai ultrapassar o quadro.');
+        var idq = trabalho[i].item.id;
+        avisos.push('"' + (idq === undefined ? 'um item' : idq) + '" é maior que a quebra e vai ultrapassar o quadro.');
       }
     }
     if (atual.length) linhas.push(atual);
 
-    /* Posicoes no eixo principal, linha a linha ----------------------- */
+    /* Eixo principal, linha a linha ------------------------------------ */
+
+    var avisouPreencher = false;
 
     function planoDaLinha(itensLinha) {
-      var soma = 0, k;
       var n = itensLinha.length;
-      for (k = 0; k < n; k++) soma += medidaPrincipal(itensLinha[k]);
+      var preenchem = [];
+      var soma = 0;
+
+      for (k = 0; k < n; k++) {
+        if (modoP(itensLinha[k].item) === 'preencher') preenchem.push(itensLinha[k]);
+      }
+
+      if (preenchem.length) {
+        if (mainDisp === null) {
+          if (!avisouPreencher) {
+            avisos.push('"Preencher" no eixo principal precisa de um quadro de medida fixa; os itens mantiveram a medida atual.');
+            avisouPreencher = true;
+          }
+        } else {
+          var ocupado = s.gap * (n - 1);
+          for (k = 0; k < n; k++) {
+            if (modoP(itensLinha[k].item) !== 'preencher') ocupado += itensLinha[k].p;
+          }
+          distribuirPreencher(preenchem, mainDisp - ocupado,
+            function (w, v) { w.p = v; }, prop(minPDe), prop(maxPDe));
+        }
+      }
+
+      for (k = 0; k < n; k++) soma += itensLinha[k].p;
 
       if (mainDisp === null) {
         return { inicio: 0, gap: s.gap, comprimento: soma + s.gap * (n - 1) };
@@ -268,38 +561,42 @@
       var livre = mainDisp - soma;
       var plano;
 
-      switch (s.distribuicao) {
-        case 'entre':
-          plano = { inicio: 0, gap: n > 1 ? livre / (n - 1) : 0, comprimento: mainDisp };
-          break;
-        case 'ao-redor':
-          var ar = livre / n;
-          plano = { inicio: ar / 2, gap: ar, comprimento: mainDisp };
-          break;
-        case 'uniforme':
-          var un = livre / (n + 1);
-          plano = { inicio: un, gap: un, comprimento: mainDisp };
-          break;
-        default:
-          var bloco = soma + s.gap * (n - 1);
-          var sobra = mainDisp - bloco;
-          plano = {
-            inicio: s.distribuicao === 'centro' ? sobra / 2 : (s.distribuicao === 'fim' ? sobra : 0),
-            gap: s.gap,
-            comprimento: mainDisp
-          };
-          if (sobra < -EPS) {
-            avisos.push('O conteúdo passa do quadro em ' + Math.abs(Math.round(sobra)) + ' px no eixo principal.');
-          }
+      // Com filho que preenche nao sobra espaco para distribuir: vale o
+      // espaco entre itens declarado, como no Figma.
+      if (preenchem.length || !espalha) {
+        var bloco = soma + s.gap * (n - 1);
+        var sobra = mainDisp - bloco;
+        var dist = preenchem.length ? 'inicio' : s.distribuicao;
+        plano = {
+          inicio: dist === 'centro' ? sobra / 2 : (dist === 'fim' ? sobra : 0),
+          gap: s.gap,
+          comprimento: mainDisp
+        };
+        if (sobra < -EPS) {
+          avisos.push('O conteúdo passa do quadro em ' + Math.abs(Math.round(sobra)) + ' px no eixo principal.');
+        }
+        return plano;
       }
 
-      if (espalha && plano.gap < -EPS) {
-        avisos.push('Os itens ficaram sobrepostos: não cabem no quadro com essa distribuição.');
+      if (s.distribuicao === 'entre') {
+        plano = { inicio: 0, gap: n > 1 ? livre / (n - 1) : 0, comprimento: mainDisp };
+      } else if (s.distribuicao === 'ao-redor') {
+        plano = { inicio: livre / n / 2, gap: livre / n, comprimento: mainDisp };
+      } else {
+        plano = { inicio: livre / (n + 1), gap: livre / (n + 1), comprimento: mainDisp };
+      }
+
+      // Espaco automatico nunca fica negativo: sem folga, os itens encostam
+      // a partir do inicio em vez de se sobreporem.
+      if (livre < -EPS) {
+        plano.inicio = 0;
+        plano.gap = 0;
+        avisos.push('O conteúdo não cabe no quadro: os itens ficaram encostados, sem espaço entre eles.');
       }
       return plano;
     }
 
-    /* Montagem final -------------------------------------------------- */
+    /* Montagem ------------------------------------------------------- */
 
     var origemPrincipal = (horizontal ? base.x : base.y) + padIni;
     var origemTransversal = (horizontal ? base.y : base.x) + padCruzIni;
@@ -314,9 +611,15 @@
       maiorComprimento = Math.max(maiorComprimento, plano.comprimento);
 
       var alturaLinha = 0;
+      var acima = 0;
+      var abaixo = 0;
       for (j = 0; j < linha.length; j++) {
-        alturaLinha = Math.max(alturaLinha, medidaTransversal(linha[j]));
+        alturaLinha = Math.max(alturaLinha, linha[j].t);
+        var b = linha[j].item.linhaBase === null ? linha[j].t : linha[j].item.linhaBase;
+        acima = Math.max(acima, b);
+        abaixo = Math.max(abaixo, linha[j].t - b);
       }
+      if (alinhamento === 'base') alturaLinha = Math.max(alturaLinha, acima + abaixo);
       // Linha unica em quadro de medida fixa: o alinhamento vale contra o
       // quadro inteiro, nao so contra o item mais alto.
       if (linhas.length === 1 && cruzDisp !== null) alturaLinha = cruzDisp;
@@ -324,82 +627,47 @@
       var cursorPrincipal = plano.inicio;
 
       for (j = 0; j < linha.length; j++) {
-        var item = linha[j];
-        var mp = medidaPrincipal(item);
-        var mt = medidaTransversal(item);
-        var novoMt = mt;
-        var deslocamentoCruz = 0;
+        var w = linha[j];
+        var item = w.item;
+        var novoT = w.t;
+        var deslocamento = 0;
 
-        switch (s.alinhamento) {
-          case 'centro':
-            deslocamentoCruz = (alturaLinha - mt) / 2;
-            break;
-          case 'fim':
-            deslocamentoCruz = alturaLinha - mt;
-            break;
-          case 'esticar':
-            novoMt = alturaLinha;
-            break;
-          default:
-            deslocamentoCruz = 0;
+        var estica = modoT(item) === 'preencher' ||
+          (alinhamento === 'esticar' && modoT(item) !== 'fixo');
+
+        if (estica) {
+          novoT = limitar(alturaLinha, minTDe(item), maxTDe(item));
+        } else if (alinhamento === 'centro') {
+          deslocamento = (alturaLinha - novoT) / 2;
+        } else if (alinhamento === 'fim') {
+          deslocamento = alturaLinha - novoT;
+        } else if (alinhamento === 'base') {
+          deslocamento = acima - (item.linhaBase === null ? novoT : item.linhaBase);
         }
 
         var posPrincipal = origemPrincipal + cursorPrincipal;
-        var posCruz = origemTransversal + cursorCruz + deslocamentoCruz;
+        var posCruz = origemTransversal + cursorCruz + deslocamento;
 
-        var novo = {
-          id: item.id,
-          ref: item.ref,
-          linha: i,
-          x: horizontal ? posPrincipal : posCruz,
-          y: horizontal ? posCruz : posPrincipal,
-          w: horizontal ? mp : novoMt,
-          h: horizontal ? novoMt : mp,
-          anterior: { x: item.x, y: item.y, w: item.w, h: item.h }
-        };
-
-        if (s.arredondar) {
-          novo.x = Math.round(novo.x);
-          novo.y = Math.round(novo.y);
-          novo.w = Math.round(novo.w);
-          novo.h = Math.round(novo.h);
-        } else {
-          novo.x = arredondar(novo.x);
-          novo.y = arredondar(novo.y);
-          novo.w = arredondar(novo.w);
-          novo.h = arredondar(novo.h);
-        }
-
-        novo.dx = novo.x - item.x;
-        novo.dy = novo.y - item.y;
-        novo.escalaX = item.w ? (novo.w / item.w) * 100 : 100;
-        novo.escalaY = item.h ? (novo.h / item.h) * 100 : 100;
-        novo.moveu = Math.abs(novo.dx) > EPS || Math.abs(novo.dy) > EPS;
-        novo.redimensionou = Math.abs(novo.w - item.w) > EPS || Math.abs(novo.h - item.h) > EPS;
-
-        resultado.push(novo);
-        cursorPrincipal += mp + plano.gap;
+        resultado.push(montarSaida(item,
+          horizontal ? posPrincipal : posCruz,
+          horizontal ? posCruz : posPrincipal,
+          horizontal ? w.p : novoT,
+          horizontal ? novoT : w.p,
+          i, s));
+        cursorPrincipal += w.p + plano.gap;
       }
 
       cursorCruz += alturaLinha + (i < linhas.length - 1 ? s.gapLinha : 0);
     }
 
-    var totalPrincipal = (mainDisp !== null ? mainDisp : maiorComprimento) + padIni + padFim;
-    var totalTransversal = (cruzDisp !== null && linhas.length === 1 ? cruzDisp : cursorCruz) + padCruzIni + padCruzFim;
-
     return {
       itens: resultado,
-      caixa: {
-        x: base.x,
-        y: base.y,
-        largura: horizontal ? totalPrincipal : totalTransversal,
-        altura: horizontal ? totalTransversal : totalPrincipal
-      },
+      principal: (mainDisp !== null ? mainDisp : maiorComprimento) + padIni + padFim,
+      transversal: (cruzDisp !== null && linhas.length === 1 ? cruzDisp : cursorCruz) + padCruzIni + padCruzFim,
       linhas: linhas.length,
-      avisos: avisos,
-      spec: s
+      avisos: avisos
     };
-  };
+  }
 
   /* ---------------------------------------------------------------- *
    * Alinhar e distribuir (barra de alinhamento, sem quadro)
@@ -572,22 +840,28 @@
    * @returns {{spec: object, nome: string}|null} null quando nao ha etiqueta
    * @throws {Error} quando a etiqueta existe mas esta corrompida
    */
-  layout.lerTag = function (nome) {
-    var texto = String(nome);
-    var achado = texto.match(RE_TAG);
-    if (!achado) return null;
-
+  /** "a=1;b=2" vira {a: '1', b: '2'}; trecho sem "=" e recusado com a origem na mensagem. */
+  function lerPares(conteudo, rotulo, origem) {
     var bruto = {};
-    var pares = achado[1].split(';');
+    var pares = String(conteudo).split(';');
     for (var i = 0; i < pares.length; i++) {
       var par = pares[i].replace(/^\s+|\s+$/g, '');
       if (!par) continue;
       var corte = par.indexOf('=');
       if (corte < 1) {
-        throw new Error('Etiqueta @auto inválida em "' + texto + '": trecho "' + par + '".');
+        throw new Error(rotulo + ' inválida em "' + origem + '": trecho "' + par + '".');
       }
       bruto[par.substring(0, corte).replace(/\s+/g, '')] = par.substring(corte + 1).replace(/^\s+|\s+$/g, '');
     }
+    return bruto;
+  }
+
+  layout.lerTag = function (nome) {
+    var texto = String(nome);
+    var achado = texto.match(RE_TAG);
+    if (!achado) return null;
+
+    var bruto = lerPares(achado[1], 'Etiqueta @auto', texto);
 
     var spec = {};
     if (bruto.dir) spec.direcao = bruto.dir === 'v' ? 'vertical' : (bruto.dir === 'h' ? 'horizontal' : bruto.dir);
@@ -599,6 +873,10 @@
     if (bruto.ordem) spec.ordem = chaveDe(ABREV_ORDEM, bruto.ordem) || bruto.ordem;
     if (bruto.ajuste) spec.ajuste = bruto.ajuste;
     if (bruto.un) spec.unidade = bruto.un;
+    if (bruto.minw !== undefined) spec.minLargura = numero(bruto.minw, 'Etiqueta @auto (minw)');
+    if (bruto.maxw !== undefined) spec.maxLargura = numero(bruto.maxw, 'Etiqueta @auto (maxw)');
+    if (bruto.minh !== undefined) spec.minAltura = numero(bruto.minh, 'Etiqueta @auto (minh)');
+    if (bruto.maxh !== undefined) spec.maxAltura = numero(bruto.maxh, 'Etiqueta @auto (maxh)');
 
     if (bruto.pad !== undefined) {
       var partes = bruto.pad.split(',');
@@ -639,6 +917,10 @@
     if (s.quebra) partes.push('quebra=' + s.quebra);
     if (s.ordem !== layout.PADRAO.ordem) partes.push('ordem=' + (ABREV_ORDEM[s.ordem] || s.ordem));
     if (s.ajuste !== layout.PADRAO.ajuste) partes.push('ajuste=' + s.ajuste);
+    if (s.minLargura !== null) partes.push('minw=' + s.minLargura);
+    if (s.maxLargura !== null) partes.push('maxw=' + s.maxLargura);
+    if (s.minAltura !== null) partes.push('minh=' + s.minAltura);
+    if (s.maxAltura !== null) partes.push('maxh=' + s.maxAltura);
     if (s.unidade && s.unidade !== 'px') partes.push('un=' + s.unidade);
 
     return '@auto[' + partes.join(';') + ']';
@@ -647,6 +929,64 @@
   /** Nome do quadro com a etiqueta atualizada (substitui a anterior). */
   layout.escreverTag = function (nome, spec) {
     return (layout.nomeLimpo(nome) + ' ' + layout.montarTag(spec)).replace(/^\s+/, '');
+  };
+
+  /* ---------------------------------------------------------------- *
+   * Propriedades do filho em texto
+   *
+   * O quadro guarda a regra no nome do grupo; os filhos guardam as suas no
+   * metadado XMP da camada, para o painel Camadas nao virar uma sopa de
+   * etiquetas (decisao 10 da arquitetura). O formato e o mesmo da etiqueta
+   * do quadro — chave=valor separados por ";" — so que sem o "@auto[...]":
+   *
+   *   w=preencher;h=fixo;maxw=320;abs=1;ancora=direita,topo,8,8
+   *
+   * Gravar e ler o XMP e trabalho do adaptador (Fase 2). Aqui so o texto.
+   * ---------------------------------------------------------------- */
+
+  /** Texto curto com o que foge do padrao; vazio quando o item e todo padrao. */
+  layout.montarItem = function (props) {
+    var p = layout.normalizarItem(props);
+    var d = layout.PADRAO_ITEM;
+    var partes = [];
+
+    if (p.largura !== d.largura) partes.push('w=' + p.largura);
+    if (p.altura !== d.altura) partes.push('h=' + p.altura);
+    if (p.minLargura !== null) partes.push('minw=' + p.minLargura);
+    if (p.maxLargura !== null) partes.push('maxw=' + p.maxLargura);
+    if (p.minAltura !== null) partes.push('minh=' + p.minAltura);
+    if (p.maxAltura !== null) partes.push('maxh=' + p.maxAltura);
+    if (p.absoluto) partes.push('abs=1');
+    if (p.ancora) partes.push('ancora=' + p.ancora.h + ',' + p.ancora.v + ',' + p.ancora.dx + ',' + p.ancora.dy);
+
+    return partes.join(';');
+  };
+
+  /** Le o texto de layout.montarItem. Vazio ou ausente devolve o padrao. */
+  layout.lerItem = function (texto) {
+    if (texto === undefined || texto === null || String(texto).replace(/\s+/g, '') === '') {
+      return layout.normalizarItem({});
+    }
+    var bruto = lerPares(texto, 'Propriedade de item', texto);
+    var props = {};
+
+    if (bruto.w) props.largura = bruto.w;
+    if (bruto.h) props.altura = bruto.h;
+    if (bruto.minw !== undefined) props.minLargura = numero(bruto.minw, 'Item (minw)');
+    if (bruto.maxw !== undefined) props.maxLargura = numero(bruto.maxw, 'Item (maxw)');
+    if (bruto.minh !== undefined) props.minAltura = numero(bruto.minh, 'Item (minh)');
+    if (bruto.maxh !== undefined) props.maxAltura = numero(bruto.maxh, 'Item (maxh)');
+    if (bruto.abs !== undefined) props.absoluto = bruto.abs === '1' || bruto.abs === 'sim';
+
+    if (bruto.ancora !== undefined) {
+      var a = bruto.ancora.split(',');
+      if (a.length !== 4) {
+        throw new Error('Propriedade de item inválida: "ancora" precisa de 4 partes — horizontal, vertical, dx, dy.');
+      }
+      props.ancora = { h: a[0], v: a[1], dx: numero(a[2], 'Item (ancora dx)', true), dy: numero(a[3], 'Item (ancora dy)', true) };
+    }
+
+    return layout.normalizarItem(props);
   };
 
   /** Uma linha legivel descrevendo a especificacao, para relatorio. */
