@@ -108,7 +108,7 @@ Motor de auto layout. Só contas — não chama nenhuma API da Adobe, e por isso
 
 | | |
 |---|---|
-| `calcular(spec, itens, caixa)` | posiciona `[{id, ref, x, y, w, h}]`; devolve `{itens, caixa, linhas, avisos, spec}` |
+| `calcular(spec, itens, caixa)` | posiciona `[{id, ref, x, y, w, h}]`; devolve `{itens, caixa, linhas, avisos, spec}`. Cada item aceita as propriedades de `normalizarItem` e `linhaBase` |
 | `alinhar(itens, caixa, modoH, modoV)` | alinha preservando o outro eixo (`nenhum`, `inicio`, `centro`, `fim`) |
 | `distribuir(itens, eixo, modo, valor)` | `bordas`, `centros` ou `fixo`; mantém a primeira e a última peça |
 | `envolver(itens)` | retângulo que contém todos os itens |
@@ -117,8 +117,10 @@ Motor de auto layout. Só contas — não chama nenhuma API da Adobe, e por isso
 | `lerTag(nome)` / `escreverTag(nome, spec)` | a regra guardada em `@auto[...]` no nome do grupo |
 | `temTag(nome)` / `nomeLimpo(nome)` / `montarTag(spec)` | auxiliares da etiqueta |
 | `descrever(spec)` | uma linha legível, para o relatório final |
+| `normalizarItem(props)` | propriedades de um filho: `largura`/`altura` (`fixo`, `abracar`, `preencher`), mínimos e máximos, `absoluto`, `ancora` |
+| `montarItem(props)` / `lerItem(texto)` | as propriedades do filho em texto, no formato gravado no XMP da camada |
 
-Cada item do resultado traz `dx`, `dy`, `escalaX`, `escalaY`, `moveu`, `redimensionou`, `linha` e `anterior` — o script só precisa aplicar.
+Cada item do resultado traz `dx`, `dy`, `escalaX`, `escalaY`, `moveu`, `redimensionou`, `linha`, `absoluto` e `anterior` — o script só precisa aplicar. Item absoluto vem com `linha: -1`. O comportamento completo, e o que ainda não chegou aos scripts, está em [auto-layout-v2.md](auto-layout-v2.md).
 
 ### `IBD.ps` (ibd-ps-camadas.jsx)
 
