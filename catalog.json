@@ -37,7 +37,7 @@
       "app": "illustrator",
       "tipo": "script",
       "arquivo": "apps/illustrator/scripts/guias-selecao-margem.jsx",
-      "versao": "1.0.0",
+      "versao": "1.0.1",
       "tags": [
         "guias",
         "margem",
