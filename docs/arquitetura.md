@@ -74,6 +74,16 @@ O mesmo raciocínio vale para a pasta de saída: se o builder tivesse a sua e o 
 
 A decisão 4 continua valendo dentro do repositório: `install:dev` grava lançadores, não cópias. O arquivo com a biblioteca embutida existe só na saída do site, para quem não tem o repositório — e é gerado, nunca versionado, então não vira uma segunda cópia para manter.
 
+## 10. As propriedades de cada filho moram no XMP da camada
+
+**Decisão:** o quadro continua com a regra no nome do grupo (decisão 8). Já as propriedades de cada filho — Fixo, Abraçar ou Preencher, mínimo e máximo, posição absoluta — vão para o metadado XMP da própria camada, no formato de `IBD.layout.montarItem`.
+
+A decisão 8 escolheu o nome pela transparência, e ela continua valendo para o quadro: quem abre o PSD vê que aquele grupo é um quadro. Mas repetir a lógica nos filhos poria uma etiqueta em quase toda camada do documento, e o painel Camadas é a ferramenta de trabalho do dia a dia — poluí-lo custa mais do que a transparência ganha.
+
+O preço é que a propriedade do filho fica invisível sem o painel Auto Layout. Por isso o texto gravado é o mesmo `chave=valor` legível da etiqueta do quadro, e o painel da Fase 3 o mostra. Perder o XMP (exportar para um formato que não o preserva, por exemplo) faz o filho voltar ao padrão, Abraçar — o quadro e a regra dele continuam intactos.
+
+**Quando reavaliar:** se o XMP de camada se mostrar instável entre versões do Photoshop na Fase 2, as propriedades do filho passam para uma camada de dados dentro do grupo, invisível e travada. Detalhes em [auto-layout-v2.md](auto-layout-v2.md).
+
 ## Limites conhecidos
 
 - A ponte UXP → ExtendScript usa um evento não documentado do batchPlay. Ela falha de forma explícita e o painel cai no modo manual. Detalhes em [guia-uxp.md](guia-uxp.md).
