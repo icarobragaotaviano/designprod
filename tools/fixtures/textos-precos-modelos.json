@@ -1,0 +1,394 @@
+[
+  {
+    "stem": "TEXTO UM DIGITO",
+    "digits": 1,
+    "label": "Um dígito — exemplo 9,99",
+    "defaultPrice": "9,99",
+    "defaultUnit": "UN",
+    "width": 597,
+    "height": 484,
+    "byteLength": 347913,
+    "crc32": 1228231559,
+    "sha256": "51b29ecf776e6672bfd494ab1899c7194c00d5df7814ee96914e51ac766928d5",
+    "hasColorProfile": false,
+    "source": "apps/photoshop/templates/textos-precos/texto-um-digito.psd",
+    "children": [
+      {
+        "name": "Preenchimento de Cor 1",
+        "kind": "solidcolorfill",
+        "visible": false,
+        "bbox": [
+          0,
+          0,
+          597,
+          484
+        ]
+      },
+      {
+        "name": "VALOR PROM",
+        "kind": "group",
+        "visible": true,
+        "bbox": [
+          294,
+          281,
+          573,
+          460
+        ],
+        "children": [
+          {
+            "name": "/KG",
+            "kind": "type",
+            "visible": false,
+            "bbox": [
+              491,
+              402,
+              574,
+              462
+            ],
+            "text": "/KG"
+          },
+          {
+            "name": "UN",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              505,
+              411,
+              572,
+              460
+            ],
+            "text": "UN"
+          },
+          {
+            "name": "VALOR PROM CENT",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              494,
+              282,
+              573,
+              344
+            ],
+            "text": ",99"
+          },
+          {
+            "name": "VALOR PROM",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              383,
+              282,
+              486,
+              460
+            ],
+            "text": "9"
+          },
+          {
+            "name": "POR R$ ",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              294,
+              281,
+              377,
+              381
+            ],
+            "text": "POR\rR$\r"
+          }
+        ]
+      },
+      {
+        "name": "VALOR NORM",
+        "kind": "group",
+        "visible": true,
+        "bbox": [
+          24,
+          272,
+          179,
+          371
+        ],
+        "children": [
+          {
+            "name": "/KG",
+            "kind": "type",
+            "visible": false,
+            "bbox": [
+              117,
+              339,
+              159,
+              369
+            ],
+            "text": "/KG"
+          },
+          {
+            "name": "UN",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              124,
+              346,
+              159,
+              371
+            ],
+            "text": "UN"
+          },
+          {
+            "name": "VALOR PROM CENT",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              119,
+              281,
+              159,
+              313
+            ],
+            "text": ",99"
+          },
+          {
+            "name": "VALOR PROM",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              64,
+              281,
+              116,
+              371
+            ],
+            "text": "9"
+          },
+          {
+            "name": "DE R$ ",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              27,
+              281,
+              57,
+              336
+            ],
+            "text": "DE\rR$\r"
+          },
+          {
+            "name": "Forma 1",
+            "kind": "shape",
+            "visible": true,
+            "bbox": [
+              24,
+              272,
+              179,
+              368
+            ]
+          }
+        ]
+      },
+      {
+        "name": "PRODUTO",
+        "kind": "type",
+        "visible": true,
+        "bbox": [
+          27,
+          39,
+          464,
+          164
+        ],
+        "text": "Lorem ipsum\rdolor sit amet"
+      }
+    ]
+  },
+  {
+    "stem": "TEXTO DOIS DIGITOS",
+    "digits": 2,
+    "label": "Dois dígitos — exemplo 99,99",
+    "defaultPrice": "99,99",
+    "defaultUnit": "/KG",
+    "width": 706,
+    "height": 468,
+    "byteLength": 372977,
+    "crc32": 3089196722,
+    "sha256": "e8f3301b35a7a6bd0fc84e024c7132f335270e936a1ab615926a0243d98c6fc9",
+    "hasColorProfile": false,
+    "source": "apps/photoshop/templates/textos-precos/texto-dois-digitos.psd",
+    "children": [
+      {
+        "name": "Preenchimento de Cor 1",
+        "kind": "solidcolorfill",
+        "visible": false,
+        "bbox": [
+          0,
+          0,
+          706,
+          468
+        ]
+      },
+      {
+        "name": "VALOR PROM",
+        "kind": "group",
+        "visible": true,
+        "bbox": [
+          286,
+          266,
+          681,
+          448
+        ],
+        "children": [
+          {
+            "name": "/KG",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              598,
+              388,
+              681,
+              448
+            ],
+            "text": "/KG"
+          },
+          {
+            "name": "UN",
+            "kind": "type",
+            "visible": false,
+            "bbox": [
+              612,
+              394,
+              679,
+              443
+            ],
+            "text": "UN"
+          },
+          {
+            "name": "VALOR PROM CENT",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              601,
+              266,
+              680,
+              328
+            ],
+            "text": ",99"
+          },
+          {
+            "name": "VALOR PROM",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              376,
+              266,
+              593,
+              444
+            ],
+            "text": "99"
+          },
+          {
+            "name": "POR R$ ",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              286,
+              266,
+              369,
+              366
+            ],
+            "text": "POR\rR$\r"
+          }
+        ]
+      },
+      {
+        "name": "VALOR NORM",
+        "kind": "group",
+        "visible": true,
+        "bbox": [
+          25,
+          258,
+          216,
+          358
+        ],
+        "children": [
+          {
+            "name": "/KG",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              172,
+              328,
+              214,
+              358
+            ],
+            "text": "/KG"
+          },
+          {
+            "name": "UN",
+            "kind": "type",
+            "visible": false,
+            "bbox": [
+              179,
+              331,
+              214,
+              356
+            ],
+            "text": "UN"
+          },
+          {
+            "name": "VALOR PROM CENT",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              174,
+              265,
+              214,
+              297
+            ],
+            "text": ",99"
+          },
+          {
+            "name": "VALOR PROM",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              62,
+              266,
+              171,
+              356
+            ],
+            "text": "99"
+          },
+          {
+            "name": "DE R$ ",
+            "kind": "type",
+            "visible": true,
+            "bbox": [
+              25,
+              265,
+              55,
+              320
+            ],
+            "text": "DE\rR$\r"
+          },
+          {
+            "name": "Forma 1",
+            "kind": "shape",
+            "visible": true,
+            "bbox": [
+              32,
+              258,
+              216,
+              355
+            ]
+          }
+        ]
+      },
+      {
+        "name": "PRODUTO",
+        "kind": "type",
+        "visible": true,
+        "bbox": [
+          25,
+          25,
+          462,
+          150
+        ],
+        "text": "Lorem ipsum\rdolor sit amet"
+      }
+    ]
+  }
+]

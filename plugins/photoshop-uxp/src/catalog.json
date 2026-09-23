@@ -282,6 +282,23 @@
       "doc": "docs/auto-layout.md"
     },
     {
+      "id": "photoshop/editar-textos-precos-rapido",
+      "titulo": "Editar textos e preços",
+      "descricao": "Edita o PSD aberto com modelos de um ou dois dígitos, nome, preços DE/POR e unidades. Ajusta tela, elementos e guias sem recriar o arquivo.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/editar-textos-precos-rapido.jsx",
+      "versao": "2.0.0",
+      "tags": [
+        "ofertas",
+        "texto",
+        "precos",
+        "modelos",
+        "guias"
+      ],
+      "doc": "docs/textos-e-precos.md"
+    },
+    {
       "id": "photoshop/exportar-camadas",
       "titulo": "Exportar camadas",
       "descricao": "Exporta cada camada ou grupo do topo do documento como arquivo separado, com opção de aparar área transparente.",

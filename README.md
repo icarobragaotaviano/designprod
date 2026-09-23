@@ -24,7 +24,7 @@ O painel do plugin **não** tem lista de ferramentas escrita em código: ele lê
 
 ```bash
 npm run validate        # checa metadados, catálogo, includes e manifest
-npm test                # valida estrutura e executa os 130 testes do repositório
+npm test                # valida estrutura e executa os testes do repositório
 npm run catalog         # regenera catalog.json a partir dos scripts
 npm run install:dev     # instala os scripts nos menus dos apps Adobe
 npm run build:plugin    # empacota o plugin UXP do Photoshop em dist/*.ccx
@@ -50,6 +50,7 @@ Não há dependências externas — só Node 18+.
 | Reaplicar auto layout | Photoshop | Recalcula todos os quadros etiquetados depois que o conteúdo mudou |
 | Alinhar e distribuir camadas | Photoshop | Alinha pela seleção, pela tela ou por uma camada de referência, com espaço fixo em mm |
 | Kit de Produção (Actions) | Photoshop | Suíte de 9 actions (.atn): 150 DPI, atualizar vínculos, sangria, placeholder, revinculação, exportações JPEG/PNG e PDFs |
+| Editar textos e preços | Photoshop | Alterna entre modelos de um ou dois dígitos no PSD aberto, com nome, preços DE/POR, unidades, tela e guias |
 
 A [família Auto layout](docs/auto-layout.md) traz para o Photoshop o que o auto layout do Figma faz: o grupo é o quadro, as camadas de dentro são os itens, e a regra de arrumação fica guardada no nome do grupo para ser reaplicada quando o conteúdo mudar. As contas ficam em `core/extendscript/ibd-layout.jsx`, sem nenhuma chamada de app — o mesmo motor vai servir Illustrator e InDesign.
 
@@ -57,11 +58,15 @@ O [kit de guias e sangria](docs/guias-e-sangria.md) inclui instruções e exempl
 
 A [suíte de actions do Photoshop](docs/actions-photoshop.md) organiza rotinas ágeis de fechamento e manipulação de arquivos. O [ZIP do kit de actions v1.0](downloads/kit-actions-photoshop-v1.0.zip) entrega o conjunto unificado `ibd-producao.atn` e todos os arquivos avulsos prontos para importação.
 
+O [editor de textos e preços](docs/textos-e-precos.md) inclui os dois PSDs originais e aplica os dados no documento aberto, sem recriar o arquivo. A primeira versão do gerador fica preservada em [histórico](historico/photoshop/README.md). Há 30 cenários locais com Photoshop simulado; a conferência visual e de desempenho no aplicativo ainda está pendente.
+
 ## Estrutura
 
 ```
 apps/<app>/scripts/     scripts ExtendScript, um arquivo por ferramenta
 apps/<app>/actions/     .atn e presets binários
+apps/<app>/templates/   documentos-base das ferramentas
+historico/              versões anteriores fora do catálogo atual
 core/extendscript/      biblioteca comum (IBD.fs, IBD.ui, IBD.prefs, IBD.layout, IBD.ps)
 plugins/<app>-uxp/      painéis de marca
 site/src/               vitrine do catálogo publicada na Vercel
@@ -83,6 +88,7 @@ Detalhes em [docs/guia-script.md](docs/guia-script.md).
 
 ## Documentação
 
+- [docs/textos-e-precos.md](docs/textos-e-precos.md) — editor de preços, modelos PSD, estrutura de camadas e testes
 - [docs/actions-photoshop.md](docs/actions-photoshop.md) — suíte de actions: rotinas, instalação, modo de botão e kit
 - [docs/auto-layout.md](docs/auto-layout.md) — família auto layout: modelo, parâmetros e etiqueta `@auto`
 - [docs/site.md](docs/site.md) — vitrine do catálogo: como é montada e como publicar na Vercel
