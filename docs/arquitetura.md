@@ -84,6 +84,14 @@ O preço é que a propriedade do filho fica invisível sem o painel Auto Layout.
 
 **Quando reavaliar:** se o XMP de camada se mostrar instável entre versões do Photoshop na Fase 2, as propriedades do filho passam para uma camada de dados dentro do grupo, invisível e travada. Detalhes em [auto-layout-v2.md](auto-layout-v2.md).
 
+## 11. Nome de camada é contrato
+
+**Decisão:** toda camada criada ou lida pela automação segue o [padrão de nomenclatura](padrao-nomenclatura-camadas.md): raiz `DP_<MODULO>_V<maior>`, seções `NN_NOME`, prefixo pelo tipo (`TXT_`, `IMG_`, `SHP_`, `BG_`, `AREA_`…), maiúsculas ASCII e temporárias `__DP_`.
+
+Scripts e actions encontram camadas pelo nome. Sem um padrão comum, cada ferramenta inventa o seu e uma não consegue trabalhar sobre o arquivo da outra. O prefixo pelo tipo também deixa o contrato verificável: um teste pode confirmar que `SHP_` é forma e que nada virou pixel.
+
+**Quando reavaliar:** se o nome precisar carregar dado que muda com frequência. Dado vai para o conteúdo da camada, para uma etiqueta `@…` (decisão 8) ou para o XMP (decisão 10) — não para a parte-base do nome.
+
 ## Limites conhecidos
 
 - A ponte UXP → ExtendScript usa um evento não documentado do batchPlay. Ela falha de forma explícita e o painel cai no modo manual. Detalhes em [guia-uxp.md](guia-uxp.md).

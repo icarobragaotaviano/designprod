@@ -95,6 +95,7 @@ Detalhes em [docs/guia-script.md](docs/guia-script.md).
 - [docs/guias-e-sangria.md](docs/guias-e-sangria.md) — uso dos três scripts e download do kit
 - [docs/guias-e-sangria-validacao.md](docs/guias-e-sangria-validacao.md) — testes locais e conferência nos apps
 - [docs/instalacao.md](docs/instalacao.md) — instalar scripts e plugin
+- [docs/padrao-nomenclatura-camadas.md](docs/padrao-nomenclatura-camadas.md) — padrão de nomes de camadas para scripts e actions
 - [docs/arquitetura.md](docs/arquitetura.md) — decisões estruturais e por quê
 - [docs/guia-script.md](docs/guia-script.md) — padrão de script e API do core
 - [docs/guia-uxp.md](docs/guia-uxp.md) — plugins, limites de plataforma por app
