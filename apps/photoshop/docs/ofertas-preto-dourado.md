@@ -1,110 +1,137 @@
 # Ofertas preto e dourado
 
-[Baixar o script](../scripts/gerar-ofertas-preto-dourado.jsx) · versão 1.1.0
+[Baixar o script](../scripts/gerar-ofertas-preto-dourado.jsx) · versão 2.0.0
 
-Cria uma arte horizontal de **1920 × 1080 px**, RGB, 72 ppi, com uma oferta principal e duas ofertas menores, a partir do print fornecido. A interface reúne os textos e cinco seletores de imagem. As dimensões podem ser alteradas antes de criar um novo layout.
+Monta a peça de ofertas do cliente em dois formatos, medidos nos arquivos de referência:
 
-O print foi usado como referência visual. Este arquivo não é uma reprodução extraída do PSD: posições, gradiente e proporções foram reconstruídos. A fonte original, as fotografias recortadas, o logotipo e a campanha não foram fornecidos. A aparência exata depende desses materiais e de conferência no Photoshop.
+| Formato | Tamanho | Referência | Diferenças |
+|---|---|---|---|
+| **Story (ADS)** | 1080 × 1920 px | `ADS.pdf` | Oferta principal no alto, dois cards empilhados, campanha no canto inferior esquerdo, rodapé em três linhas |
+| **Horizontal (VT)** | 1920 × 1080 px | `VT.pdf` | Moldura arredondada, oferta principal à direita do produto, dois cards lado a lado com divisória interna, rodapé em uma linha |
+
+Os dois usam o mesmo degradê preto → dourado, a mesma anatomia de preço (rótulo, inteiro, centavos no topo, unidade na base, risco no preço anterior) e o selo **BEBA COM MODERAÇÃO** para bebidas alcoólicas.
+
+**Nada vira pixel.** Textos são texto editável; cards, moldura, divisórias, risco e selo são **camadas de forma** (vetor, editáveis com as ferramentas de forma e no painel Propriedades); o degradê é uma **camada de preenchimento de degradê** (duplo clique para editar); imagens são **objetos inteligentes** incorporados. O documento sai com **guias** do modelo.
 
 ## Executar
 
 1. No GitHub, abra o JSX e use **Download raw file**.
-2. No Photoshop, escolha **Arquivo → Scripts → Procurar** e selecione o JSX. Ele é independente, sem biblioteca ou instalador.
-3. Em **Geral**, confira dimensões, fonte instalada, validade e rodapé.
-4. Nas três abas de oferta, preencha produto, complemento, preço anterior, preço atual, unidades e rótulos.
-5. Em cada aba, escolha a imagem do produto. Em **Marca e campanha**, escolha o logotipo e o selo.
-6. Clique em **Gerar arte**. Confira o novo documento e salve manualmente quando desejar.
+2. No Photoshop, **Arquivo → Scripts → Procurar** e selecione o JSX. Ele é independente, sem biblioteca ou instalador.
+3. Escolha o **Resultado** (abaixo), confira os campos e clique em **Aplicar**.
 
-O desenvolvimento deste recurso é feito diretamente no GitHub. A execução do JSX acontece no Photoshop do usuário. O script não grava PSD, preferências, arquivos temporários, imagens ou qualquer outro arquivo; também não acessa a rede. O aplicativo pode manter seu próprio histórico, cache e recuperação automática conforme as preferências do usuário.
+O script não grava arquivos, preferências nem acessa a rede. Salvar fica com você.
 
-## Editar todos os textos novamente
+## Três modos
 
-Com uma arte gerada por este script aberta, execute o JSX outra vez. Ele reconhece o grupo **DESIGNPROD_OFERTAS_V1** e carrega os textos existentes.
+Com um documento gerado por este script aberto (grupo **DP_OFERTAS_V2**), o formulário abre com os valores atuais e oferece:
 
-**Nova cópia do layout aberto** duplica o documento e reconstrói o grupo gerenciado com os novos dados. As imagens existentes são mantidas se você não escolher uma substituta nem clicar em Limpar. O documento de origem permanece intacto. Grupos externos ao grupo gerenciado continuam na cópia, e o grupo gerenciado volta ao topo da pilha.
+| Modo | O que faz | Quando usar |
+|---|---|---|
+| **Editar no documento aberto — só o que mudar** (padrão) | Compara o formulário com o documento e reconstrói **apenas** os elementos cujo valor mudou. Todo o resto fica intacto, inclusive ajustes manuais. Um único passo no histórico: **Ctrl+Z desfaz tudo**. | Troca de preço, nome, validade, uma imagem |
+| **Nova cópia reconstruída** | Duplica o documento e refaz o grupo gerenciado inteiro. O original não muda. | Voltar a composição ao modelo |
+| **Novo layout** | Documento novo com os dados do formulário. Único modo que permite trocar formato e tamanho. | Peça nova, ou a mesma oferta no outro formato |
 
-Se o layout aberto estiver em outra resolução (por exemplo, 300 ppi definidos em Tamanho da imagem sem reamostrar), a cópia é montada a 72 ppi **sem reamostrar** — os pixels não mudam — e volta à resolução original no final. Assim textos, preços e molduras têm a mesma geometria em pixels de um layout a 72 ppi. O corpo exibido no painel Caractere acompanha a resolução: 76 pt a 72 ppi aparecem como 18,24 pt a 300 ppi, no mesmo tamanho visual. Largura e altura são lidas em pixels, qualquer que seja a unidade das réguas.
+Sem documento gerado aberto, só existe **Novo layout**.
 
-A composição do grupo gerenciado é reconstruída: ajustes manuais de posição, tamanho, efeitos e camadas adicionais dentro dele não são transferidos. Para preservar esses ajustes, mantenha a versão original. Não renomeie os grupos/camadas gerenciados nem rasterize seus textos se quiser recarregá-los.
+### O que conta como elemento na edição
 
-**Novo layout com os dados abaixo** usa o formulário em um novo documento RGB. É a opção que permite mudar as dimensões. Imagens atuais também são reaproveitadas enquanto não forem substituídas ou limpas.
+| Elemento | Muda quando | O que é refeito |
+|---|---|---|
+| Nome e complemento da oferta | texto de Produto ou Complemento | `TXT_NOME` e `TXT_COMPLEMENTO` |
+| Preço DE | preço, unidade ou rótulo DE | grupo `PRECO_DE` |
+| Preço POR | preço, unidade ou rótulo POR | grupo `PRECO_POR` |
+| Selo | caixa "Bebida alcoólica" | só liga ou desliga `SELO_MODERACAO` |
+| Imagem do produto, logotipo, campanha | **Escolher…** ou **Limpar** | só aquela imagem |
+| Rodapé | qualquer um dos quatro campos | grupo `06_RODAPE` |
+| Fonte principal | troca da fonte | todos os textos que a usam |
 
-## Campos e preços
+Cada elemento refeito entra **no mesmo lugar da pilha** do anterior. Se nenhum valor mudou, o documento não é tocado.
 
-- Produto: texto com quebras manuais de linha. Nomes longos são reduzidos proporcionalmente para caber.
-- Complemento: texto opcional separado do nome, como **(FRAGRÂNCIAS)**.
-- Preço: aceita **2,89**, **2.89**, **2** e **R$ 2,89**, entre 0,00 e 9999,99, sem separador de milhar.
-- Preço anterior vazio: oculta o grupo inteiro, incluindo o risco. A unidade e o rótulo DE podem ficar vazios nesse caso; o grupo oculto recebe **UN** e **DE|R$** só para continuar recarregável.
-- Unidades DE e POR: independentes, de 1 a 8 caracteres; KG e L são convertidos em /KG e /L. Unidades longas são reduzidas para caber e ficam apoiadas na base do número inteiro.
-- Preços de 1 a 4 dígitos usam o mesmo bloco: o inteiro define onde entram centavos e unidade, e o bloco inteiro é reduzido proporcionalmente quando fica mais largo.
-- Rótulos: editáveis por oferta. **POR|R$** gera duas linhas.
-- Rodapé: início, validade e final ficam em três camadas de texto, na mesma linha de base, reduzidas juntas para caber acima da borda inferior e abaixo do espaço da campanha.
-- Os preços anteriores dos dois cards menores começam vazios porque seus centavos não são legíveis com confiança no print.
-- Textos presentes em imagens de marca, produtos ou campanha continuam incorporados a essas imagens.
+### Áreas: onde cada elemento encaixa
 
-Todos os textos criados pelo script usam a fonte escolhida na lista de fontes instaladas. Oswald Semibold e Roboto Condensed Bold são sugestões visuais quando instaladas; não são fontes confirmadas do arquivo original. Nenhuma fonte é instalada ou distribuída.
+O grupo oculto **98_AREAS** guarda um retângulo vetorial para cada espaço (`AREA_OFERTA_01_NOME`, `AREA_OFERTA_02_PRECO_POR`, `AREA_LOGO`…). Ao refazer um elemento, o script encaixa o conteúdo novo na área correspondente.
 
-## Imagens
+Para mudar de vez onde um elemento fica, **mova ou redimensione a área** (ligue a visibilidade de 98_AREAS, ajuste, desligue). Mover só o elemento funciona até a próxima edição daquele elemento — ela o devolve à área.
 
-São cinco espaços independentes: produto principal, produto 02, produto 03, logo e campanha.
+## Guias
 
-PNG, PSD, PSB, JPG, TIFF e WebP são aceitos. Cada imagem é incorporada como objeto inteligente, centralizada e ajustada proporcionalmente ao espaço. O script não remove fundo nem gera automaticamente as montagens com várias embalagens vistas no print. Use recortes ou montagens prontos, preferencialmente com transparência. Margens internas na imagem afetam o encaixe.
+Todo documento novo e toda cópia recebem as guias do modelo: margens, eixo da divisória, início dos textos, topo e base dos cards, rodapé. O script:
 
-Escolher uma imagem substitui apenas esse espaço no resultado. **Limpar** deixa o espaço vazio. Sem imagens selecionadas, a arte pode ser criada; o resumo identifica os espaços vazios e o grupo oculto **98_GUIAS** mostra suas áreas se ativado manualmente.
+- não duplica guia que já existe na mesma posição;
+- nunca remove guia, nem as suas;
+- não mexe em guias no modo de edição.
+
+Os elementos são posicionados pelas mesmas medidas das guias, então cards, divisória e textos caem sobre elas.
+
+## Campos
+
+- **Formato**, **Largura**, **Altura**: só no modo Novo layout. Trocar o formato ajusta o tamanho e, se os textos ainda forem os de exemplo, troca pelos exemplos do outro formato. Outros tamanhos escalam o modelo; ele foi desenhado para 9:16 e 16:9.
+- **Fonte principal**: nomes, preços, validade e selo. **Fonte de apoio**: textos do rodapé. As sugestões (Oswald, Roboto Condensed) valem se estiverem instaladas; a fonte original não foi identificada.
+- **Rodapé**: *antes da data* (pode ter várias linhas; a última continua na linha da validade), *validade* (em destaque, fonte principal), *depois da data* (mesma linha) e *linhas finais* (começam na margem). O ADS usa as quatro partes; o VT, uma linha só.
+- **Produto** e **Complemento**: nomes longos são reduzidos para caber. Nos cards, o complemento vai para o fim da última linha do nome quando cabe, como "(FRAGRÂNCIAS)" no VT.
+- **Preços**: aceitam **2,89**, **2.89**, **2** e **R$ 2,89**, de 0,00 a 9999,99, sem separador de milhar. DE vazio oculta o bloco inteiro, com risco; unidade e rótulo DE podem ficar vazios nesse caso.
+- **Unidades**: de 1 a 8 caracteres; KG e L viram /KG e /L. Ficam apoiadas na base do número inteiro.
+- **Bebida alcoólica**: liga o selo vertical BEBA COM MODERAÇÃO ao lado da oferta.
+- **Imagens**: PNG, PSD, PSB, JPG, TIFF ou WebP, incorporadas, centralizadas e ajustadas à área sem distorcer. Use recortes prontos, de preferência com transparência.
 
 ## Camadas
 
-Dentro de **DESIGNPROD_OFERTAS_V1**:
+Nomes no [padrão de nomenclatura do ecossistema](../../../docs/padrao-nomenclatura-camadas.md). Ordem do painel, de cima para baixo:
 
-| Grupo | Conteúdo |
-|---|---|
-| 01_MARCA | IMG_LOGO |
-| 02_OFERTA_DESTAQUE | produto principal, nome, complemento, preços e divisória |
-| 03_OFERTA_02 | segunda oferta e moldura do card |
-| 04_OFERTA_03 | terceira oferta e moldura do card |
-| 05_CAMPANHA | IMG_CAMPANHA |
-| 06_RODAPE | TXT_AVISO_ANTES, TXT_VALIDADE, TXT_AVISO_DEPOIS |
-| 90_GRAFISMOS | FORMA_MOLDURA |
-| 98_GUIAS | áreas de imagem, ocultas no resultado |
-| 99_FUNDO | BG_DEGRADE_PRETO_DOURADO |
+```
+DP_OFERTAS_V2
+├─ 01_MARCA            IMG_LOGO
+├─ 02_OFERTA_01        oferta principal
+├─ 03_OFERTA_02        card 1
+├─ 04_OFERTA_03        card 2
+├─ 05_CAMPANHA         IMG_CAMPANHA
+├─ 06_RODAPE           TXT_AVISO_ANTES · TXT_VALIDADE · TXT_AVISO_DEPOIS · TXT_AVISO_FINAL
+├─ 90_GRAFISMOS        SHP_MOLDURA (só VT, com máscara atrás dos cards)
+├─ 98_AREAS            AREA_… (oculto)
+└─ 99_FUNDO            BG_DEGRADE
+```
 
-Cada oferta possui **IMG_PRODUTO**, **TXT_NOME**, **TXT_COMPLEMENTO**, **PRECO_ANTERIOR** e **PRECO_ATUAL**. Cada preço contém **TXT_ROTULO**, **TXT_REAIS**, **TXT_CENTAVOS** e **TXT_UNIDADE**; o anterior inclui **FORMA_RISCO**.
+Cada oferta, de cima para baixo:
 
-Texto permanece texto; as imagens são objetos inteligentes; divisórias, contornos, risco e gradiente são camadas raster separadas. O script mantém proporções e não achata o documento.
+```
+SELO_MODERACAO   SHP_SELO · TXT_SELO (girado)
+PRECO_POR        TXT_ROTULO · TXT_REAIS · TXT_CENTAVOS · TXT_UNIDADE
+PRECO_DE         o mesmo + SHP_RISCO
+TXT_COMPLEMENTO
+TXT_NOME
+IMG_PRODUTO
+SHP_DIVISORIA    (principal; e interna dos cards no VT)
+SHP_CARD         (só nos cards)
+```
 
-A moldura e os contornos dos cards são anéis preenchidos a partir de seleções poligonais (12 segmentos por canto, desvio máximo de 0,15 px num raio de 65 px). A moldura sai pela borda esquerda sem desenhar linha nessa borda, e o trecho inferior que passa atrás dos cards é apagado para não aparecer através do fundo translúcido. Cada imagem de produto fica logo acima da divisória da sua oferta e abaixo dos textos.
+Não renomeie nem rasterize camadas gerenciadas se quiser editá-las pelo script. Camadas fora de DP_OFERTAS_V2 não são tocadas.
 
 ## Verificação e limites
 
-`npm run test:ofertas` (parte do `npm test` e do CI) executa o JSX inteiro contra um Photoshop simulado em Node.js: camadas, grupos, seleções poligonais, textos com métricas aproximadas, objetos inteligentes, descritores `Grdn` e `Plc ` e a interface ScriptUI. Onde o comportamento do DOM real é ambíguo — `artLayers.add()` do documento, `ElementPlacement.INSIDE`, conversão de `UnitValue` com réguas fora de px —, a simulação adota a leitura mais desfavorável ao script. Os 15 testes cobrem:
+`npm run test:ofertas` (parte do `npm test` e do CI) executa o JSX inteiro contra um Photoshop simulado em Node.js. A simulação cobre camadas de forma e de preenchimento via Action Manager, máscaras, rotação, guias, histórico, textos com métricas aproximadas, objetos inteligentes e a interface. Onde o comportamento real é ambíguo — `artLayers.add()` do documento, `ElementPlacement.INSIDE`, conversão de unidades com réguas fora de px —, ela adota a leitura mais desfavorável ao script. Os 28 testes cobrem, nos dois formatos:
 
-- estrutura gerenciada, textos editáveis e preferências restauradas;
-- conteúdo do descritor do gradiente;
-- preços de 1 a 4 dígitos, nomes e complementos longos, unidades de 8 caracteres e recusa de entradas inválidas;
-- DE vazio;
-- colocação incorporada, encaixe centralizado e ordem das camadas das cinco imagens;
-- moldura ausente dentro dos cards e sem traço na borda da tela, em 16:9, 4:5 e 4K;
-- rodapé abaixo da campanha e na mesma linha de base, em quatro formatos;
-- reedição por nova cópia, com imagens e camadas externas mantidas e original intacto;
-- layout a 300 ppi com réguas em cm, com geometria idêntica à de 72 ppi e resolução devolvida;
-- cancelamento no formulário, cancelamento durante a geração e falha nativa no meio, com limpeza completa.
+- árvore completa no padrão de nomes, sem camada de pixels e com o prefixo certo para cada tipo;
+- medidas dos cards, divisórias, moldura, logotipo, campanha e rodapé conferidas com os PDFs;
+- degradê como camada de preenchimento e guias sem duplicação;
+- preços de 1 a 4 dígitos, nomes longos, unidades de 8 caracteres, DE vazio e entradas inválidas;
+- selo girado dentro da área, imagens centralizadas e ordem das camadas;
+- rodapé pela linha de base e sem encobrir a campanha;
+- edição parcial: só o elemento alterado muda, a ordem se mantém, ajustes manuais sobrevivem, a área movida é respeitada, e falha ou cancelamento voltam o histórico;
+- PSD a 300 ppi com réguas em cm, nova cópia e cancelamentos sem deixar rastro.
 
 Isso não é execução nativa. Continuam pendentes de conferência no Photoshop:
 
-- se o descritor `Grdn` ainda aplica o degradê clássico na versão instalada;
-- a colocação `Plc ` com PNG, PSD, JPG, TIFF e WebP reais;
-- a seleção poligonal com suavização e o preenchimento dos anéis;
-- métricas reais da fonte escolhida: encaixe dos textos, linha de base e acentos;
-- `resizeImage` sem reamostrar em um layout de 300 ppi e a volta à resolução original;
-- se o botão Cancelar da barra de progresso responde durante a execução (o Esc do Photoshop pode interromper a execução; qualquer interrupção que chegue ao script fecha o documento parcial e restaura as preferências);
-- aparência final comparada ao print.
+- criação das camadas de forma pelo descritor `Mk contentLayer` com `Rctn`, raios e `strokeStyle` (contorno interno, sem preenchimento);
+- camada de preenchimento de degradê com ângulo −90° (preto em cima);
+- máscara de camada da moldura (`Mk Chnl`, ocultar seleção);
+- rotação da forma do risco e do texto do selo;
+- `suspendHistory` e a volta de estado do histórico após falha;
+- `doc.guides.add` e a comparação com guias existentes;
+- métricas da fonte escolhida: encaixe, linha de base, acentos;
+- resposta do botão Cancelar da barra de progresso durante a execução.
 
-Roteiro nativo: gerar a arte sem imagens; gerar com as cinco imagens; trocar nomes curtos por longos; alternar preços de um a quatro dígitos e DE vazio; mudar a resolução para 300 ppi sem reamostrar e executar **Nova cópia**; cancelar no formulário e durante a geração; conferir que o original, as réguas e a unidade de texto continuam como estavam.
+Roteiro nativo: gerar ADS e VT sem imagens e com as cinco imagens; editar só um preço e conferir no histórico um único passo; mover uma área e editar o elemento; ligar e desligar o selo; limpar e repor uma imagem; mudar a resolução para 300 ppi sem reamostrar e editar; cancelar no formulário e durante a execução.
 
-O layout foi desenhado em 16:9. Em outras proporções as posições acompanham largura e altura separadamente e os corpos acompanham o menor dos dois fatores; o resultado é válido, mas não é uma diagramação própria para 4:5 ou 9:16.
+Limites visuais por falta de material original: posições, raios, espessuras e o degradê foram medidos nos PDFs (JPEG dentro do PDF), com erro de 1 a 2 px. A textura granulada do fundo não foi reproduzida. Sem a fonte original, larguras e altura das maiúsculas mudam o tamanho final dos preços dentro de cada área. Fotos, logotipo e selo da campanha vêm das imagens escolhidas.
 
-Limites visuais por falta de material original: sem o PSD, as posições, raios, espessuras, opacidades e o degradê foram estimados do print; sem as fotos recortadas, o logotipo e o selo, os espaços ficam vazios ou recebem o material escolhido, sem a montagem de várias embalagens do print; sem a fonte original, os textos usam a fonte instalada escolhida, e larguras, altura das maiúsculas e acentos mudam o encaixe. Os centavos dos preços anteriores dos cards menores não eram legíveis no print.
-
-A versão atual não lê um PSD arbitrário nem recupera camadas do print. Ela reconhece somente sua própria estrutura.
-
-Referências Adobe: [executar scripts JSX](https://helpx.adobe.com/photoshop/using/scripting.html), [eventos de Photoshop](https://developer.adobe.com/photoshop/uxp/2022/ps-reference/media/eventcodes), [referência ExtendScript](https://github.com/Adobe-CEP/CEP-Resources/blob/master/Documentation/Product%20specific%20Documentation/Photoshop%20Scripting/photoshop-javascript-ref-2020.pdf).
+A versão 2 não lê o grupo `DESIGNPROD_OFERTAS_V1` da versão 1: um layout antigo aberto é tratado como documento comum, e a peça precisa ser gerada de novo.
