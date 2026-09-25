@@ -3,7 +3,7 @@
  * @ibd-titulo Ofertas preto e dourado
  * @ibd-descricao Cria uma arte com três ofertas, textos editáveis e cinco imagens escolhidas na interface. Reabre os dados de layouts gerados e aplica as alterações em uma nova cópia.
  * @ibd-app photoshop
- * @ibd-versao 1.0.0
+ * @ibd-versao 1.1.0
  * @ibd-tags ofertas, layout, textos, imagens, varejo
  * @ibd-doc apps/photoshop/docs/ofertas-preto-dourado.md
  */
@@ -13,11 +13,13 @@
  * ES3 / ScriptUI. Sem includes, rede, gravacao de preferencias ou saveAs.
  * Gera somente um documento em memoria; salvar fica a cargo do usuario.
  * Imagens sao incorporadas como objetos inteligentes, nunca vinculadas.
+ * Formas sao selecoes poligonais preenchidas, sem PathItem nem Tracar:
+ * nao dependem da direcao das alcas, da resolucao nem da borda da tela.
  */
 (function () {
     var TITLE = "DESIGNPROD — Ofertas preto e dourado";
     var ROOT = "DESIGNPROD_OFERTAS_V1";
-    var GOLD = "F6BC13", WHITE = "FFFFFF";
+    var GOLD = "F6BC13", WHITE = "FFFFFF", CURVE_STEPS = 12;
     var OFFER_NAMES = ["02_OFERTA_DESTAQUE", "03_OFERTA_02", "04_OFERTA_03"];
     var SPECS = [
         {image:[245,115,440,460], title:[900,112,640,148], note:[900,270,610,42],
@@ -73,6 +75,15 @@
         if (v < 640 || v > 7680) throw new Error(label + " deve ficar entre 640 e 7680 px.");
         return v;
     }
+    // Lê em Units.PIXELS: com réguas em cm, doc.width.as("px") pode converter
+    // pela base de 72 ppi e, num PSD de 300 ppi, devolver 4,17 vezes menos.
+    function pixelSize(doc) {
+        var old = app.preferences.rulerUnits;
+        try {
+            app.preferences.rulerUnits = Units.PIXELS;
+            return [Math.round(doc.width.as("px")), Math.round(doc.height.as("px"))];
+        } finally { app.preferences.rulerUnits = old; }
+    }
     function defaults() {
         return {
             width:1920, height:1080, font:"",
@@ -89,8 +100,8 @@
     function readSource(doc) {
         var root = direct(doc, ROOT, true);
         if (!root) return null;
-        var data = defaults(), images = [], i, o, g, old, cur;
-        data.width = Math.round(doc.width.as("px")); data.height = Math.round(doc.height.as("px"));
+        var data = defaults(), images = [], size = pixelSize(doc), i, o, g, old, cur;
+        data.width = size[0]; data.height = size[1];
         for (i = 0; i < 3; i++) {
             g = direct(root, OFFER_NAMES[i]); old = direct(g, "PRECO_ANTERIOR"); cur = direct(g, "PRECO_ATUAL");
             o = data.offers[i];
@@ -163,7 +174,7 @@
         var width = size.add("edittext", undefined, String(data.width)); width.characters = 7;
         size.add("statictext", undefined, "Altura");
         var height = size.add("edittext", undefined, String(data.height)); height.characters = 7;
-        size.add("statictext", undefined, "px · RGB · 72 ppi");
+        size.add("statictext", undefined, "px · novo layout em RGB, 72 ppi");
         for (i = 0; i < list.length; i++) labels.push(list[i].name + " [" + list[i].id + "]");
         general.add("statictext", undefined, "Fonte instalada — o print não identifica a fonte original");
         var font = general.add("dropdownlist", undefined, labels.length ? labels : ["Nenhuma fonte disponível"]);
@@ -214,13 +225,21 @@
                     copy:!!(source && mode.selection.index === 0)};
                 if (!list.length || !font.selection) throw new Error("Nenhuma fonte disponível. Ative uma fonte no Photoshop.");
                 out.font = list[font.selection.index].id;
-                app.fonts.getByName(out.font);
+                try { app.fonts.getByName(out.font); }
+                catch (fontError) { throw new Error("Fonte indisponível: " + out.font + ". Escolha outra fonte instalada."); }
                 for (var j = 0; j < 3; j++) {
-                    var x = controls[j], label = "Oferta " + (j+1), o = {
+                    var x = controls[j], label = "Oferta " + (j+1);
+                    var de = parsePrice(x.de.price.text,true,label+" / DE");
+                    var unitDe = x.de.unit.text, labelDe = nl(x.de.label.text.replace(/\|/g,"\r"));
+                    // Sem preço anterior o bloco DE fica oculto: unidade e rótulo
+                    // vazios recebem o padrão só para a estrutura continuar recarregável.
+                    if (!de && !trim(unitDe)) unitDe = "UN";
+                    if (!de && !trim(labelDe)) labelDe = "DE\rR$";
+                    var o = {
                         name:nl(trim(x.name.text)), note:nl(trim(x.note.text)),
-                        de:parsePrice(x.de.price.text,true,label+" / DE"), por:parsePrice(x.por.price.text,false,label+" / POR"),
-                        unitDe:unit(x.de.unit.text,label+" / DE"), unitPor:unit(x.por.unit.text,label+" / POR"),
-                        labelDe:nl(x.de.label.text.replace(/\|/g,"\r")), labelPor:nl(x.por.label.text.replace(/\|/g,"\r"))
+                        de:de, por:parsePrice(x.por.price.text,false,label+" / POR"),
+                        unitDe:unit(unitDe,label+" / DE"), unitPor:unit(x.por.unit.text,label+" / POR"),
+                        labelDe:labelDe, labelPor:nl(x.por.label.text.replace(/\|/g,"\r"))
                     };
                     if (!o.name) throw new Error(label + ": preencha o nome do produto.");
                     if (!trim(o.labelDe) || !trim(o.labelPor)) throw new Error(label + ": preencha os rótulos DE e POR.");
@@ -244,28 +263,28 @@
         doc.selection.select([[box[0],box[1]],[box[0]+box[2],box[1]],[box[0]+box[2],box[1]+box[3]],[box[0],box[1]+box[3]]]);
         doc.selection.fill(color(hex)); doc.selection.deselect(); return l;
     }
-    function rounded(doc,parent,name,box,r,hex,lineWidth,fill) {
-        var x=box[0], y=box[1], w=box[2], h=box[3], k=0.5522847498, pts=[], path=null;
-        function point(a,b,lx,ly,rx,ry) {
-            var unitScale=72/doc.resolution;
-            var p=new PathPointInfo(); p.kind=PointKind.CORNERPOINT; p.anchor=[a*unitScale,b*unitScale];
-            p.leftDirection=[lx*unitScale,ly*unitScale]; p.rightDirection=[rx*unitScale,ry*unitScale]; pts.push(p);
+    // Retângulo arredondado como polígono, em px: 12 segmentos por canto
+    // desviam no máximo 0,15 px de um raio de 65 px.
+    function roundedPoints(box,r) {
+        var x=box[0], y=box[1], w=box[2], h=box[3], pts=[], c, i, j, a;
+        r=Math.min(r,w/2,h/2);
+        if(r<=0) return [[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
+        c=[[x+w-r,y+r],[x+w-r,y+h-r],[x+r,y+h-r],[x+r,y+r]];
+        for(i=0;i<4;i++) for(j=0;j<=CURVE_STEPS;j++) {
+            a=(i-1+j/CURVE_STEPS)*Math.PI/2;
+            pts.push([c[i][0]+r*Math.cos(a),c[i][1]+r*Math.sin(a)]);
         }
-        point(x+r,y,x+r-k*r,y,x+r,y);
-        point(x+w-r,y,x+w-r,y,x+w-r+k*r,y);
-        point(x+w,y+r,x+w,y+r-k*r,x+w,y+r);
-        point(x+w,y+h-r,x+w,y+h-r,x+w,y+h-r+k*r);
-        point(x+w-r,y+h,x+w-r+k*r,y+h,x+w-r,y+h);
-        point(x+r,y+h,x+r,y+h,x+r-k*r,y+h);
-        point(x,y+h-r,x,y+h-r+k*r,x,y+h-r);
-        point(x,y+r,x,y+r,x,y+r-k*r);
-        var sp=new SubPathInfo(); sp.closed=true; sp.operation=ShapeOperation.SHAPEADD; sp.entireSubPath=pts;
-        var l=layer(parent,name); doc.activeLayer=l;
+        return pts;
+    }
+    function rounded(doc,parent,name,box,r,hex,lineWidth,fill) {
+        var l=layer(parent,name), lw=Math.max(1,lineWidth); doc.activeLayer=l;
         try {
-            path=doc.pathItems.add("__DP_FORMA_TEMP",[sp]); path.makeSelection(0,true,SelectionType.REPLACE);
-            if(fill) doc.selection.fill(color(hex));
-            else doc.selection.stroke(color(hex),Math.max(1,Math.round(lineWidth)),StrokeLocation.INSIDE,ColorBlendMode.NORMAL,100,false);
-        } finally { doc.selection.deselect(); if(path) path.remove(); }
+            doc.selection.select(roundedPoints(box,r),SelectionType.REPLACE,0,true);
+            // Contorno interno = anel preenchido. Traçar a seleção desenharia
+            // uma linha na borda da tela onde a moldura sai do documento.
+            if(!fill) doc.selection.select(roundedPoints([box[0]+lw,box[1]+lw,box[2]-2*lw,box[3]-2*lw],r-lw),SelectionType.DIMINISH,0,true);
+            doc.selection.fill(color(hex));
+        } finally { doc.selection.deselect(); }
         return l;
     }
     function line(doc,parent,name,x1,y1,x2,y2,thickness,hex) {
@@ -332,13 +351,17 @@
         integer.translate(px(left),px(0));
         var cents=putText(g,"TXT_CENTAVOS",value.cents,font,80,hex); fit(cents,[left+iw+5,0,160,76],false,true);
         var un=putText(g,"TXT_UNIDADE",unitText,font,66,hex); fit(un,[left+iw+5,ih-62,160,62],false,true);
+        // Unidade reduzida para caber continua apoiada na base do inteiro.
+        b=bounds(un); un.translate(px(0),px(ih-b[3]));
         if(strike) {
             b=bounds(g); line(doc,g,"FORMA_RISCO",b[0],b[3]-6,b[2]+5,b[1]+5,4,WHITE);
         }
         fit(g,box,false,false); g.visible=!!price;
         return g;
     }
-    function placeImage(doc,parent,name,slot,existing,box,source) {
+    // "above": camada de referência dentro do grupo. PLACEBEFORE deixa a
+    // imagem logo acima dela; INSIDE não garante topo nem base do grupo.
+    function placeImage(doc,parent,name,slot,existing,box,source,above) {
         var l=null;
         if(slot.file) {
             app.activeDocument=doc;
@@ -346,14 +369,14 @@
             var d=new ActionDescriptor(); d.putPath(charIDToTypeID("null"),slot.file);
             d.putEnumerated(charIDToTypeID("FTcs"),charIDToTypeID("QCSt"),charIDToTypeID("Qcsa"));
             executeAction(charIDToTypeID("Plc "),d,DialogModes.NO);
-            l=doc.activeLayer; l.move(parent,ElementPlacement.INSIDE);
+            l=doc.activeLayer;
         } else if(slot.keep && existing) {
             app.activeDocument=source.doc;
             try { l=existing.duplicate(doc,ElementPlacement.PLACEATBEGINNING); }
             finally { app.activeDocument=doc; }
-            l.move(parent,ElementPlacement.INSIDE);
         }
         if(l) {
+            if(above) l.move(above,ElementPlacement.PLACEBEFORE); else l.move(parent,ElementPlacement.INSIDE);
             l.name=name; l.allLocked=false; l.visible=true; fit(l,box,true,false);
         }
         return l;
@@ -373,25 +396,33 @@
     function render(data,source) {
         var oldUnits=app.preferences.rulerUnits, oldType=app.preferences.typeUnits, oldDialogs=app.displayDialogs;
         var previous=app.documents.length ? app.activeDocument : null, doc=null, bar=null, success=false, starter=null;
-        var sx=data.width/1920, sy=data.height/1080, s=Math.min(sx,sy), missing=[];
+        var resolution=72, sx=1, sy=1, s=1, missing=[];
         function box(b) { return [b[0]*sx,b[1]*sy,b[2]*sx,b[3]*sy]; }
+        function atResolution(ppi) {
+            if(Math.abs(doc.resolution-ppi)>0.001) doc.resizeImage(undefined,undefined,ppi,ResampleMethod.NONE);
+        }
         try {
             app.preferences.rulerUnits=Units.PIXELS; app.preferences.typeUnits=TypeUnits.POINTS; app.displayDialogs=DialogModes.NO;
             bar=progress(); bar.step(0,"Criando documento");
             if(data.copy) {
                 doc=source.doc.duplicate("DESIGNPROD — Ofertas — cópia",false);
                 app.activeDocument=doc;
-                starter=layer(doc,"__DP_TEMP");
+                // Monta a cópia a 72 ppi sem reamostrar (pixels intactos): 1 pt = 1 px
+                // para textos e descritores. A resolução original volta no final.
+                resolution=doc.resolution; atResolution(72);
+                // artLayers.add() do documento pode criar acima da camada ativa,
+                // dentro do grupo antigo; a temporária sobe para o topo antes.
+                starter=doc.artLayers.add(); starter.name="__DP_TEMP";
+                starter.move(doc,ElementPlacement.PLACEATBEGINNING); doc.activeLayer=starter;
                 var old=direct(doc,ROOT); old.allLocked=false; old.remove();
             } else {
                 doc=app.documents.add(px(data.width),px(data.height),72,"DESIGNPROD — Ofertas",NewDocumentMode.RGB,DocumentFill.TRANSPARENT,1,BitsPerChannelType.EIGHT,"sRGB IEC61966-2.1");
                 starter=doc.activeLayer;
             }
+            data.width=Math.round(doc.width.as("px")); data.height=Math.round(doc.height.as("px"));
+            sx=data.width/1920; sy=data.height/1080; s=Math.min(sx,sy);
             doc.selection.deselect();
-            // Text sizes below are in points. Existing copies may have another ppi:
-            // compensate at the text creation boundary, without resampling the PSD.
-            var pointScale=72/doc.resolution;
-            var root=group(doc,ROOT);
+            var root=group(doc,ROOT); root.move(doc,ElementPlacement.PLACEATBEGINNING);
             var bg=group(root,"99_FUNDO");
             gradient(doc,bg,data.width,data.height);
             if(starter) starter.remove();
@@ -420,10 +451,10 @@
                     rounded(doc,g,"FORMA_CARTAO",box(card),16*s,GOLD,2.5*s,false);
                 }
                 var div=i===0?[776,95,3,515]:i===1?[342,745,2.5,195]:[1027,745,2.5,195];
-                rectangle(doc,g,"FORMA_DIVISORIA",box(div),GOLD);
-                var im=placeImage(doc,g,"IMG_PRODUTO",data.images[i],source?source.images[i]:null,box(spec.image),source);
+                var divider=rectangle(doc,g,"FORMA_DIVISORIA",box(div),GOLD);
+                var im=placeImage(doc,g,"IMG_PRODUTO",data.images[i],source?source.images[i]:null,box(spec.image),source,divider);
                 if(!im) missing.push("produto "+(i+1));
-                var titleLayer=label(g,"TXT_NOME",o.name,data.font,spec.titleSize*s*pointScale,WHITE,box(spec.title));
+                var titleLayer=label(g,"TXT_NOME",o.name,data.font,spec.titleSize*s,WHITE,box(spec.title));
                 var noteBox=box(spec.note), sample=null;
                 if(i===2 && trim(o.note) && o.name.indexOf("\r")>=0) {
                     // Measure the last title line using the actual font and
@@ -437,7 +468,7 @@
                         if(right-inlineX>=100*s) noteBox=[inlineX,titleBounds[3]-20*s,right-inlineX,20*s];
                     } finally { if(sample) sample.remove(); }
                 }
-                label(g,"TXT_COMPLEMENTO",o.note,data.font,(i===0?32:19)*s*pointScale,WHITE,noteBox);
+                label(g,"TXT_COMPLEMENTO",o.note,data.font,(i===0?32:19)*s,WHITE,noteBox);
                 makePrice(doc,g,"PRECO_ANTERIOR",o.de,o.unitDe,o.labelDe,box(spec.de),data.font,GOLD,true);
                 makePrice(doc,g,"PRECO_ATUAL",o.por,o.unitPor,o.labelPor,box(spec.por),data.font,WHITE,false);
             }
@@ -449,14 +480,17 @@
             bar.step(6,"Compondo o rodapé");
             var footer=group(root,"06_RODAPE"), rowX=0, fields=[["TXT_AVISO_ANTES",data.before,20],["TXT_VALIDADE",data.dates,25],["TXT_AVISO_DEPOIS",data.after,20]];
             for(i=0;i<fields.length;i++) {
-                var f=fields[i], tl=putText(footer,f[0],f[1],data.font,f[2]*s*pointScale,WHITE);
+                var f=fields[i], tl=putText(footer,f[0],f[1],data.font,f[2]*s,WHITE);
                 if(trim(f[1])) {
-                    var tb=bounds(tl); tl.translate(px(rowX-tb[0]),px(28*s-tb[3]));
-                    tb=bounds(tl); rowX=tb[2]+7*s;
+                    // Alinha pela linha de base: Q, Ç e vírgulas descem abaixo dela
+                    // e desnivelavam o rodapé quando a referência era a borda inferior.
+                    tl.textItem.position=[px(rowX),px(100*s)];
+                    rowX=bounds(tl)[2]+7*s;
                 }
             }
             if(rowX>0) fit(footer,box([119,1040,1560,30]),false,true);
             bar.step(8,"Finalizando");
+            atResolution(resolution);
             app.activeDocument=doc; doc.activeLayer=root; success=true;
             return {doc:doc, missing:missing};
         } finally {
