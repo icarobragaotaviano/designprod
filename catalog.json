@@ -315,17 +315,18 @@
     {
       "id": "photoshop/gerar-ofertas-preto-dourado",
       "titulo": "Ofertas preto e dourado",
-      "descricao": "Cria uma arte com três ofertas, textos editáveis e cinco imagens escolhidas na interface. Reabre os dados de layouts gerados e aplica as alterações em uma nova cópia.",
+      "descricao": "Cria ofertas em story 1080×1920 ou horizontal 1920×1080 com textos, formas vetoriais, guias e cinco imagens. No layout aberto, edita só os elementos alterados, em um passo de histórico.",
       "app": "photoshop",
       "tipo": "script",
       "arquivo": "apps/photoshop/scripts/gerar-ofertas-preto-dourado.jsx",
-      "versao": "1.1.0",
+      "versao": "2.0.0",
       "tags": [
         "ofertas",
         "layout",
         "textos",
         "imagens",
-        "varejo"
+        "varejo",
+        "guias"
       ],
       "doc": "apps/photoshop/docs/ofertas-preto-dourado.md"
     },

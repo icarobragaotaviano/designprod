@@ -2,9 +2,10 @@
  * Testes do gerador de ofertas preto e dourado com o Photoshop simulado.
  *
  * O JSX roda inteiro em Node, contra um DOM simulado: camadas, grupos,
- * seleções poligonais, textos com métricas aproximadas, objetos
- * inteligentes, descritores Grdn/Plc e ScriptUI. Verifica encaixe,
- * alinhamento, estrutura, reedição, resolução e limpeza.
+ * textos com métricas aproximadas, camadas de forma e de preenchimento
+ * criadas pelo Action Manager, máscaras, rotação, guias, histórico,
+ * objetos inteligentes e ScriptUI. Verifica os dois modelos (ADS e VT),
+ * a edição parcial, o padrão de nomes, resolução e limpeza.
  *
  * Não é execução nativa: a fonte real, o rasterizador e o comportamento
  * do Photoshop não são reproduzidos. Onde o DOM real é ambíguo, a
@@ -43,7 +44,7 @@ function enumeration(name, members) {
 const Units = enumeration('Units', ['PIXELS', 'CM', 'MM', 'INCHES', 'POINTS', 'PERCENT']);
 const TypeUnits = enumeration('TypeUnits', ['PIXELS', 'POINTS', 'MM']);
 const DialogModes = enumeration('DialogModes', ['NO', 'ALL', 'ERROR']);
-const LayerKind = enumeration('LayerKind', ['NORMAL', 'TEXT', 'SMARTOBJECT']);
+const LayerKind = enumeration('LayerKind', ['NORMAL', 'TEXT', 'SMARTOBJECT', 'SOLIDFILL', 'GRADIENTFILL']);
 const TextType = enumeration('TextType', ['POINTTEXT', 'PARAGRAPHTEXT']);
 const Justification = enumeration('Justification', ['LEFT', 'CENTER', 'RIGHT']);
 const AntiAlias = enumeration('AntiAlias', ['SHARP', 'CRISP', 'STRONG', 'SMOOTH', 'NONE']);
@@ -55,6 +56,7 @@ const DocumentFill = enumeration('DocumentFill', ['TRANSPARENT', 'WHITE', 'BACKG
 const BitsPerChannelType = enumeration('BitsPerChannelType', ['EIGHT', 'SIXTEEN']);
 const SaveOptions = enumeration('SaveOptions', ['DONOTSAVECHANGES', 'SAVECHANGES', 'PROMPTTOSAVECHANGES']);
 const ResampleMethod = enumeration('ResampleMethod', ['NONE', 'BICUBIC', 'BILINEAR', 'NEARESTNEIGHBOR']);
+const Direction = enumeration('Direction', ['HORIZONTAL', 'VERTICAL']);
 
 /* UnitValue com a base padrão do ExtendScript: 1 px = 1 pt = 1/72 pol. */
 const TO_POINTS = {px: 1, pt: 1, cm: 72 / 2.54, mm: 72 / 25.4, in: 72};
@@ -97,14 +99,33 @@ function pointInPolygon(x, y, poly) {
     return inside;
 }
 function union(a, b) { return !a ? b : !b ? a : [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])]; }
+function bboxOf(points) {
+    const xs = points.map(p => p[0]), ys = points.map(p => p[1]);
+    return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+}
+function roundedPolygon(x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    if (!r) return [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
+    const c = [[x + w - r, y + r], [x + w - r, y + h - r], [x + r, y + h - r], [x + r, y + r]], pts = [];
+    for (let i = 0; i < 4; i++) for (let j = 0; j <= 12; j++) {
+        const a = (i - 1 + j / 12) * Math.PI / 2;
+        pts.push([c[i][0] + r * Math.cos(a), c[i][1] + r * Math.sin(a)]);
+    }
+    return pts;
+}
+function rotatePoint([x, y], R) {
+    if (!R) return [x, y];
+    const a = R.deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), dx = x - R.px, dy = y - R.py;
+    return [R.px + dx * c - dy * s, R.py + dx * s + dy * c]; // positivo = horário (y para baixo)
+}
 
 let nextId = 1;
 
 function photoshop(options = {}) {
     let current = {};
-    const log = {alerts: [], actions: [], closed: [], textSizesAt: [], dialogs: 0, prefWrites: 0};
+    const log = {alerts: [], actions: [], closed: [], textSizesAt: [], dialogs: 0, prefWrites: 0, historySteps: [], progress: []};
     const images = new Map();
-    const fontList = (options.fonts || [['Oswald SemiBold', 'Oswald-SemiBold'], ['Arial', 'ArialMT']])
+    const fontList = (options.fonts || [['Oswald SemiBold', 'Oswald-SemiBold'], ['Roboto Condensed', 'RobotoCondensed-Regular'], ['Arial', 'ArialMT']])
         .map(([name, postScriptName]) => ({name, postScriptName}));
     const fonts = Object.assign(fontList.slice(), {
         getByName(n) { const f = fontList.find(x => x.postScriptName === n); if (!f) throw new Error('Fonte não encontrada'); return f; }
@@ -129,7 +150,8 @@ function photoshop(options = {}) {
             this.name = typename === 'LayerSet' ? 'Grupo 1' : 'Camada 1';
             this.visible = true; this.opacity = 100; this.allLocked = false;
             this._parent = null; this.removed = false;
-            this.T = {kx: 1, ky: 1, tx: 0, ty: 0}; this.ops = []; this.image = null; this.text = null;
+            this.T = {kx: 1, ky: 1, tx: 0, ty: 0}; this.R = null;
+            this.image = null; this.text = null; this.shape = null; this.fill = null; this.mask = null;
             if (typename === 'LayerSet') {
                 this.children = [];
                 this.artLayers = collection(doc, this, 'ArtLayer');
@@ -141,24 +163,30 @@ function photoshop(options = {}) {
         get kind() { return this._kind; }
         set kind(v) {
             this.alive();
-            assert.equal(v, LayerKind.TEXT); assert.equal(this._kind, LayerKind.NORMAL); assert.equal(this.ops.length, 0, 'só camada vazia vira texto');
+            assert.equal(v, LayerKind.TEXT); assert.equal(this._kind, LayerKind.NORMAL, 'só camada vazia vira texto');
             this._kind = v; this.text = new TextItem(this);
         }
         get textItem() { assert.ok(this.text, `textItem em ${this.name}, que não é texto`); return this.text; }
         alive() { assert.ok(!this.removed, `camada removida: ${this.name}`); }
         leaves() { return this.children ? this.children.flatMap(c => c.leaves()) : [this]; }
+        localPoints() {
+            if (this.text) { const b = this.text.localBounds(); return b && [[b[0], b[1]], [b[2], b[1]], [b[2], b[3]], [b[0], b[3]]]; }
+            if (this.image) return [[0, 0], [this.image.w, 0], [this.image.w, this.image.h], [0, this.image.h]];
+            if (this.shape) return this.shape.outer;
+            if (this.fill) return [[0, 0], [this.doc.w, 0], [this.doc.w, this.doc.h], [0, this.doc.h]];
+            return null;
+        }
+        toDoc([x, y]) { return rotatePoint([x * this.T.kx + this.T.tx, y * this.T.ky + this.T.ty], this.R); }
         box() {
             if (this.children) return this.children.filter(c => c.visible).map(c => c.box()).reduce(union, null);
-            const T = this.T, map = b => b && [b[0] * T.kx + T.tx, b[1] * T.ky + T.ty, b[2] * T.kx + T.tx, b[3] * T.ky + T.ty];
-            if (this.text) return map(this.text.localBounds());
-            if (this.image) return map([0, 0, this.image.w, this.image.h]);
-            return map(this.ops.filter(o => o.type === 'fill').map(o => o.localBox).reduce(union, null));
+            const pts = this.localPoints();
+            return pts && bboxOf(pts.map(p => this.toDoc(p)));
         }
         get bounds() { this.alive(); return (this.box() || [0, 0, 0, 0]).map(n => new UnitValue(n, 'px')); }
         translate(dx, dy) {
             this.alive(); assert.ok(!this.allLocked, 'camada travada');
             const x = num(dx), y = num(dy);
-            for (const l of this.leaves()) { l.T.tx += x; l.T.ty += y; }
+            for (const l of this.leaves()) { l.T.tx += x; l.T.ty += y; if (l.R) { l.R.px += x; l.R.py += y; } }
         }
         resize(xp, yp, anchor) {
             this.alive(); assert.equal(anchor, AnchorPosition.TOPLEFT);
@@ -166,15 +194,21 @@ function photoshop(options = {}) {
             const fx = xp / 100, fy = yp / 100;
             assert.ok(fx > 0 && fy > 0 && Number.isFinite(fx), 'escala inválida');
             for (const l of this.leaves()) {
+                if (l.R) { assert.ok(Math.abs(fx - fy) < 1e-9, 'escala não uniforme em camada girada'); l.R.px = b[0] + (l.R.px - b[0]) * fx; l.R.py = b[1] + (l.R.py - b[1]) * fy; }
                 l.T.kx *= fx; l.T.ky *= fy;
                 l.T.tx = b[0] + (l.T.tx - b[0]) * fx; l.T.ty = b[1] + (l.T.ty - b[1]) * fy;
             }
+        }
+        rotate(deg, anchor) {
+            this.alive(); assert.equal(anchor, AnchorPosition.MIDDLECENTER); assert.ok(!this.children, 'girar grupo não simulado');
+            assert.ok(!this.R, 'segunda rotação não simulada');
+            const b = this.box(); this.R = {deg, px: (b[0] + b[2]) / 2, py: (b[1] + b[3]) / 2};
         }
         move(rel, where) {
             this.alive();
             const target = rel instanceof Doc ? rel : rel.doc;
             assert.equal(target, this.doc, 'move entre documentos');
-            if (!(rel instanceof Doc)) rel.alive();
+            if (!(rel instanceof Doc)) { rel.alive(); assert.notEqual(rel, this, 'mover em relação a si mesma'); }
             for (let p = rel; p && !(p instanceof Doc); p = p._parent) assert.notEqual(p, this, 'grupo dentro de si mesmo');
             detach(this);
             let container, index;
@@ -182,7 +216,7 @@ function photoshop(options = {}) {
                 // A documentação não diz se INSIDE vai ao topo ou à base: base.
                 assert.equal(rel.typename, 'LayerSet', 'INSIDE exige grupo'); container = rel; index = rel.children.length;
             } else if (where === ElementPlacement.PLACEATBEGINNING || where === ElementPlacement.PLACEATEND) {
-                assert.ok(rel instanceof Doc || rel.typename === 'LayerSet'); container = rel;
+                assert.ok(rel instanceof Doc, 'PLACEATBEGINNING/END simulado só para documento'); container = rel;
                 index = where === ElementPlacement.PLACEATBEGINNING ? 0 : rel.children.length;
             } else if (where === ElementPlacement.PLACEBEFORE || where === ElementPlacement.PLACEAFTER) {
                 container = rel._parent; index = container.children.indexOf(rel) + (where === ElementPlacement.PLACEAFTER ? 1 : 0);
@@ -194,10 +228,9 @@ function photoshop(options = {}) {
             const doc = this.doc;
             detach(this);
             assert.ok(doc.children.length > 0, 'o documento ficaria sem camadas');
-            const gone = l => l === this || (l && l._parent && l._parent !== doc && gone(l._parent));
             const mark = l => { l.removed = true; if (l.children) l.children.forEach(mark); };
             mark(this);
-            if (!doc._active || doc._active.removed || gone(doc._active)) doc._active = doc.children[0];
+            if (!doc._active || doc._active.removed) doc._active = doc.children[0];
         }
         duplicate(rel, where) {
             this.alive();
@@ -209,36 +242,19 @@ function photoshop(options = {}) {
             }
             assert.ok(rel instanceof Doc, 'duplicate simulado só para documento');
             assert.equal(activeDoc, this.doc, 'duplicate exige o documento de origem ativo');
-            assert.ok(where === ElementPlacement.PLACEATBEGINNING || where === ElementPlacement.PLACEATEND);
+            assert.equal(where, ElementPlacement.PLACEATBEGINNING);
             const copy = cloneLayer(this, rel);
-            attach(copy, rel, where === ElementPlacement.PLACEATBEGINNING ? 0 : rel.children.length);
+            attach(copy, rel, 0);
             return copy;
         }
-        addOp(type, parts, color) {
-            const T = this.T, doc = this.doc;
-            const local = ([x, y]) => [(x - T.tx) / T.kx, (y - T.ty) / T.ky];
-            const polys = parts.map(p => ({mode: p.mode, poly: p.poly.map(local)}));
-            const canvas = [...local([0, 0]), ...local([doc.w, doc.h])];
-            let box = null;
-            for (const p of polys) if (p.mode === 'add') {
-                const xs = p.poly.map(q => q[0]), ys = p.poly.map(q => q[1]);
-                box = union(box, [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]);
-            }
-            if (box) box = [Math.max(box[0], canvas[0]), Math.max(box[1], canvas[1]), Math.min(box[2], canvas[2]), Math.min(box[3], canvas[3])];
-            if (box && (box[2] <= box[0] || box[3] <= box[1])) box = null;
-            this.ops.push({type, polys, canvas, color, localBox: box});
-        }
         painted(X, Y) {
-            const x = (X - this.T.tx) / this.T.kx, y = (Y - this.T.ty) / this.T.ky;
-            let on = false;
-            for (const op of this.ops) {
-                const c = op.canvas;
-                if (x < c[0] || y < c[1] || x > c[2] || y > c[3]) continue;
-                let inside = false;
-                for (const p of op.polys) if (pointInPolygon(x, y, p.poly)) inside = p.mode === 'add';
-                if (inside) on = op.type === 'fill';
-            }
-            return on;
+            assert.ok(this.shape, 'painted só para formas');
+            if (X < 0 || Y < 0 || X > this.doc.w || Y > this.doc.h) return false;
+            if (this.mask && this.mask.some(p => pointInPolygon(X, Y, p))) return false;
+            let [x, y] = this.R ? rotatePoint([X, Y], {...this.R, deg: -this.R.deg}) : [X, Y];
+            x = (x - this.T.tx) / this.T.kx; y = (y - this.T.ty) / this.T.ky;
+            if (!pointInPolygon(x, y, this.shape.outer)) return false;
+            return !this.shape.inner || !pointInPolygon(x, y, this.shape.inner);
         }
     }
 
@@ -261,14 +277,14 @@ function photoshop(options = {}) {
         get leading() { return new UnitValue((this.leadingPx || this.sizePx * 1.2) * 72 / this.layer.doc.resolution, 'pt'); }
         set leading(v) { assert.ok(v instanceof UnitValue && v.type === 'pt'); this.leadingPx = v.value * this.layer.doc.resolution / 72; }
         get position() { return [new UnitValue(this.layer.T.tx, 'px'), new UnitValue(this.layer.T.ty, 'px')]; }
-        set position(v) { assert.ok(Array.isArray(v) && v.length === 2); this.layer.T.tx = num(v[0]); this.layer.T.ty = num(v[1]); }
+        set position(v) { assert.ok(!this.layer.R, 'posição de texto girado'); assert.ok(Array.isArray(v) && v.length === 2); this.layer.T.tx = num(v[0]); this.layer.T.ty = num(v[1]); }
         get contents() { return this._contents; }
         set contents(v) { this._contents = String(v); this.layer.name = this._contents.split('\r')[0] || ' '; }
+        lead() { return this.useAutoLeading || !this.leadingPx ? this.sizePx * 1.2 : this.leadingPx; }
         localBounds() {
-            const lead = this.useAutoLeading || !this.leadingPx ? this.sizePx * 1.2 : this.leadingPx;
             let box = null;
             this._contents.split('\r').forEach((line, k) => {
-                const y = k * lead; let x = 0;
+                const y = k * this.lead(); let x = 0;
                 for (const ch of line) {
                     const w = advance(ch) * this.sizePx, a = ascent(ch);
                     if (a !== null) box = union(box, [x, y - a * this.sizePx, x + w, y + descent(ch) * this.sizePx]);
@@ -277,37 +293,34 @@ function photoshop(options = {}) {
             });
             return box;
         }
+        lineBaselines() { return this._contents.split('\r').map((_, k) => this.layer.T.ty + k * this.lead() * this.layer.T.ky); }
     }
 
     class Selection {
         constructor(doc) { this.doc = doc; this.parts = []; }
-        select(region, type, feather, antiAlias) {
-            type = type || SelectionType.REPLACE;
-            assert.ok(Array.isArray(region) && region.length >= 3, 'região com ao menos 3 pontos');
-            const poly = Array.from(region, p => { assert.ok(Array.isArray(p) && p.length === 2); return [num(p[0]), num(p[1])]; });
-            if (type === SelectionType.REPLACE) this.parts = [{mode: 'add', poly}];
-            else if (type === SelectionType.EXTEND) this.parts.push({mode: 'add', poly});
-            else if (type === SelectionType.DIMINISH) { assert.ok(this.parts.length, 'subtrair sem seleção'); this.parts.push({mode: 'sub', poly}); }
-            else throw new Error(`tipo de seleção ${type}`);
+        select(region, type) {
+            assert.equal(type || SelectionType.REPLACE, SelectionType.REPLACE, 'só seleção simples é usada');
+            assert.ok(Array.isArray(region) && region.length >= 3);
+            this.parts = [Array.from(region, p => [num(p[0]), num(p[1])])];
         }
         deselect() { this.parts = []; }
-        target() {
-            const l = this.doc.activeLayer; l.alive();
-            assert.equal(l.typename, 'ArtLayer', 'pintura em grupo'); assert.equal(l.kind, LayerKind.NORMAL, `pintura em ${l.kind}`);
-            for (let p = l; p && !(p instanceof Doc); p = p._parent) assert.ok(p.visible, `alvo oculto: ${p.name}`);
-            return l;
+        fill() { throw new Error('preenchimento de pixels: formas precisam ser vetoriais'); }
+        clear() { throw new Error('apagar pixels: use máscara'); }
+        stroke() { throw new Error('traçar seleção gera pixels'); }
+    }
+
+    class Guides extends Array {
+        add(direction, coordinate) {
+            assert.ok(direction === Direction.HORIZONTAL || direction === Direction.VERTICAL);
+            assert.ok(coordinate instanceof UnitValue && coordinate.type === 'px');
+            const g = {direction, coordinate: new UnitValue(coordinate.value, 'px')}; this.push(g); return g;
         }
-        fill(c) {
-            const whole = [{mode: 'add', poly: [[0, 0], [this.doc.w, 0], [this.doc.w, this.doc.h], [0, this.doc.h]]}];
-            this.target().addOp('fill', this.parts.length ? this.parts : whole, c.rgb.hexValue);
-        }
-        clear() { assert.ok(this.parts.length, 'limpar sem seleção'); this.target().addOp('clear', this.parts, null); }
     }
 
     class Doc {
         constructor({name, width, height, resolution}) {
             this.id = nextId++; this.name = name; this.w = width; this.h = height; this.resolution = resolution;
-            this.children = []; this._active = null; this.resizeLog = [];
+            this.children = []; this._active = null; this.resizeLog = []; this.guides = new Guides();
             this.artLayers = collection(this, this, 'ArtLayer'); this.layerSets = collection(this, this, 'LayerSet');
             this.selection = new Selection(this);
         }
@@ -322,6 +335,7 @@ function photoshop(options = {}) {
             const map = new Map();
             copy.children = this.children.map(c => { const k = cloneLayer(c, copy, map); k._parent = copy; return k; });
             copy._active = map.get(this._active) || copy.children[0];
+            this.guides.forEach(g => copy.guides.add(g.direction, g.coordinate));
             documents.push(copy); activeDoc = copy;
             return copy;
         }
@@ -335,6 +349,21 @@ function photoshop(options = {}) {
             assert.equal(method, ResampleMethod.NONE, 'resolução só pode mudar sem reamostrar');
             this.resolution = resolution; this.resizeLog.push(resolution);
         }
+        get activeHistoryState() {
+            return {resolution: this.resolution, guides: this.guides.map(g => ({...g})), resizeLog: this.resizeLog.slice(),
+                children: this.children.map(c => cloneLayer(c, this, null, true))};
+        }
+        set activeHistoryState(s) {
+            this.children = s.children.map(c => { const k = cloneLayer(c, this, null, true); k._parent = this; return k; });
+            this.resolution = s.resolution; this.resizeLog = s.resizeLog.slice();
+            this.guides = new Guides(); s.guides.forEach(g => this.guides.push(g));
+            this._active = this.children[0]; log.historySteps.push('revertido');
+        }
+        suspendHistory(name, script) {
+            assert.equal(activeDoc, this, 'suspendHistory no documento ativo');
+            vm.runInContext(script, ctx);
+            log.historySteps.push(name);
+        }
     }
     // Réguas fora de px: .as('px') converte pela base de 72 ppi (leitura desfavorável).
     function ruler(doc, pixels) {
@@ -344,12 +373,12 @@ function photoshop(options = {}) {
     }
     function detach(l) { const c = l._parent.children; c.splice(c.indexOf(l), 1); l._parent = null; }
     function attach(l, container, index) { container.children.splice(index, 0, l); l._parent = container; }
+    // Documento: acima da camada ativa, mesmo quando ela está dentro de um
+    // grupo (leitura desfavorável do DOM). Grupo: topo do grupo.
     function aboveActive(doc, l) {
         const a = doc._active && !doc._active.removed ? doc._active : null;
         if (a) attach(l, a._parent, a._parent.children.indexOf(a)); else attach(l, doc, 0);
     }
-    // Grupo: cria no topo do grupo. Documento: acima da camada ativa, mesmo
-    // quando ela está dentro de um grupo (leitura desfavorável do DOM).
     function collection(doc, container, typename) {
         return {add() {
             const l = new Layer(doc, typename, typename === 'LayerSet' ? undefined : LayerKind.NORMAL);
@@ -358,12 +387,14 @@ function photoshop(options = {}) {
             return l;
         }};
     }
-    function cloneLayer(src, doc, map) {
+    function cloneLayer(src, doc, map, keepId) {
         const l = new Layer(doc, src.typename, src._kind);
+        if (keepId) l.id = src.id;
         Object.assign(l, {name: src.name, visible: src.visible, opacity: src.opacity, allLocked: src.allLocked,
-            T: {...src.T}, ops: src.ops.map(o => ({...o})), image: src.image && {...src.image}});
+            T: {...src.T}, R: src.R && {...src.R}, image: src.image && {...src.image}, shape: src.shape && structuredClone(src.shape),
+            fill: src.fill && structuredClone(src.fill), mask: src.mask && structuredClone(src.mask)});
         if (src.text) { l.text = new TextItem(l); Object.assign(l.text, src.text, {layer: l}); }
-        if (src.children) l.children = src.children.map(c => { const k = cloneLayer(c, doc, map); k._parent = l; return k; });
+        if (src.children) l.children = src.children.map(c => { const k = cloneLayer(c, doc, map, keepId); k._parent = l; return k; });
         if (map) map.set(src, l);
         return l;
     }
@@ -386,35 +417,84 @@ function photoshop(options = {}) {
     class ActionDescriptor {
         constructor() { this.map = new Map(); }
         put(k, type, value) { assert.equal(typeof k, 'string'); this.map.set(k, {type, value}); }
-        putUnitDouble(k, unit, v) { this.put(k, 'unit', {unit, value: v}); }
-        putObject(k, cls, d) { this.put(k, 'object', {cls, desc: d}); }
+        putUnitDouble(k, unit, v) { assert.ok(Number.isFinite(v), `${k} inválido`); this.put(k, 'unit', {unit, value: v}); }
+        putObject(k, cls, d) { assert.ok(d instanceof ActionDescriptor); this.put(k, 'object', {cls, desc: d}); }
         putEnumerated(k, type, v) { this.put(k, 'enum', {type, value: v}); }
-        putBoolean(k, v) { this.put(k, 'boolean', v); }
+        putBoolean(k, v) { assert.equal(typeof v, 'boolean'); this.put(k, 'boolean', v); }
         putString(k, v) { this.put(k, 'string', v); }
-        putDouble(k, v) { this.put(k, 'double', v); }
+        putDouble(k, v) { assert.ok(Number.isFinite(v)); this.put(k, 'double', v); }
         putInteger(k, v) { assert.ok(Number.isInteger(v)); this.put(k, 'integer', v); }
         putList(k, v) { assert.ok(v instanceof ActionList); this.put(k, 'list', v); }
         putPath(k, v) { assert.ok(v instanceof File); this.put(k, 'path', v); }
-        get(k) { return this.map.get(k); }
+        putReference(k, v) { assert.ok(v instanceof ActionReference); this.put(k, 'reference', v); }
+        putClass(k, v) { this.put(k, 'class', v); }
+        get(k) { const v = this.map.get(k); return v && v.value; }
+        has(k) { return this.map.has(k); }
     }
     class ActionList {
         constructor() { this.items = []; }
         putObject(cls, d) { this.items.push({cls, desc: d}); }
     }
+    class ActionReference {
+        constructor() { this.items = []; }
+        putClass(c) { this.items.push({cls: c}); }
+        putEnumerated(c, t, v) { this.items.push({cls: c, type: t, value: v}); }
+    }
     function charIDToTypeID(s) { assert.equal(s.length, 4, `charID ${s}`); return s; }
+    function stringIDToTypeID(s) { assert.ok(/^[a-zA-Z]+$/.test(s), `stringID ${s}`); return s; }
+    const hex = c => ['Rd  ', 'Grn ', 'Bl  '].map(k => Math.round(c.get(k)).toString(16).padStart(2, '0')).join('').toUpperCase();
+    function makeContentLayer(doc, desc) {
+        assert.equal(doc.selection.parts.length, 0, 'forma criada com seleção ativa vira máscara');
+        const using = desc.get('Usng'); assert.equal(using.cls, 'contentLayer');
+        const l = using.desc, type = l.get('Type');
+        let layer;
+        if (type.cls === 'solidColorLayer') {
+            const shp = l.get('Shp '); assert.ok(shp && shp.cls === 'Rctn', 'forma sólida precisa de Rctn');
+            const r = shp.desc, u = k => { const v = r.get(k); assert.equal(v.unit, '#Pxl'); return v.value; };
+            assert.equal(r.get('unitValueQuadVersion'), 1);
+            const box = [u('Left'), u('Top '), u('Rght') - u('Left'), u('Btom') - u('Top ')];
+            assert.ok(box[2] > 0 && box[3] > 0, 'retângulo vazio');
+            const radii = ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'].map(k => r.has(k) ? u(k) : 0);
+            assert.ok(radii.every(x => x === radii[0]), 'raios diferentes');
+            const stroke = l.has('strokeStyle') ? l.get('strokeStyle').desc : null;
+            let strokeInfo = null, fillEnabled = true;
+            if (stroke) {
+                assert.equal(stroke.get('strokeEnabled'), true);
+                fillEnabled = stroke.get('fillEnabled');
+                assert.equal(stroke.get('strokeStyleLineAlignment').value, 'strokeStyleAlignInside');
+                const w = stroke.get('strokeStyleLineWidth'); assert.equal(w.unit, '#Pxl');
+                strokeInfo = {width: w.value, color: hex(stroke.get('strokeStyleContent').desc.get('Clr ').desc)};
+            }
+            layer = new Layer(doc, 'ArtLayer', LayerKind.SOLIDFILL);
+            const outer = roundedPolygon(...box, radii[0]);
+            const inner = !fillEnabled && strokeInfo ? roundedPolygon(box[0] + strokeInfo.width, box[1] + strokeInfo.width,
+                box[2] - 2 * strokeInfo.width, box[3] - 2 * strokeInfo.width, radii[0] - strokeInfo.width) : null;
+            layer.shape = {rect: box, radius: radii[0], fill: fillEnabled ? hex(type.desc.get('Clr ').desc) : null, stroke: strokeInfo, outer, inner};
+        } else if (type.cls === 'gradientLayer') {
+            const g = type.desc, grad = g.get('Grad').desc;
+            layer = new Layer(doc, 'ArtLayer', LayerKind.GRADIENTFILL);
+            layer.fill = {angle: g.get('Angl'), type: g.get('Type').value,
+                stops: grad.get('Clrs').items.map(s => [s.desc.get('Lctn'), hex(s.desc.get('Clr ').desc)]),
+                transparency: grad.get('Trns').items.length};
+        } else throw new Error(`contentLayer ${type.cls} não simulado`);
+        aboveActive(doc, layer); doc._active = layer;
+    }
     function executeAction(id, desc, mode) {
         assert.equal(mode, DialogModes.NO);
         const doc = app.activeDocument;
         log.actions.push({id, desc, resolution: doc.resolution});
         if (current.failAction && current.failAction(id, desc)) throw new Error(`Falha simulada em ${id}`);
-        if (id === 'Grdn') {
-            assert.equal(doc.selection.parts.length, 0, 'degradê com seleção ativa');
-            const target = doc.selection.target();
-            target.addOp('fill', [{mode: 'add', poly: [[0, 0], [doc.w, 0], [doc.w, doc.h], [0, doc.h]]}], 'gradient');
+        if (id === 'Mk  ' && desc.has('Nw  ')) {
+            assert.equal(desc.get('Nw  '), 'Chnl'); assert.equal(desc.get('Usng').value, 'HdSl');
+            const l = doc.activeLayer; assert.ok(doc.selection.parts.length, 'máscara sem seleção');
+            assert.ok(!l.mask, 'segunda máscara'); l.mask = doc.selection.parts.map(p => p.map(q => [...q]));
+        } else if (id === 'Mk  ') {
+            assert.equal(desc.get('null').items[0].cls, 'contentLayer');
+            makeContentLayer(doc, desc);
         } else if (id === 'Plc ') {
-            const file = desc.get('null').value, fixture = images.get(file.fsName);
+            const file = desc.get('null'), fixture = images.get(file.fsName);
             assert.ok(fixture, `imagem desconhecida ${file.fsName}`);
-            assert.ok(!desc.map.has('Lnkd'), 'imagem vinculada');
+            assert.ok(!desc.has('Lnkd'), 'imagem vinculada');
             const l = new Layer(doc, 'ArtLayer', LayerKind.SMARTOBJECT);
             l.name = path.basename(file.fsName).replace(/\.[^.]+$/, ''); l.image = {...fixture, file: file.fsName};
             const k = Math.min(1, doc.w / fixture.w, doc.h / fixture.h);
@@ -433,12 +513,13 @@ function photoshop(options = {}) {
 
     function element(type, value, props) {
         const e = {type, text: typeof value === 'string' ? value : '', children: [], properties: props || {},
-            preferredSize: {width: 0, height: 0}, enabled: true, visible: true};
+            preferredSize: {width: 0, height: 0}, enabled: true, visible: true, value: false};
         e.add = (t, bounds, val, pr) => { const c = element(t, val, pr); c.parent = e; e.children.push(c); return c; };
         if (type === 'dropdownlist') {
-            e.items = (value || []).map((text, index) => ({text, index}));
+            e.items = Array.from(value || [], (text, index) => ({text, index}));
             let sel = null;
-            Object.defineProperty(e, 'selection', {get: () => sel, set: v => { sel = typeof v === 'number' ? e.items[v] : v; }});
+            // ScriptUI dispara onChange também quando o script muda a seleção.
+            Object.defineProperty(e, 'selection', {get: () => sel, set: v => { sel = typeof v === 'number' ? e.items[v] : v; if (e.onChange) e.onChange(); }});
         }
         return e;
     }
@@ -453,8 +534,7 @@ function photoshop(options = {}) {
                 const api = dialogApi(w);
                 if (current.fill) current.fill(api);
                 w.exitCode = undefined;
-                const ok = all(w).find(e => e.properties && e.properties.name === 'ok');
-                ok.onClick();
+                all(w).find(e => e.properties && e.properties.name === 'ok').onClick();
                 return w.exitCode === undefined ? 2 : w.exitCode;
             };
         } else {
@@ -464,6 +544,7 @@ function photoshop(options = {}) {
             w.update = () => {
                 const text = w.children.find(e => e.type === 'statictext').text;
                 const cancel = w.children.find(e => e.type === 'button');
+                log.progress.push(text);
                 if (current.onProgress) current.onProgress(text, () => cancel.onClick());
             };
         }
@@ -484,11 +565,14 @@ function photoshop(options = {}) {
         const priceRow = (i, kind) => all(offerTab(i)).find(g => g.children.some(c => c.type === 'statictext' && c.text === (kind === 'de' ? 'DE ' : 'POR')))
             .children.filter(c => c.type === 'edittext');
         const imagePanels = () => all(w).filter(e => e.type === 'panel' && /^(Imagem do produto|Logotipo|Campanha)/.test(e.text));
-        const modeList = () => all(w).find(e => e.type === 'dropdownlist');
+        const lists = () => all(w).filter(e => e.type === 'dropdownlist');
         const fields = {name: 'Produto', note: 'Complemento'};
+        const checkbox = i => all(offerTab(i)).find(e => e.type === 'checkbox');
         return {
-            modes: () => Array.from(modeList().items, x => x.text),
-            mode(i) { const d = modeList(); d.selection = i; if (d.onChange) d.onChange(); },
+            modes: () => Array.from(lists()[0].items, x => x.text),
+            mode(i) { lists()[0].selection = i; },
+            format(i) { lists()[1].selection = i; },
+            formatEnabled: () => lists()[1].enabled,
             size() { const g = tab('Geral'), a = edit(g, 'Largura'), b = edit(g, 'Altura'); return {width: a.text, height: b.text, enabled: a.enabled && b.enabled}; },
             setSize(width, height) { const g = tab('Geral'); edit(g, 'Largura').text = String(width); edit(g, 'Altura').text = String(height); },
             general(label, value) { edit(tab('Geral'), label).text = value; },
@@ -496,12 +580,14 @@ function photoshop(options = {}) {
             offer(i, values) {
                 for (const [k, v] of Object.entries(values)) {
                     if (fields[k]) { edit(offerTab(i), fields[k]).text = v; continue; }
+                    if (k === 'alcohol') { checkbox(i).value = v; continue; }
                     const [kind, part] = k.split('.');
                     priceRow(i, kind)[['price', 'unit', 'label'].indexOf(part)].text = v;
                 }
             },
             offerValue(i, k) {
                 if (fields[k]) return edit(offerTab(i), fields[k]).text;
+                if (k === 'alcohol') return checkbox(i).value;
                 const [kind, part] = k.split('.');
                 return priceRow(i, kind)[['price', 'unit', 'label'].indexOf(part)].text;
             },
@@ -512,11 +598,12 @@ function photoshop(options = {}) {
     }
 
     const ctx = vm.createContext({
-        app, UnitValue, SolidColor, Window, File, ActionDescriptor, ActionList, charIDToTypeID, executeAction,
-        alert: m => log.alerts.push(String(m)),
+        app, UnitValue, SolidColor, Window, File, ActionDescriptor, ActionList, ActionReference,
+        charIDToTypeID, stringIDToTypeID, executeAction, alert: m => log.alerts.push(String(m)),
         Units, TypeUnits, DialogModes, LayerKind, TextType, Justification, AntiAlias, ElementPlacement, AnchorPosition,
-        SelectionType, NewDocumentMode, DocumentFill, BitsPerChannelType, SaveOptions, ResampleMethod
+        SelectionType, NewDocumentMode, DocumentFill, BitsPerChannelType, SaveOptions, ResampleMethod, Direction
     });
+    ctx.$ = {global: ctx};
     return {
         app, log, prefs, ResampleMethod,
         image(name, w, h) { const f = new File(path.join('/qa/imagens', name)); images.set(f.fsName, {w, h}); return f; },
@@ -525,23 +612,27 @@ function photoshop(options = {}) {
             current = config;
             const before = log.alerts.length;
             vm.runInContext(code, ctx, {filename: scriptPath});
+            assert.ok(!('__DP_OFERTAS_EDITAR' in ctx), 'função temporária global sobrou');
             return {alerts: log.alerts.slice(before), doc: activeDoc};
         }
     };
 }
 
-/* Consultas sobre a árvore gerada. */
-const ROOT = 'DESIGNPROD_OFERTAS_V1';
-const OFFERS = ['02_OFERTA_DESTAQUE', '03_OFERTA_02', '04_OFERTA_03'];
-const GROUPS = ['01_MARCA', ...OFFERS, '05_CAMPANHA', '06_RODAPE', '90_GRAFISMOS', '98_GUIAS', '99_FUNDO'];
-const SPECS = [
-    {image: [245, 115, 440, 460], title: [900, 112, 640, 148], note: [900, 270, 610, 42], de: [900, 382, 172, 112], por: [1184, 382, 320, 216]},
-    {image: [138, 757, 180, 182], title: [390, 755, 288, 70], note: [390, 825, 284, 22], de: [390, 862, 79, 67], por: [506, 862, 135, 82]},
-    {image: [792, 750, 220, 190], title: [1052, 755, 298, 70], note: [1052, 825, 296, 22], de: [1052, 862, 79, 67], por: [1165, 862, 171, 82]}
-];
-const CARDS = [[75, 712, 617, 256], [755, 712, 617, 256]];
-const SLOTS = [SPECS[0].image, SPECS[1].image, SPECS[2].image, [1595, 36, 194, 172], [1407, 687, 418, 346]];
-const FOOTER = [119, 1040, 1560, 30];
+/* Modelos medidos nos PDFs ADS e VT: a referência dos testes. */
+const ROOT = 'DP_OFERTAS_V2';
+const OFFERS = ['02_OFERTA_01', '03_OFERTA_02', '04_OFERTA_03'];
+const SECTIONS = ['01_MARCA', ...OFFERS, '05_CAMPANHA', '06_RODAPE', '90_GRAFISMOS', '98_AREAS', '99_FUNDO'];
+const OTHER = ['01_MARCA', '05_CAMPANHA', '06_RODAPE', '90_GRAFISMOS', '98_AREAS', '99_FUNDO'];
+const REF = {
+    STORY: {w: 1080, h: 1920, formatIndex: 0, cards: [[250, 1114, 580, 238], [250, 1385, 580, 238]], divider: [241.5, 701, 2.5, 372],
+        logo: [830, 140, 190, 160], campaign: [110, 1625, 340, 280], footer: [486, 1748, 470, 70],
+        guidesV: [110, 242, 250, 263, 515, 830, 1020], guidesH: [140, 701, 1073, 1114, 1352, 1385, 1623, 1748, 1905]},
+    VT: {w: 1920, h: 1080, formatIndex: 1, cards: [[191, 734, 579, 241], [828, 734, 578, 241]], divider: [846, 185, 4, 457],
+        frame: [95, 107, 1730, 745], gap: [191, 1406], logo: [1610, 120, 200, 170], campaign: [1445, 700, 405, 340], footer: [191, 1005, 1215, 28],
+        guidesV: [95, 191, 340, 846, 966, 1406, 1825], guidesH: [107, 185, 443, 642, 734, 852, 975, 1005]}
+};
+const NAME_RE = /^(?:\d{2}_)?[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/;
+const PREFIXES = {TEXT: ['TXT_'], SMARTOBJECT: ['IMG_'], SOLIDFILL: ['SHP_', 'AREA_'], GRADIENTFILL: ['BG_']};
 
 function at(container, ...names) {
     let node = container;
@@ -552,7 +643,7 @@ function at(container, ...names) {
     }
     return node;
 }
-function rect(b, sx = 1, sy = sx) { return [b[0] * sx, b[1] * sy, (b[0] + b[2]) * sx, (b[1] + b[3]) * sy]; }
+function rect(b) { return [b[0], b[1], b[0] + b[2], b[1] + b[3]]; }
 function within(inner, outer, label, tol = 0.01) {
     assert.ok(inner, `${label}: sem conteúdo`);
     assert.ok(inner[0] >= outer[0] - tol && inner[1] >= outer[1] - tol && inner[2] <= outer[2] + tol && inner[3] <= outer[3] + tol,
@@ -561,354 +652,445 @@ function within(inner, outer, label, tol = 0.01) {
 function disjoint(a, b, label) { assert.ok(a[2] <= b[0] || b[2] <= a[0] || a[3] <= b[1] || b[3] <= a[1], `${label}: ${fmt(a)} x ${fmt(b)}`); }
 function close(a, b, label, tol = 0.01) { assert.ok(Math.abs(a - b) <= tol, `${label}: ${a} != ${b}`); }
 function fmt(b) { return '[' + b.map(n => n.toFixed(2)).join(', ') + ']'; }
-function textLayers(node, prefix = '') {
-    if (!node.children) return node.kind === LayerKind.TEXT ? [[prefix, node]] : [];
-    return node.children.flatMap(c => textLayers(c, prefix + '/' + c.name));
+function walk(node, fn, prefix = '') {
+    for (const c of node.children) { fn(c, prefix + '/' + c.name); if (c.children) walk(c, fn, prefix + '/' + c.name); }
 }
-function snapshot(doc) {
-    const walk = l => ({name: l.name, visible: l.visible, kind: l._kind, T: l.T, ops: l.ops.length, image: l.image,
-        text: l.text && [l.text._contents, l.text.sizePx, l.text._font], children: l.children && l.children.map(walk)});
-    return JSON.stringify({w: doc.w, h: doc.h, resolution: doc.resolution, layers: doc.children.map(walk)});
+function textLayers(node) { const out = []; walk(node, (l, p) => { if (l.kind === LayerKind.TEXT) out.push([p, l]); }); return out; }
+function snapshot(node) {
+    const one = l => ({name: l.name, visible: l.visible, kind: l._kind, T: l.T, R: l.R, image: l.image, shape: l.shape && l.shape.rect, mask: l.mask,
+        fill: l.fill, text: l.text && [l.text._contents, l.text.sizePx, l.text._font], children: l.children && l.children.map(one)});
+    return JSON.stringify(node.children ? node.children.map(one) : one(node));
 }
-function allFields(offers) {
-    return api => offers.forEach((values, i) => values && api.offer(i, values));
-}
-/* Confere a anatomia de um bloco de preço já gerado. */
+function allFields(offers) { return api => offers.forEach((values, i) => values && api.offer(i, values)); }
+function area(root, name) { return at(root, '98_AREAS', name).box(); }
 function checkPrice(group, box, label) {
-    const g = group.box(), reais = at(group, 'TXT_REAIS').box(), cents = at(group, 'TXT_CENTAVOS').box();
+    const reais = at(group, 'TXT_REAIS').box(), cents = at(group, 'TXT_CENTAVOS').box();
     const unit = at(group, 'TXT_UNIDADE').box(), caption = at(group, 'TXT_ROTULO').box();
-    within(g, box, `${label} no espaço`);
+    within([reais, cents, unit, caption].reduce(union, null), box, `${label} no espaço`);
     assert.ok(caption[2] <= reais[0] + 0.01, `${label}: rótulo invade o inteiro`);
     assert.ok(reais[2] <= cents[0] + 0.01 && reais[2] <= unit[0] + 0.01, `${label}: centavos/unidade antes do inteiro`);
     close(cents[1], reais[1], `${label}: centavos no topo do inteiro`);
     close(unit[3], reais[3], `${label}: unidade na base do inteiro`);
     disjoint(cents, unit, `${label}: centavos x unidade`);
 }
+function newLayout(format, extra) { return api => { api.format(REF[format].formatIndex); if (extra) extra(api); }; }
+const settled = ps => [ps.prefs.rulerUnits, ps.prefs.typeUnits, ps.app.displayDialogs];
+const ORIGINAL = [Units.CM, TypeUnits.PIXELS, DialogModes.ALL];
 
 /* --------------------------------------------------------------------- */
 
-test('Cabeçalho em semver, ES3, sem include, rede, gravação, PathItem ou Traçar', () => {
-    assert.match(version, /^\d+\.\d+\.\d+$/);
+test('Cabeçalho 2.x, ES3 e sem include, rede, gravação, pixels ou métodos ES5', () => {
+    assert.match(version, /^2\.\d+\.\d+$/);
     new vm.Script(code, {filename: scriptPath});
     const bare = code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '').replace(/"(?:\\.|[^"\\\n])*"/g, '""');
     assert.ok(!/\b(?:let|const|class)\s+[A-Za-z_$]/.test(bare), 'let/const/class');
     assert.ok(!bare.includes('=>') && !bare.includes('`'), 'arrow ou template');
-    for (const banned of ['#include', 'saveAs', '.save(', 'Socket', 'HttpConnection', 'putCustomOptions', 'pathItems', 'PathPointInfo', '.stroke(', '.write(', '.open(']) {
+    for (const banned of ['#include', 'saveAs', '.save(', 'Socket', 'HttpConnection', 'putCustomOptions', 'pathItems', 'PathPointInfo',
+        '.stroke(', '.fill(', '.clear(', '.write(', '.open(', '.forEach(', '.map(', '.filter(', 'Array.isArray', 'JSON.', 'Object.keys', '.trim()']) {
         assert.ok(!bare.includes(banned), banned);
     }
 });
 
-test('Documento novo: estrutura gerenciada, textos editáveis e preferências restauradas', () => {
-    const ps = photoshop();
-    const {alerts, doc} = ps.run();
-    assert.equal(ps.app.documents.length, 1);
-    assert.deepEqual([doc.w, doc.h, doc.resolution, doc.profile], [1920, 1080, 72, 'sRGB IEC61966-2.1']);
-    assert.deepEqual(doc.children.map(l => l.name), [ROOT], 'só o grupo gerenciado no topo');
-    const root = doc.children[0];
-    assert.deepEqual(root.children.map(l => l.name).sort(), GROUPS.slice().sort());
-    assert.equal(at(root, '98_GUIAS').visible, false);
-    assert.equal(at(root, '90_GRAFISMOS', 'FORMA_MOLDURA').kind, LayerKind.NORMAL);
-    for (const name of OFFERS) {
-        const g = at(root, name);
-        for (const t of ['TXT_NOME', 'TXT_COMPLEMENTO']) assert.equal(at(g, t).kind, LayerKind.TEXT);
-        for (const p of ['PRECO_ANTERIOR', 'PRECO_ATUAL']) for (const t of ['TXT_ROTULO', 'TXT_REAIS', 'TXT_CENTAVOS', 'TXT_UNIDADE']) {
-            assert.equal(at(g, p, t).kind, LayerKind.TEXT, `${name}/${p}/${t}`);
-        }
-    }
-    assert.equal(at(root, OFFERS[0], 'TXT_NOME').textItem.contents, 'AÇÚCAR TRITURADO\rCAUAXÍ 1 KG');
-    assert.equal(at(root, OFFERS[0], 'TXT_NOME').textItem.font, 'Oswald-SemiBold');
-    assert.deepEqual([ps.prefs.rulerUnits, ps.prefs.typeUnits, ps.app.displayDialogs], [Units.CM, TypeUnits.PIXELS, DialogModes.ALL]);
-    assert.equal(alerts.length, 1);
-    for (const slot of ['produto 1', 'produto 2', 'produto 3', 'campanha', 'logotipo']) assert.ok(alerts[0].includes(slot), slot);
-});
-
-test('Descritor Grdn: linear, 3 cores de preto a dourado, de 32% da altura até a base, em px', () => {
-    const ps = photoshop();
-    ps.run({fill: api => api.setSize(1280, 720)});
-    const grad = ps.log.actions.filter(a => a.id === 'Grdn');
-    assert.equal(grad.length, 1);
-    const d = grad[0].desc, from = d.get('From').value.desc, to = d.get('T   ').value.desc;
-    assert.deepEqual([from.get('Hrzn').value, from.get('Vrtc').value], [{unit: '#Pxl', value: 0}, {unit: '#Pxl', value: 720 * 0.32}]);
-    assert.deepEqual([to.get('Hrzn').value, to.get('Vrtc').value], [{unit: '#Pxl', value: 0}, {unit: '#Pxl', value: 720}]);
-    assert.equal(d.get('Type').value.value, 'Lnr ');
-    const g = d.get('Grad').value.desc;
-    assert.equal(g.get('Intr').value, 4096);
-    const stops = g.get('Clrs').value.items.map(s => [s.desc.get('Lctn').value, ...['Rd  ', 'Grn ', 'Bl  '].map(k => s.desc.get('Clr ').value.desc.get(k).value)]);
-    assert.deepEqual(stops, [[0, 23, 23, 23], [2048, 69, 56, 34], [4096, 169, 130, 57]]);
-    assert.equal(g.get('Trns').value.items.length, 2);
-    assert.equal(ps.app.documents[0].children[0].children.length, 9);
-    assert.equal(at(ps.app.documents[0].children[0], '99_FUNDO', 'BG_DEGRADE_PRETO_DOURADO').ops[0].color, 'gradient');
-});
-
-test('Preços de 1 a 4 dígitos cabem no espaço, com centavos no topo e unidade na base', () => {
-    const cases = [['7', '7', ',00'], ['12,5', '12', ',50'], ['345,99', '345', ',99'], ['9999,99', '9999', ',99'], ['R$ 0,90', '0', ',90'], ['2.89', '2', ',89']];
-    const heights = [];
-    for (const [input, reais, cents] of cases) {
+for (const format of ['STORY', 'VT']) {
+    const R = REF[format];
+    test(`${format}: árvore no padrão de nomes, sem camada de pixels e preferências restauradas`, () => {
         const ps = photoshop();
-        const {doc, alerts} = ps.run({fill: allFields([0, 1, 2].map(() => ({'de.price': input, 'por.price': input})))});
+        const {alerts, doc} = ps.run({fill: newLayout(format)});
+        assert.equal(ps.app.documents.length, 1);
+        assert.deepEqual([doc.w, doc.h, doc.resolution, doc.profile], [R.w, R.h, 72, 'sRGB IEC61966-2.1']);
+        assert.deepEqual(doc.children.map(l => l.name), [ROOT], 'só o grupo gerenciado');
+        const root = doc.children[0];
+        assert.deepEqual(root.children.map(l => l.name), SECTIONS, 'seções na ordem do padrão');
+        assert.equal(at(root, '98_AREAS').visible, false);
+        walk(root, (l, p) => {
+            assert.match(l.name, NAME_RE, `nome fora do padrão: ${p}`);
+            if (l.children) {
+                const names = l.children.map(c => c.name);
+                assert.equal(new Set(names).size, names.length, `irmãos repetidos em ${p}`);
+                return;
+            }
+            assert.notEqual(l.kind, LayerKind.NORMAL, `camada de pixels: ${p}`);
+            assert.ok(PREFIXES[l.kind.split('.')[1]].some(x => l.name.startsWith(x)), `prefixo errado para ${l.kind}: ${p}`);
+        });
+        for (const name of OFFERS) {
+            const g = at(root, name);
+            for (const p of ['PRECO_DE', 'PRECO_POR']) for (const t of ['TXT_ROTULO', 'TXT_REAIS', 'TXT_CENTAVOS', 'TXT_UNIDADE']) assert.equal(at(g, p, t).kind, LayerKind.TEXT);
+            assert.equal(at(g, 'PRECO_DE', 'SHP_RISCO').kind, LayerKind.SOLIDFILL);
+            assert.equal(at(g, 'SELO_MODERACAO', 'TXT_SELO').textItem.contents, 'BEBA COM MODERAÇÃO');
+        }
+        assert.equal(at(root, OFFERS[0], 'TXT_NOME').textItem.font, 'Oswald-SemiBold');
+        assert.equal(at(root, '06_RODAPE', 'TXT_AVISO_ANTES').textItem.font, 'RobotoCondensed-Regular');
+        assert.equal(at(root, '06_RODAPE', 'TXT_VALIDADE').textItem.font, 'Oswald-SemiBold');
+        assert.deepEqual(settled(ps), ORIGINAL);
+        assert.equal(alerts.length, 1);
+        for (const slot of ['produto 1', 'produto 2', 'produto 3', 'campanha', 'logotipo']) assert.ok(alerts[0].includes(slot), slot);
+    });
+
+    test(`${format}: formas vetoriais e degradê de preenchimento nas medidas do PDF`, () => {
+        const ps = photoshop();
+        const {doc} = ps.run({fill: newLayout(format)});
+        const root = doc.children[0];
+        [OFFERS[1], OFFERS[2]].forEach((name, k) => {
+            const card = at(root, name, 'SHP_CARD').shape;
+            assert.deepEqual(card.rect, R.cards[k], `${name}: card`);
+            assert.equal(card.fill, null, 'card só com contorno');
+            assert.deepEqual(card.stroke, {width: 2.5, color: 'F5BE2E'});
+        });
+        assert.deepEqual(at(root, OFFERS[0], 'SHP_DIVISORIA').shape.rect, R.divider);
+        const inner = at(root, OFFERS[1]).children.filter(l => l.name === 'SHP_DIVISORIA');
+        assert.equal(inner.length, format === 'VT' ? 1 : 0, 'divisória interna só no VT');
+        if (format === 'VT') assert.deepEqual(inner[0].shape.rect, [191 + 250, 734 + 31, 2, 182]);
+        const bg = at(root, '99_FUNDO', 'BG_DEGRADE');
+        assert.equal(bg.kind, LayerKind.GRADIENTFILL);
+        assert.deepEqual(bg.fill.angle, {unit: '#Ang', value: -90});
+        const [start, end] = format === 'VT' ? [0.27, 1] : [0.57, 0.875];
+        assert.deepEqual(bg.fill.stops.map(s => s[1]), ['171717', '1D1C19', '393020', '73582F', 'AD8140']);
+        close(bg.fill.stops[0][0], 4096 * start, 'início do dourado', 1); close(bg.fill.stops[4][0], 4096 * end, 'fim do dourado', 1);
+    });
+
+    test(`${format}: guias do modelo criadas sem duplicar nem remover as existentes`, () => {
+        const ps = photoshop();
+        const {doc} = ps.run({fill: newLayout(format)});
+        const coords = (d, dir) => Array.from(d.guides).filter(g => g.direction === dir).map(g => g.coordinate.value).sort((a, b) => a - b);
+        assert.deepEqual(coords(doc, Direction.VERTICAL), R.guidesV.slice().sort((a, b) => a - b));
+        assert.deepEqual(coords(doc, Direction.HORIZONTAL), R.guidesH.slice().sort((a, b) => a - b));
+        doc.guides.add(Direction.VERTICAL, new UnitValue(333, 'px'));
+        const total = doc.guides.length;
+        ps.run({fill: api => api.mode(1)});
+        const copy = ps.app.documents[1];
+        assert.equal(copy.guides.length, total, 'nova cópia não duplica guias');
+        assert.ok(copy.guides.some(g => g.coordinate.value === 333), 'guia do usuário mantida');
+        ps.app.activeDocument = doc;
+        ps.run({fill: api => api.offer(0, {'por.price': '1,11'})});
+        assert.equal(doc.guides.length, total, 'edição não mexe em guias');
+        // Guias ficam sobre os limites das áreas que elas representam.
+        const root = doc.children[0], v = new Set(R.guidesV), h = new Set(R.guidesH);
+        const a = area(root, 'AREA_OFERTA_02_NOME'), card = R.cards[0];
+        assert.ok(v.has(card[0]) && h.has(card[1]) && h.has(card[1] + card[3]), 'card 1 alinhado às guias');
+        assert.ok(v.has(a[0]) || format === 'VT', 'texto dos cards na guia');
+    });
+
+    test(`${format}: preços de 1 a 4 dígitos cabem na área, com centavos no topo e unidade na base`, () => {
+        const cases = [['7', '7', ',00'], ['12,5', '12', ',50'], ['345,99', '345', ',99'], ['9999,99', '9999', ',99'], ['R$ 0,90', '0', ',90'], ['2.89', '2', ',89']];
+        for (const [input, reais, cents] of cases) {
+            const ps = photoshop();
+            const {doc, alerts} = ps.run({fill: newLayout(format, allFields([0, 1, 2].map(() => ({'de.price': input, 'por.price': input, 'de.unit': 'kg'}))))});
+            assert.equal(alerts.length, 1, alerts.join('\n'));
+            const root = doc.children[0];
+            OFFERS.forEach((name, i) => {
+                for (const p of ['PRECO_DE', 'PRECO_POR']) {
+                    const g = at(root, name, p);
+                    assert.equal(at(g, 'TXT_REAIS').textItem.contents, reais);
+                    assert.equal(at(g, 'TXT_CENTAVOS').textItem.contents, cents);
+                    checkPrice(g, area(root, `AREA_OFERTA_0${i + 1}_${p}`), `${input} ${name}/${p}`);
+                }
+                const strike = at(root, name, 'PRECO_DE', 'SHP_RISCO');
+                assert.ok(strike.R && strike.R.deg < 0, 'risco sobe da esquerda para a direita');
+                assert.equal(strike.shape.fill, 'FFFFFF');
+                assert.ok(strike.shape.rect[3] >= 2 - 1e-9, 'risco com espessura legível');
+            });
+        }
+    });
+
+    test(`${format}: nomes longos, complemento e unidades de 8 caracteres ficam nas áreas`, () => {
+        const ps = photoshop();
+        const {doc, alerts} = ps.run({fill: newLayout(format, allFields([0, 1, 2].map(i => ({
+            name: i === 1 ? 'DETERGENTELÍQUIDOCONCENTRADOSUPERECONÔMICOLIMÃO500ML' : 'BISCOITO RECHEADO SABOR CHOCOLATE COM MORANGO\nPACOTE FAMÍLIA 3 X 140 G\nEMBALAGEM ECONÔMICA',
+            note: '(FRAGRÂNCIAS SORTIDAS)', 'de.price': '1234,56', 'de.unit': 'bandejas', 'por.price': '999,99', 'por.unit': 'PCT C/12'
+        }))))});
         assert.equal(alerts.length, 1, alerts.join('\n'));
         const root = doc.children[0];
         OFFERS.forEach((name, i) => {
-            for (const [p, key] of [['PRECO_ANTERIOR', 'de'], ['PRECO_ATUAL', 'por']]) {
-                const g = at(root, name, p);
-                assert.equal(g.visible, true);
-                assert.equal(at(g, 'TXT_REAIS').textItem.contents, reais);
-                assert.equal(at(g, 'TXT_CENTAVOS').textItem.contents, cents);
-                checkPrice(g, rect(SPECS[i][key]), `${input} ${name}/${p}`);
-            }
+            const g = at(root, name), n = `AREA_OFERTA_0${i + 1}_`;
+            within(at(g, 'TXT_NOME').box(), area(root, n + 'NOME'), `${name} nome`);
+            within(at(g, 'TXT_COMPLEMENTO').box(), union(area(root, n + 'NOME'), area(root, n + 'COMPLEMENTO')), `${name} complemento`);
+            disjoint(at(g, 'TXT_COMPLEMENTO').box(), at(g, 'PRECO_POR').box(), `${name} complemento x preço`);
+            assert.equal(at(g, 'PRECO_DE', 'TXT_UNIDADE').textItem.contents, 'BANDEJAS');
+            checkPrice(at(g, 'PRECO_DE'), area(root, n + 'PRECO_DE'), `${name} DE`);
+            checkPrice(at(g, 'PRECO_POR'), area(root, n + 'PRECO_POR'), `${name} POR`);
         });
-        heights.push(at(root, OFFERS[0], 'PRECO_ATUAL').box());
-        assert.ok(at(root, OFFERS[1], 'PRECO_ANTERIOR', 'FORMA_RISCO').box(), 'risco do DE');
-    }
-    const h = b => b[3] - b[1];
-    assert.ok(h(heights[3]) < h(heights[0]), 'quatro dígitos reduzem o bloco em vez de vazar');
-});
-
-test('Nomes longos, complementos e unidades de 8 caracteres ficam nas suas áreas', () => {
-    const longName = 'BISCOITO RECHEADO SABOR CHOCOLATE COM MORANGO\nPACOTE FAMÍLIA TRIPLO 3 X 140 G\nEMBALAGEM ECONÔMICA PROMOCIONAL';
-    const ps = photoshop();
-    const {doc, alerts} = ps.run({fill: allFields([0, 1, 2].map(i => ({
-        name: i === 1 ? 'DETERGENTELÍQUIDOCONCENTRADOSUPERECONÔMICOLIMÃOEHORTELÃ500ML' : longName,
-        note: '(FRAGRÂNCIAS SORTIDAS, EXCETO LAVANDA E CAMPOS DE ALGODÃO)',
-        'de.price': '1234,56', 'de.unit': 'bandejas', 'por.price': '999,99', 'por.unit': 'PCT C/12'
-    })))});
-    assert.equal(alerts.length, 1, alerts.join('\n'));
-    const root = doc.children[0];
-    OFFERS.forEach((name, i) => {
-        const g = at(root, name);
-        within(at(g, 'TXT_NOME').box(), rect(SPECS[i].title), `${name} nome`);
-        const note = at(g, 'TXT_COMPLEMENTO').box();
-        if (i === 2) {
-            within(note, [SPECS[2].title[0], SPECS[2].title[1], SPECS[2].title[0] + SPECS[2].title[2], SPECS[2].note[1] + SPECS[2].note[3]], `${name} complemento`);
-            disjoint(note, at(g, 'PRECO_ATUAL').box(), `${name} complemento x preço`);
-        } else within(note, rect(SPECS[i].note), `${name} complemento`);
-        assert.equal(at(g, 'PRECO_ANTERIOR', 'TXT_UNIDADE').textItem.contents, 'BANDEJAS');
-        assert.equal(at(g, 'PRECO_ATUAL', 'TXT_UNIDADE').textItem.contents, 'PCT C/12');
-        checkPrice(at(g, 'PRECO_ANTERIOR'), rect(SPECS[i].de), `${name} DE`);
-        checkPrice(at(g, 'PRECO_ATUAL'), rect(SPECS[i].por), `${name} POR`);
-        disjoint(at(g, 'TXT_NOME').box(), at(g, 'PRECO_ATUAL').box(), `${name} nome x preço`);
     });
+
+    test(`${format}: selo BEBA COM MODERAÇÃO só nas bebidas alcoólicas, girado dentro da área`, () => {
+        const ps = photoshop();
+        const {doc} = ps.run({fill: newLayout(format, allFields([{alcohol: true}, {alcohol: false}, {alcohol: true}]))});
+        const root = doc.children[0];
+        [true, false, true].forEach((on, i) => {
+            const selo = at(root, OFFERS[i], 'SELO_MODERACAO'), a = area(root, `AREA_OFERTA_0${i + 1}_SELO`);
+            assert.equal(selo.visible, on);
+            assert.deepEqual(at(selo, 'SHP_SELO').shape.rect, [a[0], a[1], a[2] - a[0], a[3] - a[1]]);
+            const t = at(selo, 'TXT_SELO'), b = t.box();
+            assert.equal(t.R.deg, -90, 'lê de baixo para cima');
+            within(b, a, `selo ${i}`);
+            assert.ok(b[3] - b[1] > b[2] - b[0], 'texto na vertical');
+        });
+        assert.equal(at(root, OFFERS[0]).children[0].name, 'SELO_MODERACAO');
+    });
+
+    test(`${format}: imagens incorporadas, centralizadas nas áreas e na ordem certa`, () => {
+        const ps = photoshop();
+        const files = [ps.image('p1.png', 1200, 900), ps.image('p2.png', 300, 900), ps.image('p3.psd', 2000, 400), ps.image('logo.png', 120, 60), ps.image('campanha.png', 4000, 4000)];
+        const {doc, alerts} = ps.run({fill: newLayout(format, api => files.forEach((f, i) => api.choose(i, f)))});
+        assert.ok(!alerts[0].includes('Espaços sem imagem'), alerts[0]);
+        const root = doc.children[0];
+        [[at(root, OFFERS[0], 'IMG_PRODUTO'), 'AREA_OFERTA_01_IMAGEM'], [at(root, OFFERS[1], 'IMG_PRODUTO'), 'AREA_OFERTA_02_IMAGEM'],
+            [at(root, OFFERS[2], 'IMG_PRODUTO'), 'AREA_OFERTA_03_IMAGEM'], [at(root, '01_MARCA', 'IMG_LOGO'), 'AREA_LOGO'], [at(root, '05_CAMPANHA', 'IMG_CAMPANHA'), 'AREA_CAMPANHA']]
+            .forEach(([l, a], i) => {
+                const b = l.box(), s = area(root, a);
+                assert.equal(l.kind, LayerKind.SMARTOBJECT);
+                within(b, s, `imagem ${i}`);
+                close((b[0] + b[2]) / 2, (s[0] + s[2]) / 2, `imagem ${i} centro x`); close((b[1] + b[3]) / 2, (s[1] + s[3]) / 2, `imagem ${i} centro y`);
+                close((b[2] - b[0]) / (b[3] - b[1]), l.image.w / l.image.h, `imagem ${i} proporção`, 1e-6);
+            });
+        assert.deepEqual(area(root, 'AREA_LOGO'), rect(R.logo)); assert.deepEqual(area(root, 'AREA_CAMPANHA'), rect(R.campaign));
+        assert.deepEqual(at(root, OFFERS[1]).children.map(l => l.name), ['SELO_MODERACAO', 'PRECO_POR', 'PRECO_DE', 'TXT_COMPLEMENTO', 'TXT_NOME', 'IMG_PRODUTO']
+            .concat(format === 'VT' ? ['SHP_DIVISORIA', 'SHP_CARD'] : ['SHP_CARD']));
+    });
+
+    test(`${format}: rodapé nas linhas do modelo, pela linha de base, sem encobrir a campanha`, () => {
+        const ps = photoshop();
+        const {doc} = ps.run({fill: newLayout(format, api => api.choose(4, ps.image('selo-alto.png', 600, 1400)))});
+        const root = doc.children[0], g = at(root, '06_RODAPE');
+        const [antes, data, depois, final] = ['TXT_AVISO_ANTES', 'TXT_VALIDADE', 'TXT_AVISO_DEPOIS', 'TXT_AVISO_FINAL'].map(n => at(g, n));
+        within(g.box(), rect(R.footer), 'rodapé na área');
+        disjoint(g.box(), at(root, '05_CAMPANHA', 'IMG_CAMPANHA').box(), 'rodapé x campanha');
+        const lastBase = antes.textItem.lineBaselines().at(-1);
+        close(data.textItem.lineBaselines()[0], lastBase, 'validade na última linha do início', 1e-6);
+        close(depois.textItem.lineBaselines()[0], lastBase, 'depois na mesma linha', 1e-6);
+        assert.ok(data.box()[2] < depois.box()[0], 'depois à direita da data');
+        assert.ok(data.textItem.size.value > antes.textItem.size.value, 'data em destaque');
+        if (format === 'STORY') {
+            assert.equal(antes.textItem.contents, 'OFERTAS VÁLIDAS EM TODAS AS UNIDADES DO +B SUPERMERCADOS\rDE');
+            assert.ok(final.textItem.lineBaselines()[0] > lastBase, 'linhas finais abaixo');
+            close(final.textItem.position[0].value, antes.textItem.position[0].value, 'linhas finais na margem', 1e-6);
+            close(g.box()[0], R.footer[0], 'alinhado à esquerda', 0.5);
+        } else {
+            assert.equal(final.visible, false, 'VT em uma linha');
+            close((g.box()[0] + g.box()[2]) / 2, (R.gap[0] + R.gap[1]) / 2, 'centralizado sob os cards', 0.5);
+        }
+    });
+}
+
+test('VT: moldura vetorial com máscara que some atrás da fileira de cards', () => {
+    const ps = photoshop();
+    const {doc} = ps.run({fill: newLayout('VT')});
+    const f = at(doc.children[0], '90_GRAFISMOS', 'SHP_MOLDURA');
+    assert.equal(f.kind, LayerKind.SOLIDFILL);
+    assert.deepEqual(f.shape.rect, REF.VT.frame); assert.equal(f.shape.radius, 70); assert.equal(f.shape.fill, null);
+    const y = 852 - 1.25;
+    for (let x = 195; x < 1402; x += 5) assert.equal(f.painted(x, y), false, `base visível em x=${x}`);
+    for (const x of [170, 185, 1415, 1700]) assert.equal(f.painted(x, y), true, `base some em x=${x}`);
+    assert.equal(f.painted(900, 108), true, 'topo'); assert.equal(f.painted(96, 500), true, 'lateral esquerda');
+    assert.equal(f.painted(1823.5, 500), true, 'lateral direita'); assert.equal(f.painted(900, 500), false, 'interior vazio');
+    const story = photoshop().run({fill: newLayout('STORY')}).doc;
+    assert.equal(at(story.children[0], '90_GRAFISMOS').children.length, 0, 'ADS sem moldura');
 });
 
-test('Unidade com 9 caracteres, POR vazio e preço com milhar são recusados sem criar documento', () => {
+test('Formulário: trocar o formato ajusta tamanho e exemplo, sem apagar texto digitado', () => {
+    const ps = photoshop();
+    let seen;
+    ps.run({fill: api => {
+        seen = {start: api.size(), name: api.offerValue(0, 'name'), alcohol: api.offerValue(1, 'alcohol')};
+        api.format(1);
+        seen.vt = {size: api.size(), name: api.offerValue(0, 'name'), alcohol: api.offerValue(1, 'alcohol')};
+        api.offer(0, {name: 'MEU PRODUTO'}); api.format(0);
+        seen.back = {size: api.size(), name: api.offerValue(0, 'name')};
+    }});
+    assert.deepEqual(seen.start, {width: '1080', height: '1920', enabled: true});
+    assert.equal(seen.name, 'CARNE BOVINA TRASEIRA\nPATINHO KG'); assert.equal(seen.alcohol, true, 'cerveja do ADS com selo');
+    assert.deepEqual(seen.vt, {size: {width: '1920', height: '1080', enabled: true}, name: 'AÇÚCAR TRITURADO\nCAUAXÍ 1 KG', alcohol: false});
+    assert.deepEqual(seen.back, {size: {width: '1080', height: '1920', enabled: true}, name: 'MEU PRODUTO'});
+    assert.equal(ps.app.documents[0].w, 1080);
+});
+
+test('Entradas inválidas são recusadas sem criar documento nem tocar nas preferências', () => {
     const ps = photoshop();
     ps.run({fill: allFields([{'por.unit': 'UNIDADES9'}])});
     ps.run({fill: allFields([null, {'por.price': ''}])});
     ps.run({fill: allFields([null, null, {'de.price': '1.234,56'}])});
     ps.run({fill: allFields([{'de.price': '3,15', 'de.unit': ''}])});
+    ps.run({fill: api => api.setSize(500, 1920)});
     assert.equal(ps.app.documents.length, 0);
     assert.match(ps.log.alerts[0], /Oferta 1 \/ POR: unidade de 1 a 8/);
     assert.match(ps.log.alerts[1], /Oferta 2 \/ POR: informe/);
     assert.match(ps.log.alerts[2], /Oferta 3 \/ DE: informe/);
     assert.match(ps.log.alerts[3], /Oferta 1 \/ DE: unidade de 1 a 8/);
-    assert.equal(ps.log.prefWrites, 0, 'preferências intocadas');
+    assert.match(ps.log.alerts[4], /Largura deve ficar entre 640 e 7680/);
+    assert.equal(ps.log.prefWrites, 0);
 });
 
-test('DE vazio oculta o bloco inteiro e dispensa unidade e rótulo', () => {
+test('DE vazio oculta o bloco inteiro, dispensa unidade e rótulo e continua vazio ao reabrir', () => {
     const ps = photoshop();
-    const {doc, alerts} = ps.run({fill: allFields([0, 1, 2].map(() => ({'de.price': '', 'de.unit': '', 'de.label': ''})))});
-    assert.equal(alerts.length, 1, alerts.join('\n'));
-    const root = doc.children[0];
+    ps.run({fill: allFields([0, 1, 2].map(() => ({'de.price': '', 'de.unit': '', 'de.label': ''})))});
+    const root = ps.app.documents[0].children[0];
     for (const name of OFFERS) {
-        const de = at(root, name, 'PRECO_ANTERIOR');
+        const de = at(root, name, 'PRECO_DE');
         assert.equal(de.visible, false);
         assert.equal(at(de, 'TXT_UNIDADE').textItem.contents, 'UN');
-        assert.equal(at(de, 'TXT_ROTULO').textItem.contents, 'DE\rR$');
-        assert.equal(at(root, name, 'PRECO_ATUAL').visible, true);
+        assert.equal(at(root, name, 'PRECO_POR').visible, true);
     }
-    // Recarregado, o DE continua vazio.
-    ps.run({fill: api => { for (let i = 0; i < 3; i++) assert.equal(api.offerValue(i, 'de.price'), ''); }});
-    assert.equal(ps.app.documents.length, 2);
-    assert.equal(at(ps.app.documents[1].children[0], OFFERS[0], 'PRECO_ANTERIOR').visible, false);
-});
-
-test('Imagens: Plc incorporado, encaixe proporcional centralizado e ordem acima da divisória', () => {
-    const ps = photoshop();
-    const files = [ps.image('produto-principal.png', 1200, 900), ps.image('produto-02.png', 300, 900),
-        ps.image('produto-03.psd', 2000, 400), ps.image('logo.png', 120, 60), ps.image('campanha.png', 4000, 4000)];
-    const {doc, alerts} = ps.run({fill: api => files.forEach((f, i) => api.choose(i, f))});
-    assert.ok(!alerts[0].includes('Espaços sem imagem'), alerts[0]);
-    assert.equal(ps.log.actions.filter(a => a.id === 'Plc ').length, 5);
-    const root = doc.children[0];
-    const placed = [at(root, OFFERS[0], 'IMG_PRODUTO'), at(root, OFFERS[1], 'IMG_PRODUTO'), at(root, OFFERS[2], 'IMG_PRODUTO'),
-        at(root, '01_MARCA', 'IMG_LOGO'), at(root, '05_CAMPANHA', 'IMG_CAMPANHA')];
-    placed.forEach((l, i) => {
-        const b = l.box(), s = rect(SLOTS[i]);
-        assert.equal(l.kind, LayerKind.SMARTOBJECT);
-        within(b, s, `imagem ${i}`);
-        close((b[0] + b[2]) / 2, (s[0] + s[2]) / 2, `imagem ${i} centro x`); close((b[1] + b[3]) / 2, (s[1] + s[3]) / 2, `imagem ${i} centro y`);
-        assert.ok(Math.abs((b[2] - b[0]) - (s[2] - s[0])) < 0.01 || Math.abs((b[3] - b[1]) - (s[3] - s[1])) < 0.01, `imagem ${i} encosta num lado`);
-        close((b[2] - b[0]) / (b[3] - b[1]), l.image.w / l.image.h, `imagem ${i} proporção`, 1e-6);
-    });
-    assert.deepEqual(at(root, OFFERS[1]).children.map(l => l.name),
-        ['PRECO_ATUAL', 'PRECO_ANTERIOR', 'TXT_COMPLEMENTO', 'TXT_NOME', 'IMG_PRODUTO', 'FORMA_DIVISORIA', 'FORMA_CARTAO', 'BG_CARTAO']);
-    assert.deepEqual(at(root, OFFERS[0]).children.map(l => l.name).slice(-2), ['IMG_PRODUTO', 'FORMA_DIVISORIA']);
-});
-
-test('Moldura não reaparece dentro dos cards e não vira traço na borda esquerda da tela', () => {
-    for (const [w, h] of [[1920, 1080], [1080, 1350], [3840, 2160]]) {
-        const ps = photoshop();
-        const {doc} = ps.run({fill: api => api.setSize(w, h)});
-        const sx = w / 1920, sy = h / 1080, s = Math.min(sx, sy), lw = 2.5 * s;
-        const root = doc.children[0], frame = at(root, '90_GRAFISMOS', 'FORMA_MOLDURA');
-        const y = 845 * sy - lw / 2;
-        for (const c of CARDS) for (let x = c[0] + 2; x < c[0] + c[2] - 2; x += 3) {
-            assert.equal(frame.painted(x * sx, y), false, `${w}x${h}: moldura dentro do card em x=${x}`);
-        }
-        assert.equal(frame.painted(723 * sx, y), true, `${w}x${h}: moldura entre os cards`);
-        assert.equal(frame.painted(1500 * sx, y), true, `${w}x${h}: moldura à direita dos cards`);
-        assert.equal(frame.painted(900 * sx, 10 * sy + lw / 2), true, `${w}x${h}: topo da moldura`);
-        assert.equal(frame.painted((1819 * sx) - lw / 2, 400 * sy), true, `${w}x${h}: lado direito`);
-        for (let yy = 50; yy < 1070; yy += 10) assert.equal(frame.painted(0.5, yy * sy), false, `${w}x${h}: traço na borda esquerda em y=${yy}`);
-        assert.equal(frame.painted(900 * sx, 400 * sy), false, `${w}x${h}: interior vazio`);
-        const card = at(root, OFFERS[1], 'FORMA_CARTAO');
-        assert.equal(card.painted(383 * sx, 712 * sy + lw / 2), true, 'contorno do card');
-        assert.equal(card.painted(383 * sx, 840 * sy), false, 'interior do card');
-        assert.equal(at(root, OFFERS[1], 'BG_CARTAO').opacity, 22);
-    }
-});
-
-test('Rodapé não encobre a campanha e mantém a linha de base comum (16:9, 4:5, 4K, 720p)', () => {
-    for (const [w, h] of [[1920, 1080], [1080, 1350], [3840, 2160], [1280, 720]]) {
-        const ps = photoshop();
-        const tall = ps.image('selo-alto.png', 600, 1400);
-        const {doc} = ps.run({fill: api => {
-            api.setSize(w, h); api.choose(4, tall);
-            api.general('Rodapé — final', 'OU ENQUANTO DURAR O ESTOQUE. PROMOÇÃO NÃO CUMULATIVA, LIMITADA A 5 UNIDADES POR CLIENTE. IMAGENS MERAMENTE ILUSTRATIVAS.');
-        }});
-        const root = doc.children[0], sx = w / 1920, sy = h / 1080;
-        const footer = at(root, '06_RODAPE').box(), campaign = at(root, '05_CAMPANHA', 'IMG_CAMPANHA').box();
-        within(footer, rect(FOOTER, sx, sy), `${w}x${h}: rodapé`);
-        disjoint(footer, campaign, `${w}x${h}: rodapé x campanha`);
-        assert.ok(footer[1] >= campaign[3], `${w}x${h}: rodapé abaixo da campanha`);
-        assert.ok(footer[3] <= h, `${w}x${h}: rodapé dentro da tela`);
-        const base = ['TXT_AVISO_ANTES', 'TXT_VALIDADE', 'TXT_AVISO_DEPOIS'].map(n => at(root, '06_RODAPE', n).textItem.position[1].value);
-        close(base[1], base[0], `${w}x${h}: base da validade`, 1e-6); close(base[2], base[0], `${w}x${h}: base do aviso final (Q/Ç/vírgula)`, 1e-6);
-        const [a, v, d] = ['TXT_AVISO_ANTES', 'TXT_VALIDADE', 'TXT_AVISO_DEPOIS'].map(n => at(root, '06_RODAPE', n).box());
-        assert.ok(a[2] < v[0] && v[2] < d[0], `${w}x${h}: ordem e espaço entre os textos`);
-    }
-});
-
-test('Reedição: nova cópia recarrega tudo, mantém imagens e camadas externas e não toca no original', () => {
-    const ps = photoshop();
-    const files = [0, 1, 2, 3, 4].map(i => ps.image(`img-${i}.png`, 500 + i * 100, 400));
-    ps.run({fill: api => {
-        files.forEach((f, i) => api.choose(i, f));
-        api.offer(0, {name: 'CAFÉ TORRADO\nPILÃO 500 G', 'de.price': '19,90', 'de.unit': 'kg', 'por.price': '15,49', 'por.unit': 'kg', 'por.label': 'SÓ|R$'});
-        api.offer(1, {'de.price': ''});
-        api.general('Validade', '01 A 05.10.2026');
-    }});
-    const source = ps.app.documents[0];
-    const external = source.artLayers.add(); external.name = 'AJUSTE_DO_USUARIO';
-    source.activeLayer = at(source.children.find(l => l.name === ROOT), OFFERS[0], 'PRECO_ATUAL', 'TXT_REAIS');
-    const before = snapshot(source);
     let seen;
-    ps.run({fill: api => {
-        seen = {modes: api.modes(), size: api.size(), name: api.offerValue(0, 'name'), de: api.offerValue(0, 'de.price'), unit: api.offerValue(0, 'de.unit'),
-            label: api.offerValue(0, 'por.label'), de2: api.offerValue(1, 'de.price'), dates: api.generalValue('Validade'), status: [0, 1, 2, 3, 4].map(api.imageStatus)};
-        api.offer(2, {name: 'AMACIANTE DOWNY\nCONCENTRADO 1 L', 'por.price': '21,90'});
-    }});
-    assert.deepEqual(seen, {modes: ['Nova cópia do layout aberto', 'Novo layout com os dados abaixo'], size: {width: '1920', height: '1080', enabled: false},
-        name: 'CAFÉ TORRADO\nPILÃO 500 G', de: '19,90', unit: '/KG', label: 'SÓ|R$', de2: '', dates: '01 A 05.10.2026',
-        status: Array(5).fill('Imagem atual será mantida')});
-    assert.equal(snapshot(source), before, 'original alterado');
-    assert.equal(ps.app.documents.length, 2);
-    const copy = ps.app.documents[1];
-    assert.equal(ps.app.activeDocument, copy);
-    assert.equal(copy.children[0].name, ROOT);
-    assert.equal(copy.children.filter(l => l.name === ROOT).length, 1, 'grupo antigo removido');
-    assert.ok(copy.children.some(l => l.name === 'AJUSTE_DO_USUARIO'), 'camada externa mantida');
-    assert.ok(!JSON.stringify(snapshot(copy)).includes('__DP_TEMP'));
-    const root = copy.children[0];
-    assert.equal(at(root, OFFERS[2], 'TXT_NOME').textItem.contents, 'AMACIANTE DOWNY\rCONCENTRADO 1 L');
-    assert.equal(at(root, OFFERS[0], 'PRECO_ATUAL', 'TXT_ROTULO').textItem.contents, 'SÓ\rR$');
-    assert.equal(at(root, OFFERS[1], 'PRECO_ANTERIOR').visible, false);
-    const imgs = [at(root, OFFERS[0], 'IMG_PRODUTO'), at(root, OFFERS[1], 'IMG_PRODUTO'), at(root, OFFERS[2], 'IMG_PRODUTO'),
-        at(root, '01_MARCA', 'IMG_LOGO'), at(root, '05_CAMPANHA', 'IMG_CAMPANHA')];
-    imgs.forEach((l, i) => { assert.equal(l.image.file, files[i].fsName); within(l.box(), rect(SLOTS[i]), `imagem mantida ${i}`); });
-    assert.equal(ps.log.actions.filter(a => a.id === 'Plc ').length, 5, 'nenhuma imagem recolocada');
-    // Terceira execução: limpa o logo, troca a campanha e gera novo layout em outro tamanho.
-    const novo = ps.image('campanha-nova.png', 800, 800);
-    const {alerts} = ps.run({fill: api => { api.mode(1); api.setSize(1080, 1080); api.clear(3); api.choose(4, novo); }});
-    const third = ps.app.documents[2];
-    assert.deepEqual([third.w, third.h], [1080, 1080]);
-    assert.equal(at(third.children[0], '01_MARCA').children.length, 0);
-    assert.equal(at(third.children[0], '05_CAMPANHA', 'IMG_CAMPANHA').image.file, novo.fsName);
-    assert.match(alerts[0], /Espaços sem imagem: logotipo\./);
+    ps.run({fill: api => { seen = [0, 1, 2].map(i => api.offerValue(i, 'de.price')); }});
+    assert.deepEqual(seen, ['', '', '']);
 });
 
-test('PSD a 300 ppi com réguas em cm: tamanho certo, mesma geometria dos textos e resolução devolvida', () => {
+test('Edição parcial: muda só o preço alterado, preserva ajustes manuais e ordem, em um passo', () => {
+    const ps = photoshop();
+    ps.run({fill: newLayout('VT')});
+    const doc = ps.app.documents[0], root = doc.children[0];
+    at(root, OFFERS[0], 'TXT_NOME').translate(new UnitValue(13, 'px'), new UnitValue(-7, 'px')); // ajuste manual
+    doc.activeLayer = at(root, OFFERS[1], 'TXT_NOME');
+    const others = [snapshot(at(root, OFFERS[0])), snapshot(at(root, OFFERS[2]))], sections = OTHER.map(n => snapshot(at(root, n)));
+    const offer2 = at(root, OFFERS[1]), order = offer2.children.map(l => l.name), keep = offer2.children.filter(l => l.name !== 'PRECO_POR').map(snapshot);
+    let modes, formatEnabled;
+    const {alerts} = ps.run({fill: api => { modes = api.modes(); formatEnabled = api.formatEnabled(); api.offer(1, {'por.price': '4,29'}); }});
+    assert.deepEqual(modes, ['Editar no documento aberto — só o que mudar', 'Nova cópia reconstruída', 'Novo layout']);
+    assert.equal(formatEnabled, false);
+    assert.equal(ps.app.documents.length, 1, 'no próprio documento');
+    assert.deepEqual(ps.log.historySteps, ['Ofertas — editar elementos']);
+    assert.match(alerts[0], /oferta 2 — preço POR/); assert.ok(!/principal|rodapé|nome/.test(alerts[0]), alerts[0]);
+    const after = doc.children[0];
+    assert.deepEqual([snapshot(at(after, OFFERS[0])), snapshot(at(after, OFFERS[2]))], others);
+    assert.deepEqual(OTHER.map(n => snapshot(at(after, n))), sections);
+    assert.deepEqual(at(after, OFFERS[1]).children.map(l => l.name), order, 'ordem preservada');
+    assert.deepEqual(at(after, OFFERS[1]).children.filter(l => l.name !== 'PRECO_POR').map(snapshot), keep);
+    const por = at(after, OFFERS[1], 'PRECO_POR');
+    assert.equal(at(por, 'TXT_REAIS').textItem.contents, '4'); assert.equal(at(por, 'TXT_CENTAVOS').textItem.contents, ',29');
+    checkPrice(por, area(after, 'AREA_OFERTA_02_PRECO_POR'), 'POR editado');
+    assert.deepEqual(settled(ps), ORIGINAL);
+});
+
+test('Edição parcial: área movida pelo usuário leva o elemento reconstruído junto', () => {
+    const ps = photoshop();
+    ps.run();
+    const root = ps.app.documents[0].children[0];
+    at(root, '98_AREAS', 'AREA_OFERTA_01_PRECO_POR').translate(new UnitValue(-40, 'px'), new UnitValue(120, 'px'));
+    const moved = area(root, 'AREA_OFERTA_01_PRECO_POR');
+    ps.run({fill: api => api.offer(0, {'por.price': '39,90'})});
+    checkPrice(at(ps.app.documents[0].children[0], OFFERS[0], 'PRECO_POR'), moved, 'POR na área movida');
+});
+
+test('Edição parcial: imagem, logo, selo e rodapé trocados sem tocar no resto', () => {
+    const ps = photoshop();
+    const first = [ps.image('a.png', 500, 500), ps.image('b.png', 500, 500), ps.image('c.png', 500, 500), ps.image('logo.png', 200, 100), ps.image('camp.png', 400, 400)];
+    ps.run({fill: api => first.forEach((f, i) => api.choose(i, f))});
+    const doc = ps.app.documents[0], root = doc.children[0];
+    const untouched = [OFFERS[1], OFFERS[2], '05_CAMPANHA'].map(n => snapshot(at(root, n)));
+    const nova = ps.image('nova.png', 800, 400);
+    const {alerts} = ps.run({fill: api => {
+        api.choose(0, nova); api.clear(3); api.offer(0, {alcohol: true});
+        api.general('Validade (destaque)', '01 A 03.10.2026');
+    }});
+    const after = doc.children[0];
+    assert.equal(at(after, OFFERS[0], 'IMG_PRODUTO').image.file, nova.fsName);
+    within(at(after, OFFERS[0], 'IMG_PRODUTO').box(), area(after, 'AREA_OFERTA_01_IMAGEM'), 'nova imagem');
+    assert.equal(at(after, '01_MARCA').children.length, 0, 'logo removido');
+    assert.equal(at(after, OFFERS[0], 'SELO_MODERACAO').visible, true);
+    assert.equal(at(after, '06_RODAPE', 'TXT_VALIDADE').textItem.contents, '01 A 03.10.2026');
+    assert.deepEqual([OFFERS[1], OFFERS[2], '05_CAMPANHA'].map(n => snapshot(at(after, n))), untouched);
+    assert.deepEqual(at(after, OFFERS[0]).children.map(l => l.name).slice(-2), ['IMG_PRODUTO', 'SHP_DIVISORIA']);
+    for (const piece of ['oferta principal — imagem', 'oferta principal — selo', 'rodapé', 'logotipo']) assert.ok(alerts[0].includes(piece), piece);
+    assert.equal(ps.log.historySteps.length, 1);
+    const before = snapshot(doc);
+    const again = ps.run();
+    assert.match(again.alerts[0], /Nenhum valor mudou/);
+    assert.equal(snapshot(doc), before); assert.equal(ps.log.historySteps.length, 1);
+    // Imagem de volta num espaço vazio: logo no grupo e produto logo acima do card.
+    ps.run({fill: api => { api.choose(3, ps.image('logo2.png', 300, 100)); api.clear(1); }});
+    assert.equal(at(doc.children[0], '01_MARCA', 'IMG_LOGO').image.w, 300);
+    assert.equal(at(doc.children[0], OFFERS[1]).children.filter(l => l.name === 'IMG_PRODUTO').length, 0);
+    ps.run({fill: api => api.choose(1, ps.image('volta.png', 400, 400))});
+    assert.deepEqual(at(doc.children[0], OFFERS[1]).children.map(l => l.name).slice(-2), ['IMG_PRODUTO', 'SHP_CARD']);
+});
+
+test('Edição parcial com falha ou cancelamento volta ao estado anterior do histórico', () => {
+    const ps = photoshop();
+    ps.run();
+    const doc = ps.app.documents[0], before = snapshot(doc);
+    ps.run({fill: api => { api.offer(0, {'por.price': '5,55'}); api.choose(4, ps.image('x.png', 300, 300)); }, failAction: id => id === 'Plc '});
+    assert.match(ps.log.alerts.at(-1), /Falha simulada em Plc/);
+    assert.equal(snapshot(doc), before, 'documento revertido');
+    assert.deepEqual(ps.log.historySteps.slice(-2), ['Ofertas — editar elementos', 'revertido']);
+    ps.run({fill: api => api.offer(1, {name: 'OUTRO'}), onProgress: (text, cancel) => { if (/Alterando/.test(text)) cancel(); }});
+    assert.match(ps.log.alerts.at(-1), /Operação cancelada/);
+    assert.equal(snapshot(doc), before);
+    assert.deepEqual(settled(ps), ORIGINAL);
+});
+
+test('PSD a 300 ppi com réguas em cm: tamanho certo, mesma geometria e resolução devolvida', () => {
     const ps = photoshop();
     ps.run({fill: api => api.offer(0, {'de.price': '1234,56', 'por.price': '999,99'})});
     const source = ps.app.documents[0];
     const reference = new Map(textLayers(source.children[0]).map(([k, l]) => [k, l.box()]));
-    source.resizeImage(undefined, undefined, 300, ps.ResampleMethod.NONE); // o usuário muda só a resolução
+    source.resizeImage(undefined, undefined, 300, ps.ResampleMethod.NONE);
     ps.prefs.rulerUnits = Units.CM;
     const before = snapshot(source);
     let size;
-    const {alerts} = ps.run({fill: api => { size = api.size(); }});
+    const {alerts} = ps.run({fill: api => { size = api.size(); api.mode(1); }});
     assert.equal(alerts.length, 1, alerts.join('\n'));
-    assert.deepEqual(size, {width: '1920', height: '1080', enabled: false});
+    assert.deepEqual(size, {width: '1080', height: '1920', enabled: false});
     const copy = ps.app.documents[1];
-    assert.equal(copy.resolution, 300);
-    assert.deepEqual(copy.resizeLog, [72, 300]);
+    assert.equal(copy.resolution, 300); assert.deepEqual(copy.resizeLog, [72, 300]);
     assert.equal(snapshot(source), before);
-    const texts = textLayers(copy.children[0]);
-    assert.equal(texts.length, reference.size);
-    for (const [k, l] of texts) {
+    for (const [k, l] of textLayers(copy.children[0])) {
         const a = l.box(), b = reference.get(k);
         if (!b) { assert.equal(a, null, k); continue; }
         a.forEach((v, i) => close(v, b[i], `${k}[${i}]`, 1e-6));
     }
-    close(at(copy.children[0], OFFERS[0], 'TXT_NOME').textItem.size.value, 76 * 72 / 300, 'corpo em pt a 300 ppi', 1e-9);
     assert.ok(ps.log.textSizesAt.every(r => r === 72), 'textos criados a 72 ppi');
-    assert.ok(ps.log.actions.every(a => a.resolution === 72), 'descritores executados a 72 ppi');
+    assert.ok(ps.log.actions.every(a => a.resolution === 72), 'formas criadas a 72 ppi');
+    ps.app.activeDocument = source;
+    ps.run({fill: api => api.offer(2, {'por.price': '1,99'})});
+    assert.equal(source.resolution, 300); assert.deepEqual(source.resizeLog, [300, 72, 300]);
+    assert.ok(ps.log.textSizesAt.every(r => r === 72), 'edição também a 72 ppi');
     assert.equal(ps.prefs.rulerUnits, Units.CM);
-    // Novo layout a partir do PSD de 300 ppi continua em 72 ppi.
-    ps.run({fill: api => api.mode(1)});
-    assert.equal(ps.app.documents[2].resolution, 72);
 });
 
-test('Cancelar no formulário não cria documento nem altera preferências ou documento ativo', () => {
+test('Cancelar no formulário ou na geração não deixa rastro', () => {
     const ps = photoshop();
     const user = ps.open({name: 'cliente.psd', width: 2000, height: 1000, resolution: 150});
-    const {alerts} = ps.run({cancelDialog: true});
-    assert.deepEqual(alerts, []);
+    assert.deepEqual(ps.run({cancelDialog: true}).alerts, []);
     assert.deepEqual([...ps.app.documents], [user]);
-    assert.equal(ps.app.activeDocument, user);
     assert.equal(ps.log.prefWrites, 0);
-    assert.deepEqual([ps.prefs.rulerUnits, ps.prefs.typeUnits, ps.app.displayDialogs], [Units.CM, TypeUnits.PIXELS, DialogModes.ALL]);
-});
-
-test('Cancelar durante a geração fecha o parcial e restaura preferências, resolução e documento ativo', () => {
-    const ps = photoshop();
-    const user = ps.open({name: 'cliente.psd', width: 2000, height: 1000, resolution: 150});
     ps.run({onProgress: (text, cancel) => { if (text === 'Montando oferta 2') cancel(); }});
     assert.deepEqual([...ps.app.documents], [user]);
     assert.equal(ps.app.activeDocument, user);
     assert.equal(ps.log.closed.length, 1);
-    assert.match(ps.log.alerts.at(-1), /Geração cancelada/);
-    assert.deepEqual([ps.prefs.rulerUnits, ps.prefs.typeUnits, ps.app.displayDialogs], [Units.CM, TypeUnits.PIXELS, DialogModes.ALL]);
-    // Cópia de um layout a 300 ppi cancelada: o original continua a 300 ppi e intacto.
-    ps.run();
-    const source = ps.app.documents[1];
-    source.resizeImage(undefined, undefined, 300, ps.ResampleMethod.NONE);
-    const before = snapshot(source);
-    ps.run({onProgress: (text, cancel) => { if (text === 'Compondo o rodapé') cancel(); }});
-    assert.equal(ps.app.documents.length, 2);
-    assert.equal(ps.app.activeDocument, source);
-    assert.equal(snapshot(source), before);
-    assert.equal(ps.log.closed.length, 2);
+    assert.match(ps.log.alerts.at(-1), /Operação cancelada/);
+    assert.deepEqual(settled(ps), ORIGINAL);
+    ps.run({fill: api => api.choose(4, ps.image('ruim.png', 10, 10)), failAction: id => id === 'Plc '});
+    assert.deepEqual([...ps.app.documents], [user]);
+    assert.match(ps.log.alerts.at(-1), /Falha simulada em Plc/);
 });
 
-test('Falha nativa no meio (Plc recusado) também fecha o parcial e restaura o estado', () => {
+test('Reedição por nova cópia recarrega os dados, mantém imagens e camadas externas', () => {
     const ps = photoshop();
-    const bad = ps.image('corrompida.png', 100, 100);
-    ps.run({fill: api => api.choose(4, bad), failAction: id => id === 'Plc '});
-    assert.equal(ps.app.documents.length, 0);
-    assert.equal(ps.log.closed.length, 1);
-    assert.match(ps.log.alerts.at(-1), /Falha simulada em Plc/);
-    assert.deepEqual([ps.prefs.rulerUnits, ps.prefs.typeUnits, ps.app.displayDialogs], [Units.CM, TypeUnits.PIXELS, DialogModes.ALL]);
+    const files = [0, 1, 2, 3, 4].map(i => ps.image(`img-${i}.png`, 500 + i * 100, 400));
+    ps.run({fill: newLayout('VT', api => {
+        files.forEach((f, i) => api.choose(i, f));
+        api.offer(0, {name: 'CAFÉ TORRADO\nPILÃO 500 G', 'de.unit': 'kg', 'por.label': 'SÓ|R$', alcohol: true});
+        api.offer(1, {'de.price': ''});
+    })});
+    const source = ps.app.documents[0];
+    const external = source.artLayers.add(); external.name = 'AJUSTE_DO_USUARIO';
+    source.activeLayer = at(source.children.find(l => l.name === ROOT), OFFERS[0], 'PRECO_POR', 'TXT_REAIS');
+    const before = snapshot(source);
+    let seen;
+    ps.run({fill: api => {
+        seen = {name: api.offerValue(0, 'name'), unit: api.offerValue(0, 'de.unit'), label: api.offerValue(0, 'por.label'),
+            alcohol: api.offerValue(0, 'alcohol'), de2: api.offerValue(1, 'de.price'), status: [0, 1, 2, 3, 4].map(api.imageStatus)};
+        api.mode(1);
+    }});
+    assert.deepEqual(seen, {name: 'CAFÉ TORRADO\nPILÃO 500 G', unit: '/KG', label: 'SÓ|R$', alcohol: true, de2: '', status: Array(5).fill('Imagem atual será mantida')});
+    assert.equal(snapshot(source), before);
+    const copy = ps.app.documents[1], root = copy.children[0];
+    assert.equal(root.name, ROOT);
+    assert.equal(copy.children.filter(l => l.name === ROOT).length, 1);
+    assert.ok(copy.children.some(l => l.name === 'AJUSTE_DO_USUARIO'));
+    assert.equal(at(root, OFFERS[0], 'SELO_MODERACAO').visible, true);
+    [at(root, OFFERS[0], 'IMG_PRODUTO'), at(root, OFFERS[1], 'IMG_PRODUTO'), at(root, OFFERS[2], 'IMG_PRODUTO'), at(root, '01_MARCA', 'IMG_LOGO'), at(root, '05_CAMPANHA', 'IMG_CAMPANHA')]
+        .forEach((l, i) => assert.equal(l.image.file, files[i].fsName));
+    assert.equal(ps.log.actions.filter(a => a.id === 'Plc ').length, 5, 'nenhuma imagem recolocada');
 });
 
 for (const r of results) console.log(`${r.ok ? 'PASS' : 'FAIL'} ${r.name}${r.ok ? '' : '\n' + r.error}`);
