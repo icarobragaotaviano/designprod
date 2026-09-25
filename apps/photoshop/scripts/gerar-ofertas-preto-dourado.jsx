@@ -247,8 +247,9 @@
     function rounded(doc,parent,name,box,r,hex,lineWidth,fill) {
         var x=box[0], y=box[1], w=box[2], h=box[3], k=0.5522847498, pts=[], path=null;
         function point(a,b,lx,ly,rx,ry) {
-            var p=new PathPointInfo(); p.kind=PointKind.CORNERPOINT; p.anchor=[a,b];
-            p.leftDirection=[lx,ly]; p.rightDirection=[rx,ry]; pts.push(p);
+            var unitScale=72/doc.resolution;
+            var p=new PathPointInfo(); p.kind=PointKind.CORNERPOINT; p.anchor=[a*unitScale,b*unitScale];
+            p.leftDirection=[lx*unitScale,ly*unitScale]; p.rightDirection=[rx*unitScale,ry*unitScale]; pts.push(p);
         }
         point(x+r,y,x+r-k*r,y,x+r,y);
         point(x+w-r,y,x+w-r,y,x+w-r+k*r,y);
@@ -380,6 +381,7 @@
             if(data.copy) {
                 doc=source.doc.duplicate("DESIGNPROD — Ofertas — cópia",false);
                 app.activeDocument=doc;
+                starter=layer(doc,"__DP_TEMP");
                 var old=direct(doc,ROOT); old.allLocked=false; old.remove();
             } else {
                 doc=app.documents.add(px(data.width),px(data.height),72,"DESIGNPROD — Ofertas",NewDocumentMode.RGB,DocumentFill.TRANSPARENT,1,BitsPerChannelType.EIGHT,"sRGB IEC61966-2.1");
@@ -390,11 +392,20 @@
             // compensate at the text creation boundary, without resampling the PSD.
             var pointScale=72/doc.resolution;
             var root=group(doc,ROOT);
-            if(starter) starter.remove();
             var bg=group(root,"99_FUNDO");
             gradient(doc,bg,data.width,data.height);
+            if(starter) starter.remove();
             var graph=group(root,"90_GRAFISMOS");
-            rounded(doc,graph,"FORMA_MOLDURA",box([-36,10,1855,835]),65*s,GOLD,2.5*s,false);
+            var outline=rounded(doc,graph,"FORMA_MOLDURA",box([-36,10,1855,835]),65*s,GOLD,2.5*s,false);
+            // The bottom border passes behind the cards. Erase its covered spans
+            // so it cannot shine through the translucent card backgrounds.
+            var masks=[[75,712,617,256],[755,712,617,256]], mi, mb;
+            doc.activeLayer=outline;
+            for(mi=0;mi<masks.length;mi++) {
+                mb=box(masks[mi]);
+                doc.selection.select([[mb[0],mb[1]],[mb[0]+mb[2],mb[1]],[mb[0]+mb[2],mb[1]+mb[3]],[mb[0],mb[1]+mb[3]]]);
+                doc.selection.clear(); doc.selection.deselect();
+            }
             var guides=group(root,"98_GUIAS");
             var slots=[SPECS[0].image,SPECS[1].image,SPECS[2].image,[1595,36,194,172],[1407,687,418,346]];
             var guideNames=["AREA_PRODUTO_01","AREA_PRODUTO_02","AREA_PRODUTO_03","AREA_LOGO","AREA_CAMPANHA"], i;
@@ -412,8 +423,21 @@
                 rectangle(doc,g,"FORMA_DIVISORIA",box(div),GOLD);
                 var im=placeImage(doc,g,"IMG_PRODUTO",data.images[i],source?source.images[i]:null,box(spec.image),source);
                 if(!im) missing.push("produto "+(i+1));
-                label(g,"TXT_NOME",o.name,data.font,spec.titleSize*s*pointScale,WHITE,box(spec.title));
-                label(g,"TXT_COMPLEMENTO",o.note,data.font,(i===0?32:19)*s*pointScale,WHITE,box(spec.note));
+                var titleLayer=label(g,"TXT_NOME",o.name,data.font,spec.titleSize*s*pointScale,WHITE,box(spec.title));
+                var noteBox=box(spec.note), sample=null;
+                if(i===2 && trim(o.note) && o.name.indexOf("\r")>=0) {
+                    // Measure the last title line using the actual font and
+                    // transform; place FRAGRANCIAS on the same line if it fits.
+                    try {
+                        var titleBounds=bounds(titleLayer);
+                        sample=titleLayer.duplicate();
+                        sample.textItem.contents=o.name.split("\r").pop();
+                        var lastBounds=bounds(sample), inlineX=titleBounds[0]+lastBounds[2]-lastBounds[0]+10*s;
+                        var right=(spec.title[0]+spec.title[2])*sx;
+                        if(right-inlineX>=100*s) noteBox=[inlineX,titleBounds[3]-20*s,right-inlineX,20*s];
+                    } finally { if(sample) sample.remove(); }
+                }
+                label(g,"TXT_COMPLEMENTO",o.note,data.font,(i===0?32:19)*s*pointScale,WHITE,noteBox);
                 makePrice(doc,g,"PRECO_ANTERIOR",o.de,o.unitDe,o.labelDe,box(spec.de),data.font,GOLD,true);
                 makePrice(doc,g,"PRECO_ATUAL",o.por,o.unitPor,o.labelPor,box(spec.por),data.font,WHITE,false);
             }
@@ -425,13 +449,13 @@
             bar.step(6,"Compondo o rodapé");
             var footer=group(root,"06_RODAPE"), rowX=0, fields=[["TXT_AVISO_ANTES",data.before,20],["TXT_VALIDADE",data.dates,25],["TXT_AVISO_DEPOIS",data.after,20]];
             for(i=0;i<fields.length;i++) {
-                var f=fields[i], tl=putText(footer,f[0],f[1],data.font,f[2]*pointScale,WHITE);
+                var f=fields[i], tl=putText(footer,f[0],f[1],data.font,f[2]*s*pointScale,WHITE);
                 if(trim(f[1])) {
-                    var tb=bounds(tl); tl.translate(px(rowX-tb[0]),px(28-tb[3]));
-                    tb=bounds(tl); rowX=tb[2]+7;
+                    var tb=bounds(tl); tl.translate(px(rowX-tb[0]),px(28*s-tb[3]));
+                    tb=bounds(tl); rowX=tb[2]+7*s;
                 }
             }
-            if(rowX>0) fit(footer,box([119,1025,1560,30]),false,true);
+            if(rowX>0) fit(footer,box([119,1040,1560,30]),false,true);
             bar.step(8,"Finalizando");
             app.activeDocument=doc; doc.activeLayer=root; success=true;
             return {doc:doc, missing:missing};
