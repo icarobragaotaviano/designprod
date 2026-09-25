@@ -1,6 +1,6 @@
 # Ofertas preto e dourado
 
-[Baixar o script](../scripts/gerar-ofertas-preto-dourado.jsx) · versão 1.0.0
+[Baixar o script](../scripts/gerar-ofertas-preto-dourado.jsx) · versão 1.1.0
 
 Cria uma arte horizontal de **1920 × 1080 px**, RGB, 72 ppi, com uma oferta principal e duas ofertas menores, a partir do print fornecido. A interface reúne os textos e cinco seletores de imagem. As dimensões podem ser alteradas antes de criar um novo layout.
 
@@ -21,7 +21,9 @@ O desenvolvimento deste recurso é feito diretamente no GitHub. A execução do 
 
 Com uma arte gerada por este script aberta, execute o JSX outra vez. Ele reconhece o grupo **DESIGNPROD_OFERTAS_V1** e carrega os textos existentes.
 
-**Nova cópia do layout aberto** duplica o documento e reconstrói o grupo gerenciado com os novos dados. As imagens existentes são mantidas se você não escolher uma substituta nem clicar em Limpar. O documento de origem permanece intacto. Grupos externos ao grupo gerenciado continuam na cópia.
+**Nova cópia do layout aberto** duplica o documento e reconstrói o grupo gerenciado com os novos dados. As imagens existentes são mantidas se você não escolher uma substituta nem clicar em Limpar. O documento de origem permanece intacto. Grupos externos ao grupo gerenciado continuam na cópia, e o grupo gerenciado volta ao topo da pilha.
+
+Se o layout aberto estiver em outra resolução (por exemplo, 300 ppi definidos em Tamanho da imagem sem reamostrar), a cópia é montada a 72 ppi **sem reamostrar** — os pixels não mudam — e volta à resolução original no final. Assim textos, preços e molduras têm a mesma geometria em pixels de um layout a 72 ppi. O corpo exibido no painel Caractere acompanha a resolução: 76 pt a 72 ppi aparecem como 18,24 pt a 300 ppi, no mesmo tamanho visual. Largura e altura são lidas em pixels, qualquer que seja a unidade das réguas.
 
 A composição do grupo gerenciado é reconstruída: ajustes manuais de posição, tamanho, efeitos e camadas adicionais dentro dele não são transferidos. Para preservar esses ajustes, mantenha a versão original. Não renomeie os grupos/camadas gerenciados nem rasterize seus textos se quiser recarregá-los.
 
@@ -32,10 +34,11 @@ A composição do grupo gerenciado é reconstruída: ajustes manuais de posiçã
 - Produto: texto com quebras manuais de linha. Nomes longos são reduzidos proporcionalmente para caber.
 - Complemento: texto opcional separado do nome, como **(FRAGRÂNCIAS)**.
 - Preço: aceita **2,89**, **2.89**, **2** e **R$ 2,89**, entre 0,00 e 9999,99, sem separador de milhar.
-- Preço anterior vazio: oculta o grupo inteiro, incluindo o risco.
-- Unidades DE e POR: independentes, de 1 a 8 caracteres; KG e L são convertidos em /KG e /L.
+- Preço anterior vazio: oculta o grupo inteiro, incluindo o risco. A unidade e o rótulo DE podem ficar vazios nesse caso; o grupo oculto recebe **UN** e **DE|R$** só para continuar recarregável.
+- Unidades DE e POR: independentes, de 1 a 8 caracteres; KG e L são convertidos em /KG e /L. Unidades longas são reduzidas para caber e ficam apoiadas na base do número inteiro.
+- Preços de 1 a 4 dígitos usam o mesmo bloco: o inteiro define onde entram centavos e unidade, e o bloco inteiro é reduzido proporcionalmente quando fica mais largo.
 - Rótulos: editáveis por oferta. **POR|R$** gera duas linhas.
-- Rodapé: início, validade e final ficam em três camadas de texto.
+- Rodapé: início, validade e final ficam em três camadas de texto, na mesma linha de base, reduzidas juntas para caber acima da borda inferior e abaixo do espaço da campanha.
 - Os preços anteriores dos dois cards menores começam vazios porque seus centavos não são legíveis com confiança no print.
 - Textos presentes em imagens de marca, produtos ou campanha continuam incorporados a essas imagens.
 
@@ -69,11 +72,38 @@ Cada oferta possui **IMG_PRODUTO**, **TXT_NOME**, **TXT_COMPLEMENTO**, **PRECO_A
 
 Texto permanece texto; as imagens são objetos inteligentes; divisórias, contornos, risco e gradiente são camadas raster separadas. O script mantém proporções e não achata o documento.
 
+A moldura e os contornos dos cards são anéis preenchidos a partir de seleções poligonais (12 segmentos por canto, desvio máximo de 0,15 px num raio de 65 px). A moldura sai pela borda esquerda sem desenhar linha nessa borda, e o trecho inferior que passa atrás dos cards é apagado para não aparecer através do fundo translúcido. Cada imagem de produto fica logo acima da divisória da sua oferta e abaixo dos textos.
+
 ## Verificação e limites
 
-Os testes automatizados exercitam lógica e contratos de um Photoshop simulado, sem executar o aplicativo Adobe. O CI também confere metadados, catálogo e geração da vitrine.
+`npm run test:ofertas` (parte do `npm test` e do CI) executa o JSX inteiro contra um Photoshop simulado em Node.js: camadas, grupos, seleções poligonais, textos com métricas aproximadas, objetos inteligentes, descritores `Grdn` e `Plc ` e a interface ScriptUI. Onde o comportamento do DOM real é ambíguo — `artLayers.add()` do documento, `ElementPlacement.INSIDE`, conversão de `UnitValue` com réguas fora de px —, a simulação adota a leitura mais desfavorável ao script. Os 15 testes cobrem:
 
-A conferência nativa ainda é necessária, principalmente para o descritor do gradiente, a importação das imagens, fontes e medidas reais dos textos. Para validar: gerar a arte; trocar textos curtos por longos; alternar preços de um a quatro dígitos; carregar e substituir as cinco imagens; cancelar; executar novamente e conferir que o original e as preferências continuam intactos.
+- estrutura gerenciada, textos editáveis e preferências restauradas;
+- conteúdo do descritor do gradiente;
+- preços de 1 a 4 dígitos, nomes e complementos longos, unidades de 8 caracteres e recusa de entradas inválidas;
+- DE vazio;
+- colocação incorporada, encaixe centralizado e ordem das camadas das cinco imagens;
+- moldura ausente dentro dos cards e sem traço na borda da tela, em 16:9, 4:5 e 4K;
+- rodapé abaixo da campanha e na mesma linha de base, em quatro formatos;
+- reedição por nova cópia, com imagens e camadas externas mantidas e original intacto;
+- layout a 300 ppi com réguas em cm, com geometria idêntica à de 72 ppi e resolução devolvida;
+- cancelamento no formulário, cancelamento durante a geração e falha nativa no meio, com limpeza completa.
+
+Isso não é execução nativa. Continuam pendentes de conferência no Photoshop:
+
+- se o descritor `Grdn` ainda aplica o degradê clássico na versão instalada;
+- a colocação `Plc ` com PNG, PSD, JPG, TIFF e WebP reais;
+- a seleção poligonal com suavização e o preenchimento dos anéis;
+- métricas reais da fonte escolhida: encaixe dos textos, linha de base e acentos;
+- `resizeImage` sem reamostrar em um layout de 300 ppi e a volta à resolução original;
+- se o botão Cancelar da barra de progresso responde durante a execução (o Esc do Photoshop pode interromper a execução; qualquer interrupção que chegue ao script fecha o documento parcial e restaura as preferências);
+- aparência final comparada ao print.
+
+Roteiro nativo: gerar a arte sem imagens; gerar com as cinco imagens; trocar nomes curtos por longos; alternar preços de um a quatro dígitos e DE vazio; mudar a resolução para 300 ppi sem reamostrar e executar **Nova cópia**; cancelar no formulário e durante a geração; conferir que o original, as réguas e a unidade de texto continuam como estavam.
+
+O layout foi desenhado em 16:9. Em outras proporções as posições acompanham largura e altura separadamente e os corpos acompanham o menor dos dois fatores; o resultado é válido, mas não é uma diagramação própria para 4:5 ou 9:16.
+
+Limites visuais por falta de material original: sem o PSD, as posições, raios, espessuras, opacidades e o degradê foram estimados do print; sem as fotos recortadas, o logotipo e o selo, os espaços ficam vazios ou recebem o material escolhido, sem a montagem de várias embalagens do print; sem a fonte original, os textos usam a fonte instalada escolhida, e larguras, altura das maiúsculas e acentos mudam o encaixe. Os centavos dos preços anteriores dos cards menores não eram legíveis no print.
 
 A versão atual não lê um PSD arbitrário nem recupera camadas do print. Ela reconhece somente sua própria estrutura.
 
