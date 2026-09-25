@@ -313,6 +313,23 @@
       ]
     },
     {
+      "id": "photoshop/gerar-ofertas-preto-dourado",
+      "titulo": "Ofertas preto e dourado",
+      "descricao": "Cria uma arte com três ofertas, textos editáveis e cinco imagens escolhidas na interface. Reabre os dados de layouts gerados e aplica as alterações em uma nova cópia.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/gerar-ofertas-preto-dourado.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "ofertas",
+        "layout",
+        "textos",
+        "imagens",
+        "varejo"
+      ],
+      "doc": "apps/photoshop/docs/ofertas-preto-dourado.md"
+    },
+    {
       "id": "photoshop/guias-selecao-margem",
       "titulo": "Remendo de adesivo — seleção e margem",
       "descricao": "Cria guias, seleciona a área total com margem e gera um novo documento mesclado na escala e nas cores do original.",
