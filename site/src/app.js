@@ -18,7 +18,46 @@
   var elContagem = document.getElementById('contagem');
   var elAcoes = document.getElementById('acoes-repo');
 
-  var estado = { termo: '', app: 'todos' };
+  var estado = { termo: '', app: 'todos', selecionado: null };
+  var elDetalhes = document.getElementById('detalhes');
+  var elResultados = document.getElementById('resultados');
+  var elTitulo = document.getElementById('titulo-biblioteca');
+  var elContexto = document.getElementById('contexto');
+
+  function mostrarArea(area) {
+    var instalacao = area === 'instalacao';
+    document.getElementById('biblioteca').hidden = instalacao;
+    document.getElementById('instalacao').hidden = !instalacao;
+    document.getElementById('propriedades').hidden = instalacao;
+    document.getElementById('abrir-biblioteca').setAttribute('aria-pressed', String(!instalacao));
+    document.getElementById('abrir-instalacao').setAttribute('aria-pressed', String(instalacao));
+  }
+  document.getElementById('abrir-biblioteca').addEventListener('click', function () { mostrarArea('biblioteca'); });
+  document.getElementById('abrir-instalacao').addEventListener('click', function () { mostrarArea('instalacao'); });
+  document.getElementById('ajuda-instalar').addEventListener('click', function () {
+    mostrarArea('instalacao');
+    document.getElementById('titulo-instalacao').setAttribute('tabindex', '-1');
+    document.getElementById('titulo-instalacao').focus();
+  });
+  ['grade', 'lista'].forEach(function (modo) {
+    document.getElementById('modo-' + modo).addEventListener('click', function () {
+      mostrarArea('biblioteca');
+      elLista.className = 'grade' + (modo === 'lista' ? ' em-lista' : '');
+      ['grade', 'lista'].forEach(function (opcao) {
+        document.getElementById('modo-' + opcao).setAttribute('aria-pressed', String(opcao === modo));
+      });
+    });
+  });
+
+  function iconeApp(id) {
+    var abreviacoes = { todos: '▦', photoshop: 'Ps', illustrator: 'Ai', indesign: 'Id', aftereffects: 'Ae' };
+    var icone = document.createElement('span');
+    icone.className = 'app-icone';
+    icone.dataset.app = id;
+    icone.setAttribute('aria-hidden', 'true');
+    icone.textContent = abreviacoes[id] || id.substring(0, 2);
+    return icone;
+  }
 
   /* Cabecalho ------------------------------------------------------- */
 
@@ -85,13 +124,15 @@
     b.dataset.app = app;
     b.setAttribute('aria-pressed', String(app === estado.app));
     b.innerHTML = '';
-    b.appendChild(document.createTextNode(app === 'todos' ? 'Todos' : nomeDoApp(app)));
+    b.appendChild(iconeApp(app));
+    b.appendChild(document.createTextNode(app === 'todos' ? 'Todos os aplicativos' : nomeDoApp(app)));
     var quantos = document.createElement('span');
     quantos.className = 'quantos';
     quantos.textContent = contarNoApp(app);
     b.appendChild(quantos);
     b.addEventListener('click', function () {
       estado.app = app;
+      mostrarArea('biblioteca');
       gravarEndereco();
       render();
     });
@@ -111,13 +152,15 @@
 
   elBusca.addEventListener('input', function () {
     estado.termo = elBusca.value.trim().toLowerCase();
+    mostrarArea('biblioteca');
     gravarEndereco();
     render();
   });
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === '/' && document.activeElement !== elBusca) {
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName) && !document.activeElement.isContentEditable) {
       e.preventDefault();
+      mostrarArea('biblioteca');
       elBusca.focus();
       elBusca.select();
     }
@@ -146,7 +189,8 @@
       var corte = par.indexOf('=');
       if (corte < 1) return;
       var chave = par.substring(0, corte);
-      var valor = decodeURIComponent(par.substring(corte + 1));
+      var valor;
+      try { valor = decodeURIComponent(par.substring(corte + 1)); } catch (e) { return; }
       if (chave === 'app' && appsPresentes.indexOf(valor) > -1) estado.app = valor;
       if (chave === 'q') { estado.termo = valor.toLowerCase(); elBusca.value = valor; }
     });
@@ -156,15 +200,24 @@
 
   function montarCartao(f) {
     var cartao = document.createElement('article');
-    cartao.className = 'cartao';
+    cartao.className = 'cartao' + (f.id === estado.selecionado ? ' selecionado' : '');
+    cartao.dataset.ferramenta = f.id;
 
     var topo = document.createElement('div');
     topo.className = 'cartao-topo';
     var h2 = document.createElement('h2');
-    h2.textContent = f.titulo;
+    var selecionar = document.createElement('button');
+    selecionar.type = 'button';
+    selecionar.className = 'selecionar-ferramenta';
+    selecionar.textContent = f.titulo;
+    selecionar.setAttribute('aria-pressed', String(f.id === estado.selecionado));
+    selecionar.setAttribute('aria-controls', 'detalhes');
+    selecionar.addEventListener('click', function () { selecionarFerramenta(f); });
+    h2.appendChild(selecionar);
     var app = document.createElement('span');
     app.className = 'app';
     app.textContent = nomeDoApp(f.app);
+    topo.appendChild(iconeApp(f.app));
     topo.appendChild(h2);
     topo.appendChild(app);
     cartao.appendChild(topo);
@@ -226,6 +279,69 @@
     return a;
   }
 
+  /* Propriedades: metadados e links do mesmo catálogo, sem executar scripts. */
+  function selecionarFerramenta(f) {
+    estado.selecionado = f.id;
+    Array.prototype.forEach.call(elLista.querySelectorAll('.cartao'), function (cartao) {
+      var selecionado = cartao.dataset.ferramenta === f.id;
+      cartao.classList.toggle('selecionado', selecionado);
+      cartao.querySelector('.selecionar-ferramenta').setAttribute('aria-pressed', String(selecionado));
+    });
+    renderDetalhes(f);
+    if (window.matchMedia('(max-width: 900px)').matches) {
+      var painel = document.getElementById('titulo-propriedades');
+      painel.setAttribute('tabindex', '-1');
+      painel.focus();
+      painel.scrollIntoView({ block: 'start' });
+    }
+  }
+
+  function renderDetalhes(f) {
+    elDetalhes.innerHTML = '';
+    if (!f) {
+      var vazio = document.createElement('p');
+      vazio.className = 'miudo';
+      vazio.textContent = 'Nenhuma ferramenta selecionada.';
+      elDetalhes.appendChild(vazio);
+      return;
+    }
+    elDetalhes.appendChild(iconeApp(f.app));
+    var titulo = document.createElement('h3');
+    titulo.textContent = f.titulo;
+    elDetalhes.appendChild(titulo);
+    var descricao = document.createElement('p');
+    descricao.className = 'descricao';
+    descricao.textContent = f.descricao;
+    elDetalhes.appendChild(descricao);
+    var propriedades = document.createElement('dl');
+    var itens = [
+      ['Aplicativo', nomeDoApp(f.app)],
+      ['Tipo', f.tipo === 'action' ? 'Action' : 'Script'],
+      ['Versão', 'v' + f.versao]
+    ];
+    if (f.baixarTamanho) itens.push(['Tamanho', f.baixarTamanho + ' KB']);
+    itens.forEach(function (item) {
+      var termo = document.createElement('dt');
+      termo.textContent = item[0];
+      var valor = document.createElement('dd');
+      valor.textContent = item[1];
+      propriedades.appendChild(termo);
+      propriedades.appendChild(valor);
+    });
+    elDetalhes.appendChild(propriedades);
+    var acoes = document.createElement('div');
+    acoes.className = 'detalhes-acoes';
+    if (f.baixar) {
+      var baixar = elo(f.baixar, f.tipo === 'action' ? 'Baixar action' : 'Baixar ferramenta', false);
+      baixar.className = 'elo principal';
+      baixar.setAttribute('download', f.baixarNome);
+      acoes.appendChild(baixar);
+    }
+    if (f.docUrl) acoes.appendChild(elo(f.docUrl, 'Abrir documentação', true));
+    if (f.codigo) acoes.appendChild(elo(f.codigo, f.codigoRotulo || 'Ver código', false));
+    elDetalhes.appendChild(acoes);
+  }
+
   /* Render ------------------------------------------------------------ */
 
   function render() {
@@ -237,6 +353,14 @@
       b.setAttribute('aria-pressed', String(b.dataset.app === estado.app));
     });
 
+    var selecionada = visiveis.filter(function (f) { return f.id === estado.selecionado; })[0] || visiveis[0];
+    estado.selecionado = selecionada ? selecionada.id : null;
+    renderDetalhes(selecionada);
+    var total = visiveis.length;
+    elResultados.textContent = total + (total === 1 ? ' ferramenta' : ' ferramentas');
+    elContagem.textContent = total + ' de ' + ferramentas.length + ' ferramentas';
+    elTitulo.textContent = estado.app === 'todos' ? 'Todas as ferramentas' : nomeDoApp(estado.app);
+    elContexto.textContent = estado.app === 'todos' ? 'Todos os aplicativos' : nomeDoApp(estado.app);
     elLista.innerHTML = '';
 
     if (!visiveis.length) {
