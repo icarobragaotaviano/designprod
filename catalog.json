@@ -282,6 +282,24 @@
       "doc": "docs/auto-layout.md"
     },
     {
+      "id": "photoshop/criar-textos-precos",
+      "titulo": "Criar textos e preços em série",
+      "descricao": "Cria PSDs novos a partir dos modelos de um ou dois dígitos, com nome, preços, rótulos, unidades UN ou /KG, imagens incorporadas ou vinculadas e nome do arquivo. Salva e já abre o próximo.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/criar-textos-precos.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "ofertas",
+        "texto",
+        "precos",
+        "modelos",
+        "lote",
+        "imagens"
+      ],
+      "doc": "docs/textos-e-precos.md"
+    },
+    {
       "id": "photoshop/editar-textos-precos-rapido",
       "titulo": "Editar textos e preços",
       "descricao": "Edita o PSD aberto com modelos de um ou dois dígitos, nome, preços DE/POR e unidades. Ajusta tela, elementos e guias sem recriar o arquivo.",
