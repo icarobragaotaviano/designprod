@@ -2,25 +2,31 @@
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IBD Ferramentas</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="cabecalho">
-      <span class="marca" id="marca">IBD</span>
-      <span class="versao" id="versao"></span>
+      <div class="cabecalho-linha">
+        <h1 id="titulo-painel">Ferramentas</h1>
+        <div class="identidade">
+          <span class="marca" id="marca">IBD</span>
+          <span class="versao" id="versao"></span>
+        </div>
+      </div>
+      <span class="contexto">Photoshop</span>
     </header>
 
-    <div class="busca">
-      <input id="filtro" type="text" placeholder="Filtrar ferramentas" />
-    </div>
+    <label class="busca">
+      <span class="busca-rotulo" id="rotulo-busca">Buscar ferramentas</span>
+      <input id="filtro" type="text" placeholder="Nome ou palavra-chave" aria-labelledby="rotulo-busca" />
+    </label>
 
-    <main id="lista" class="lista"></main>
-
+    <main id="lista" class="lista" aria-labelledby="titulo-painel"></main>
     <footer class="rodape">
-      <span id="status">Pronto.</span>
+      <span id="status" role="status" aria-live="polite" aria-atomic="true">Pronto.</span>
     </footer>
-
     <script src="main.js"></script>
   </body>
 </html>

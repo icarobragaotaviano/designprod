@@ -1,139 +1,111 @@
 /* Tokens vindos de brand.config.json. Regerar com: npm run build:plugin */
 :root {
-  --fundo: #0E0E10;
-  --superficie: #1A1A1E;
-  --texto: #F4F4F5;
-  --texto-secundario: #A1A1AA;
-  --acento: #FFD21E;
-  --acento-texto: #0E0E10;
-  --borda: #2A2A31;
-  --erro: #F87171;
-  --sucesso: #4ADE80;
+  --fundo: #222222;
+  --superficie: #323232;
+  --texto: #F2F2F2;
+  --texto-secundario: #AFAFAF;
+  --acento: #4069FD;
+  --acento-texto: #FFFFFF;
+  --borda: #444444;
+  --erro: #FF9B91;
+  --sucesso: #7EE2B8;
 }
 
+/* Cores nativas dos quatro temas do Photoshop; marca como fallback.
+   https://developer.adobe.com/photoshop/uxp/2022/guides/theme-awareness/ */
+* { box-sizing: border-box; }
+html { height: 100%; }
 body {
+  --painel-fundo: var(--uxp-host-background-color, var(--fundo));
+  --painel-texto: var(--uxp-host-text-color, var(--texto));
+  --painel-secundario: var(--uxp-host-text-color-secondary, var(--texto-secundario));
+  --painel-borda: var(--uxp-host-border-color, var(--borda));
+  --painel-superficie: var(--superficie);
+  --painel-campo: var(--fundo);
+  --painel-controle-borda: #6b6b6b;
+  --painel-hover: var(--uxp-host-widget-hover-background-color, #3d3d3d);
+  --painel-hover-texto: var(--uxp-host-widget-hover-text-color, var(--texto));
+  --painel-erro: var(--erro);
+  --painel-sucesso: var(--sucesso);
   margin: 0;
   padding: 0;
-  background: var(--fundo);
-  color: var(--texto);
-  font-size: 12px;
+  height: 100vh;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  overflow: hidden;
+  background: var(--painel-fundo);
+  color: var(--painel-texto);
+  font-family: "Adobe Clean", "Segoe UI", sans-serif;
+  font-size: 12px;
 }
 
-.cabecalho {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 12px 12px 8px;
-  border-bottom: 1px solid var(--borda);
+/* O UXP estende prefers-color-scheme com darkest/lightest. */
+@media (prefers-color-scheme: dark) {
+  body {
+    --painel-fundo: var(--uxp-host-background-color, #323232);
+    --painel-superficie: #454545;
+    --painel-campo: #292929;
+    --painel-controle-borda: #808080;
+  }
 }
-
-.marca {
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--acento);
+@media (prefers-color-scheme: light) {
+  body {
+    --painel-fundo: var(--uxp-host-background-color, #d9d9d9);
+    --painel-texto: var(--uxp-host-text-color, #242424);
+    --painel-secundario: var(--uxp-host-text-color-secondary, #555555);
+    --painel-borda: var(--uxp-host-border-color, #b3b3b3);
+    --painel-hover: var(--uxp-host-widget-hover-background-color, #c9c9c9);
+    --painel-hover-texto: var(--uxp-host-widget-hover-text-color, #242424);
+    --painel-superficie: #e3e3e3;
+    --painel-campo: #f5f5f5;
+    --painel-controle-borda: #858585;
+    --painel-erro: #b42318;
+    --painel-sucesso: #147d4b;
+  }
 }
-
-.versao {
-  color: var(--texto-secundario);
-  font-size: 10px;
+@media (prefers-color-scheme: lightest) {
+  body {
+    --painel-fundo: var(--uxp-host-background-color, #f0f0f0);
+    --painel-texto: var(--uxp-host-text-color, #242424);
+    --painel-secundario: var(--uxp-host-text-color-secondary, #606060);
+    --painel-borda: var(--uxp-host-border-color, #c9c9c9);
+    --painel-hover: var(--uxp-host-widget-hover-background-color, #e1e1e1);
+    --painel-hover-texto: var(--uxp-host-widget-hover-text-color, #242424);
+    --painel-superficie: #f5f5f5;
+    --painel-campo: #ffffff;
+    --painel-controle-borda: #8a8a8a;
+    --painel-erro: #b42318;
+    --painel-sucesso: #147d4b;
+  }
 }
-
-.busca {
-  padding: 8px 12px;
-}
-
-.busca input {
-  width: 100%;
-  box-sizing: border-box;
-  background: var(--superficie);
-  border: 1px solid var(--borda);
-  border-radius: 4px;
-  color: var(--texto);
-  padding: 6px 8px;
-}
-
-.lista {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 12px 12px;
-}
-
-.grupo-app {
-  margin-top: 12px;
-  color: var(--texto-secundario);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.cartao {
-  background: var(--superficie);
-  border: 1px solid var(--borda);
-  border-radius: 6px;
-  padding: 10px;
-  margin-top: 8px;
-}
-
-.cartao-titulo {
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.cartao-descricao {
-  color: var(--texto-secundario);
-  line-height: 1.4;
-  margin-bottom: 8px;
-}
-
-.cartao-acoes {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-button {
-  background: var(--acento);
-  color: var(--acento-texto);
-  border: none;
-  border-radius: 4px;
-  padding: 5px 10px;
-  font-weight: 600;
-}
-
-button.secundario {
-  background: transparent;
-  color: var(--texto-secundario);
-  border: 1px solid var(--borda);
-}
-
-.etiqueta {
-  font-size: 10px;
-  color: var(--texto-secundario);
-  border: 1px solid var(--borda);
-  border-radius: 999px;
-  padding: 1px 7px;
-}
-
-.rodape {
-  border-top: 1px solid var(--borda);
-  padding: 8px 12px;
-  color: var(--texto-secundario);
-  font-size: 10px;
-}
-
-.rodape.erro {
-  color: var(--erro);
-}
-
-.rodape.sucesso {
-  color: var(--sucesso);
-}
-
-.vazio {
-  color: var(--texto-secundario);
-  padding: 24px 0;
-  text-align: center;
-}
+.cabecalho { flex-shrink: 0; padding: 10px 12px 8px; border-bottom: 1px solid var(--painel-borda); }
+.cabecalho-linha { display: flex; align-items: center; min-width: 0; }
+.cabecalho h1 { flex: 1; min-width: 0; margin: 0; font-size: 13px; font-weight: 600; }
+.identidade { display: flex; align-items: center; margin-left: 12px; color: var(--painel-secundario); }
+.marca { font-size: 11px; font-weight: 600; }
+.versao { margin-left: 6px; font-size: 10px; }
+.contexto { display: block; margin-top: 3px; color: var(--painel-secundario); font-size: 11px; }
+/* Label envolvendo o campo evita depender do atributo for no UXP. */
+.busca { display: flex; flex-direction: column; flex-wrap: nowrap; flex-shrink: 0; align-items: stretch; margin: 0; padding: 9px 12px 10px; border-bottom: 1px solid var(--painel-borda); }
+.busca-rotulo { display: block; margin-bottom: 5px; color: var(--painel-secundario); font-size: 11px; }
+.busca input { width: 100%; min-width: 0; height: 28px; box-sizing: border-box; margin: 0; padding: 4px 8px; background: var(--painel-campo); border: 1px solid var(--painel-controle-borda); border-radius: 4px; color: var(--painel-texto); font-family: "Adobe Clean", "Segoe UI", sans-serif; font-size: 12px; }
+.busca input:hover { border-color: var(--painel-secundario); }
+.busca input:focus { border-color: var(--acento); outline: 2px solid var(--acento); }
+.lista { flex: 1; min-width: 0; min-height: 0; overflow: auto; padding: 0; }
+.cartao { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 10px 12px; border-bottom: 1px solid var(--painel-borda); }
+.cartao-titulo { color: var(--painel-texto); font-size: 12px; font-weight: 600; }
+.cartao-descricao { margin-top: 4px; color: var(--painel-secundario); font-size: 11px; }
+.cartao-acoes { display: flex; flex-wrap: wrap; align-items: center; margin-top: 5px; }
+button { min-height: 26px; min-width: 72px; margin: 4px 6px 0 0; padding: 4px 12px; background: var(--painel-superficie); color: var(--painel-texto); border: 1px solid var(--painel-controle-borda); border-radius: 14px; font-family: "Adobe Clean", "Segoe UI", sans-serif; font-size: 11px; font-weight: 600; }
+button.secundario { background: transparent; }
+button:hover { background: var(--painel-hover); color: var(--painel-hover-texto); border-color: var(--painel-secundario); }
+button:focus { border-color: var(--acento); outline: 2px solid var(--acento); }
+button:active { background: var(--acento); color: var(--acento-texto); border-color: var(--acento); }
+button:disabled, button[disabled] { background: var(--painel-superficie); color: var(--painel-secundario); border-color: var(--painel-borda); opacity: 0.5; }
+.etiqueta { margin: 4px 0 0 2px; color: var(--painel-secundario); font-size: 10px; }
+.rodape { flex-shrink: 0; min-height: 28px; max-height: 35%; overflow: auto; padding: 7px 12px; border-top: 1px solid var(--painel-borda); color: var(--painel-secundario); font-size: 11px; }
+#status { display: block; white-space: normal; }
+.rodape.erro { color: var(--painel-erro); }
+.rodape.sucesso { color: var(--painel-sucesso); }
+.vazio { padding: 24px 16px; color: var(--painel-secundario); font-size: 12px; text-align: center; }
