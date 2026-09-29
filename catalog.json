@@ -284,11 +284,11 @@
     {
       "id": "photoshop/criar-textos-precos",
       "titulo": "Criar textos e preços em série",
-      "descricao": "Cria PSDs novos a partir dos modelos de um ou dois dígitos, com nome, preços, rótulos, unidades UN ou /KG, imagens incorporadas ou vinculadas e nome do arquivo. Salva e já abre o próximo.",
+      "descricao": "Cria PSDs iguais aos modelos de preço, sem arquivo externo: textos, UN ou /KG, imagens incorporadas ou vinculadas e nome do arquivo. Salva e já abre o próximo.",
       "app": "photoshop",
       "tipo": "script",
       "arquivo": "apps/photoshop/scripts/criar-textos-precos.jsx",
-      "versao": "1.0.0",
+      "versao": "1.1.0",
       "tags": [
         "ofertas",
         "texto",

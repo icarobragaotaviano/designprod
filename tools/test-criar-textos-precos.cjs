@@ -58,15 +58,29 @@ function guideCollection(items = []) {
 }
 
 /* Sistema de arquivos e Photoshop simulados. */
-const disk = new Set(['/modelos', '/repo/apps/photoshop/templates/textos-precos', '/modelos/texto-um-digito.psd', '/modelos/texto-dois-digitos.psd', '/fotos/arroz.png', '/fotos/feijao.jpg', '/saida']);
+const disk = new Set(['/userdata', '/desktop', '/fotos/arroz.png', '/fotos/feijao.jpg', '/saida']);
+const contents = new Map();
+const MODEL_DIR = '/userdata/IBD/modelos-textos-precos-1';
+let templateWrites = 0;
 function File(p) { this.fsName = String(p); this.name = encodeURI(this.fsName.split('/').pop()); }
 Object.defineProperty(File.prototype, 'exists', {get() { return disk.has(this.fsName); }});
+Object.defineProperty(File.prototype, 'length', {get() { return (contents.get(this.fsName) || '').length; }});
 Object.defineProperty(File.prototype, 'parent', {get() { return new Folder(this.fsName.replace(/\/[^/]*$/, '')); }});
-File.prototype.open = () => false;
+File.prototype.open = function (mode) {
+    if (mode === 'r' && !this.exists) return false;
+    if (mode === 'w') { if (!disk.has(this.parent.fsName)) return false; contents.set(this.fsName, ''); disk.add(this.fsName); if (this.fsName.startsWith(MODEL_DIR)) templateWrites++; }
+    this.mode = mode; this.pos = 0; return true;
+};
+File.prototype.read = function () { assert.equal(this.encoding, 'BINARY'); return contents.get(this.fsName); };
+File.prototype.write = function (t) { assert.equal(this.encoding, 'BINARY'); contents.set(this.fsName, contents.get(this.fsName) + t); return true; };
+File.prototype.close = function () { return true; };
 function Folder(p) { this.fsName = String(p); }
 Object.defineProperty(Folder.prototype, 'exists', {get() { return disk.has(this.fsName); }});
 Object.defineProperty(Folder.prototype, 'parent', {get() { return new Folder(this.fsName.replace(/\/[^/]*$/, '')); }});
+Folder.prototype.create = function () { if (!disk.has(this.parent.fsName)) return false; disk.add(this.fsName); return true; };
 Folder.userData = new Folder('/userdata');
+Folder.desktop = new Folder('/desktop');
+const psdBytes = ['texto-um-digito.psd', 'texto-dois-digitos.psd'].map(n => fs.readFileSync(nodePath.join(base, 'apps/photoshop/templates/textos-precos', n)).toString('latin1'));
 
 const log = {opened: [], saved: [], closed: [], placed: []};
 let failPlacement = false;
@@ -122,6 +136,7 @@ const context = {
         fonts: {getByName(name) { assert.equal(name, 'SFPro-CondensedSemibold'); return {}; }},
         open(file) {
             assert.ok(file.exists, 'abriu arquivo inexistente');
+            assert.equal(contents.get(file.fsName), psdBytes[file.fsName.endsWith('dois-digitos.psd') ? 1 : 0], 'abriu um modelo diferente da referência');
             log.opened.push(file.fsName);
             const doc = makeDocument(file); this.documents.push(doc); this.activeDocument = doc; return doc;
         }},
@@ -134,7 +149,7 @@ const context = {
 };
 const marker = '    try {\n        run(initialState());';
 assert.equal(source.split(marker).length, 2);
-vm.runInNewContext(source.replace(marker, '    this.API = {layouts:LAYOUTS, parseData:parseData, autoFileName:autoFileName, safeFileName:safeFileName, create:create, dialog:dialog, run:run, initialState:initialState, bounds:bounds, readGuides:readGuides};\n    return;\n' + marker), context);
+vm.runInNewContext(source.replace(marker, '    this.API = {layouts:LAYOUTS, parseData:parseData, autoFileName:autoFileName, safeFileName:safeFileName, create:create, dialog:dialog, run:run, initialState:initialState, bounds:bounds, readGuides:readGuides, layoutIndexFor:layoutIndexFor, templateBytes:templateBytes, templateFile:templateFile};\n    return;\n' + marker), context);
 const A = context.API;
 
 let passed = 0;
@@ -165,13 +180,25 @@ function fields(extra = {}) {
 }
 function job(index, extra = {}, data = {}) {
     return Object.assign({layout: A.layouts[index], layoutIndex: index, data: A.parseData(A.layouts[index], fields(data)),
-        file: new File('/saida/teste.psd'), templates: new Folder('/modelos'), images: [], linked: false, fit: 0, keepOpen: false}, extra);
+        file: new File('/saida/teste.psd'), images: [], linked: false, fit: 0, keepOpen: false}, extra);
 }
 
-test('Script compila, sem modelos binários embutidos', () => {
+test('Script compila e traz os dois PSDs de referência byte a byte, sem base64', () => {
     new vm.Script(source);
-    assert.ok(Buffer.byteLength(source) < 40000);
-    assert.doesNotMatch(source, /decode64|base64/);
+    assert.doesNotMatch(source, /decode64|base64|templates\/textos-precos|selectDialog\("Pasta com/);
+    assert.equal(A.templateBytes(0), psdBytes[0]); assert.equal(A.templateBytes(1), psdBytes[1]);
+});
+test('Modelo embutido é gravado uma vez e reaproveitado; cópia corrompida é regravada', () => {
+    templateWrites = 0;
+    const f = A.templateFile(1);
+    assert.equal(f.fsName, MODEL_DIR + '/texto-dois-digitos.psd'); assert.equal(contents.get(f.fsName), psdBytes[1]);
+    A.templateFile(1); assert.equal(templateWrites, 1, 'não deve regravar um modelo íntegro');
+    contents.set(f.fsName, psdBytes[1].slice(0, -1) + 'x');
+    A.templateFile(1); assert.equal(templateWrites, 2); assert.equal(contents.get(f.fsName), psdBytes[1]);
+});
+test('Modelo escolhido pelo preço: dois dígitos em DE ou POR usa o modelo largo', () => {
+    assert.equal(A.layoutIndexFor('', '9,99'), 0); assert.equal(A.layoutIndexFor('12,90', '9,99'), 1);
+    assert.equal(A.layoutIndexFor('', 'R$ 10'), 1); assert.equal(A.layoutIndexFor('', '09,90'), 0);
 });
 test('Dados: unidades UN e /KG, rótulos editáveis e validação de preço', () => {
     const d = A.parseData(A.layouts[1], fields({de: 'R$ 29,9', por: '8.5', unitDe: 'kg', unitPor: 'un', labelPor: 'SÓ\nR$'}));
@@ -189,7 +216,7 @@ test('Nome do arquivo: sugestão automática e caracteres proibidos', () => {
 });
 test('Arquivo novo sai do modelo certo, com a geometria original, e o modelo não é regravado', () => {
     A.create(job(1, {}, {de: '99,99', por: '99,99', unitDe: '/KG', unitPor: '/KG'}));
-    assert.deepEqual(log.opened, ['/modelos/texto-dois-digitos.psd']);
+    assert.deepEqual(log.opened, [MODEL_DIR + '/texto-dois-digitos.psd']);
     assert.deepEqual(log.saved.map(s => s.path), ['/saida/teste.psd']);
     assert.deepEqual(log.closed, ['no']);
     const doc = log.saved[0].doc;
@@ -224,42 +251,58 @@ test('Falha ao colocar imagem fecha a cópia sem salvar', () => {
     assert.equal(context.app.preferences.rulerUnits, 'MM');
 });
 test('Modelo aberto no Photoshop não é tocado', () => {
-    context.app.documents.push({fullName: new File('/modelos/texto-um-digito.psd')});
-    assert.throws(() => A.create(job(0)), /Feche o modelo/);
+    context.app.documents.push({fullName: new File(MODEL_DIR + '/texto-um-digito.psd')});
+    assert.throws(() => A.create(job(0)), /Feche o arquivo/);
     assert.deepEqual(log.opened, []);
+});
+// edittext na ordem: produto, DE, outra DE, rótulo DE, POR, outra POR, rótulo POR, nome do arquivo.
+test('Janela abre pronta: pasta na Área de Trabalho, UN marcado e sem pedir modelo', () => {
+    uiAction = root => {
+        assert.equal(controls(root, 'button').some(b => /Modelos|modelo/i.test(b.text)), false);
+        const texts = controls(root, 'statictext').map(t => t.text);
+        assert.ok(texts.includes('/desktop')); assert.ok(texts.some(t => /um dígito — 597 × 484/.test(t)));
+        const radios = controls(root, 'radiobutton');
+        assert.deepEqual(radios.slice(0, 3).map(r => r.value), [true, false, false]);
+        assert.equal(controls(root, 'edittext')[2].enabled, false, 'campo Outra desligado com UN');
+        button(root, 'Fechar').onClick(); return 0;
+    };
+    A.run(A.initialState());
 });
 test('Salvar e criar outro: janela volta com os dados, sem as imagens, e grava vários arquivos', () => {
     let round = 0;
     uiAction = root => {
         round++;
-        const inputs = controls(root, 'edittext');
+        const inputs = controls(root, 'edittext'), radios = controls(root, 'radiobutton');
         if (round === 1) {
-            controls(root, 'dropdownlist')[0].selection = 1;
             inputs[0].text = 'Arroz Tipo 1\n5 kg'; inputs[0].onChanging();
             inputs[4].text = '19,90'; inputs[4].onChanging();
             assert.equal(inputs[7].text, 'Arroz Tipo 1 5 kg 19,90', 'nome automático acompanha produto e preço');
-            controls(root, 'radiobutton')[1].value = true; controls(root, 'radiobutton')[0].value = false;
+            assert.ok(controls(root, 'statictext').some(t => /dois dígitos — 706 × 468/.test(t.text)), 'modelo acompanha o preço');
+            radios[3].value = false; radios[4].value = true; radios[4].onClick();
+            radios[6].value = false; radios[7].value = true;
             button(root, 'Salvar e criar outro').onClick();
         } else if (round === 2) {
             assert.match(controls(root, 'statictext')[0].text, /Salvo: Arroz Tipo 1 5 kg 19,90\.psd/);
             assert.equal(controls(root, 'listbox')[0].items.length, 0, 'imagens limpas para o próximo');
             assert.equal(inputs[0].text, 'Arroz Tipo 1\n5 kg', 'dados mantidos');
-            assert.equal(controls(root, 'radiobutton')[1].value, true, 'modo vinculado mantido');
+            assert.equal(radios[4].value, true, '/KG mantido'); assert.equal(radios[7].value, true, 'modo vinculado mantido');
             inputs[0].text = 'Feijão'; inputs[0].onChanging();
             inputs[7].text = 'meu-nome'; inputs[7].onChanging();
             inputs[0].text = 'Feijão Carioca'; inputs[0].onChanging();
             assert.equal(inputs[7].text, 'meu-nome', 'nome digitado não é sobrescrito');
+            radios[4].value = false; radios[5].value = true; radios[5].onClick();
+            assert.equal(inputs[5].enabled, true); inputs[5].text = 'cx';
             button(root, 'Salvar e fechar').onClick();
         } else throw new Error('janela reaberta depois de Salvar e fechar');
         return root.closed;
     };
     const state = A.initialState();
     state.output = new Folder('/saida');
-    assert.equal(state.templates.fsName, '/repo/apps/photoshop/templates/textos-precos');
-    state.templates = new Folder('/modelos');
     assert.equal(A.run(state), 2);
     assert.deepEqual(log.saved.map(s => s.path), ['/saida/Arroz Tipo 1 5 kg 19,90.psd', '/saida/meu-nome.psd']);
-    assert.deepEqual(log.opened, ['/modelos/texto-dois-digitos.psd', '/modelos/texto-dois-digitos.psd']);
+    assert.deepEqual(log.opened, [MODEL_DIR + '/texto-dois-digitos.psd', MODEL_DIR + '/texto-dois-digitos.psd']);
+    const prom = log.saved[1].doc.layers.find(l => l.name === 'VALOR PROM');
+    assert.equal(prom.layers.find(l => l.name === 'UN').text, 'CX');
     assert.deepEqual(alerts, []);
 });
 test('Erro de dados mantém a janela aberta; erro ao gravar volta com os mesmos dados', () => {
@@ -268,9 +311,9 @@ test('Erro de dados mantém a janela aberta; erro ao gravar volta com os mesmos 
         round++;
         const inputs = controls(root, 'edittext');
         if (round === 1) {
-            inputs[4].text = '19,90';
+            inputs[4].text = '9,999';
             button(root, 'Salvar e criar outro').onClick();
-            assert.equal(root.closed, undefined); assert.match(alerts[0], /Dois dígitos/);
+            assert.equal(root.closed, undefined); assert.match(alerts[0], /preço POR/);
             inputs[4].text = '9,90';
             button(root, 'Salvar e criar outro').onClick();
             assert.equal(root.closed, 1);
@@ -283,7 +326,7 @@ test('Erro de dados mantém a janela aberta; erro ao gravar volta com os mesmos 
         return 0;
     };
     const state = A.initialState();
-    state.output = new Folder('/saida'); state.templates = new Folder('/modelos');
+    state.output = new Folder('/saida');
     state.images = [new File('/fotos/arroz.png')];
     assert.equal(A.run(state), 0);
     assert.deepEqual(log.saved, []);

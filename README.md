@@ -51,7 +51,7 @@ Não há dependências externas — só Node 18+.
 | Alinhar e distribuir camadas | Photoshop | Alinha pela seleção, pela tela ou por uma camada de referência, com espaço fixo em mm |
 | Kit de Produção (Actions) | Photoshop | Suíte de 9 actions (.atn): 150 DPI, atualizar vínculos, sangria, placeholder, revinculação, exportações JPEG/PNG e PDFs |
 | Editar textos e preços | Photoshop | Alterna entre modelos de um ou dois dígitos no PSD aberto, com nome, preços DE/POR, unidades, tela e guias |
-| Criar textos e preços em série | Photoshop | Cria PSDs novos a partir dos modelos, com textos, UN ou /KG, imagens incorporadas ou vinculadas e nome do arquivo; salva e já abre o próximo |
+| Criar textos e preços em série | Photoshop | Cria PSDs iguais aos modelos, sem arquivo externo, com textos, UN ou /KG, imagens incorporadas ou vinculadas e nome do arquivo; salva e já abre o próximo |
 
 A [família Auto layout](docs/auto-layout.md) traz para o Photoshop o que o auto layout do Figma faz: o grupo é o quadro, as camadas de dentro são os itens, e a regra de arrumação fica guardada no nome do grupo para ser reaplicada quando o conteúdo mudar. As contas ficam em `core/extendscript/ibd-layout.jsx`, sem nenhuma chamada de app — o mesmo motor vai servir Illustrator e InDesign.
 
@@ -59,7 +59,7 @@ O [kit de guias e sangria](docs/guias-e-sangria.md) inclui instruções e exempl
 
 A [suíte de actions do Photoshop](docs/actions-photoshop.md) organiza rotinas ágeis de fechamento e manipulação de arquivos. O [ZIP do kit de actions v1.0](downloads/kit-actions-photoshop-v1.0.zip) entrega o conjunto unificado `ibd-producao.atn` e todos os arquivos avulsos prontos para importação.
 
-O [editor de textos e preços](docs/textos-e-precos.md) inclui os dois PSDs originais e aplica os dados no documento aberto, sem recriar o arquivo. O criador em série usa os mesmos modelos para gerar um arquivo novo por produto, sem fechar a janela entre um e outro. A primeira versão do gerador fica preservada em [histórico](historico/photoshop/README.md). Há 41 cenários locais com Photoshop simulado; a conferência visual e de desempenho no aplicativo ainda está pendente.
+O [editor de textos e preços](docs/textos-e-precos.md) inclui os dois PSDs originais e aplica os dados no documento aberto, sem recriar o arquivo. O criador em série usa os mesmos modelos para gerar um arquivo novo por produto, sem fechar a janela entre um e outro. A primeira versão do gerador fica preservada em [histórico](historico/photoshop/README.md). Há 44 cenários locais com Photoshop simulado; a conferência visual e de desempenho no aplicativo ainda está pendente.
 
 ## Estrutura
 

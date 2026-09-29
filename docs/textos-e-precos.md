@@ -1,6 +1,6 @@
 # Textos e preços no Photoshop
 
-Há duas ferramentas sobre os mesmos modelos: o **criador em série v1.0.0**, que gera um PSD novo por produto, e o **editor rápido v2.0.0**, que altera o PSD aberto.
+Há duas ferramentas sobre os mesmos modelos: o **criador em série v1.1.0**, que gera um PSD novo por produto, e o **editor rápido v2.0.0**, que altera o PSD aberto.
 
 O **editor rápido v2.0.0** altera o PSD aberto. Na janela, escolha o modelo de um ou dois dígitos e informe o nome do produto, os valores DE/POR e a unidade de cada preço. O script ajusta o tamanho da tela, as posições e os tamanhos dos elementos e, opcionalmente, as guias.
 
@@ -18,29 +18,28 @@ Os dois PSDs foram copiados dos arquivos enviados, sem regravação. Os nomes fo
 
 ## Criar arquivos em série
 
-Use quando precisar de vários arquivos iguais aos modelos, um por produto. Não é preciso abrir nenhum PSD antes.
+Use quando precisar de vários arquivos iguais aos modelos, um por produto. Não é preciso abrir nenhum PSD nem ter os modelos no computador: os dois PSDs de referência estão dentro do script, byte a byte.
 
 1. **Arquivo → Scripts → Procurar** e selecione `criar-textos-precos.jsx`.
-2. Na primeira vez, em **Modelos**, escolha a pasta com `texto-um-digito.psd` e `texto-dois-digitos.psd` (no repositório: `apps/photoshop/templates/textos-precos/`). Em **Salvar em**, escolha a pasta de saída. As duas ficam lembradas.
-3. Escolha o modelo e preencha o nome do produto, os preços, as unidades e, se quiser, os rótulos.
-4. Opcional: **Adicionar…** imagens, escolha **Incorporado** ou **Vinculado** e o ajuste.
-5. Confira o **Nome** do arquivo e clique em **Salvar e criar outro**. O PSD é gravado e a janela volta com os mesmos dados, pronta para o próximo produto. **Salvar e fechar** grava e encerra; **Fechar** encerra sem gravar.
+2. Preencha, de cima para baixo: **1. Nome do produto**, **2. Preços** (valor, unidade UN, /KG ou outra, e rótulo), **3. Imagens** (opcional) e **4. Salvar** (nome do arquivo e pasta de destino).
+3. Clique em **Salvar e criar outro**. O PSD é gravado e a janela volta com os mesmos dados, pronta para o próximo produto. **Salvar e fechar** grava e encerra; **Fechar** encerra sem gravar.
 
 | Campo | Comportamento |
 |---|---|
-| Modelo | Abre uma cópia do PSD original escolhido; o modelo nunca é regravado |
-| Nome do produto, preços DE/POR | Mesmas regras do editor rápido, descritas abaixo |
-| Unidade | Texto livre de até oito caracteres; os botões **UN** e **/KG** preenchem o campo. `/` na frente usa a camada `/KG` do modelo; sem `/`, a camada `UN` |
+| Modelo | Escolhido pelo preço: DE ou POR com dois dígitos inteiros (10,00 a 99,99) usa o de dois dígitos (706 × 468 px); senão, o de um dígito (597 × 484 px). A janela mostra qual será usado |
+| Nome do produto, preços DE/POR | Mesmas regras do editor rápido, descritas abaixo. DE vazio não mostra o preço antigo nem o risco |
+| Unidade | **UN** e **/KG** usam as camadas do modelo. **Outra** aceita até oito caracteres; com `/` na frente usa a camada `/KG`, sem `/` a camada `UN` |
 | Rótulo | Texto de `DE R$` e `POR R$`. Use ` / ` para quebrar a linha: `POR / R$`. Um rótulo maior que o original é reduzido ao espaço dele |
 | Imagens | Uma ou mais. Cada uma vira um Objeto Inteligente chamado `IMAGEM - <arquivo>`, logo acima do preenchimento do fundo e atrás dos textos. A primeira da lista fica por cima |
-| Incorporado / Vinculado | Incorporado guarda a imagem dentro do PSD. Vinculado guarda só o caminho: o PSD fica leve, mas a imagem precisa continuar no lugar |
-| Ajuste | **Conter na tela** mostra a imagem inteira; **Preencher a tela** cobre a tela e pode cortar as bordas; **Tamanho original** apenas centraliza. Com a preferência "Redimensionar imagem ao inserir" ativa, o Photoshop já reduz a imagem antes do ajuste |
-| Nome | Sugerido a partir do produto e do preço POR (ex.: `Arroz Tipo 1 5 kg 19,90`). Ao digitar, a sugestão para de mudar; **Auto** volta a gerar. Caracteres proibidos em nomes de arquivo são trocados por espaço. Se o arquivo já existir, o script pergunta antes de substituir |
+| Incorporada / Vinculada | Incorporada guarda a imagem dentro do PSD. Vinculada guarda só o caminho: o PSD fica leve, mas a imagem precisa continuar no lugar |
+| Ajuste da imagem | **Conter na tela** mostra a imagem inteira; **Preencher a tela** cobre a tela e pode cortar as bordas; **Tamanho original** apenas centraliza. Com a preferência "Redimensionar imagem ao inserir" ativa, o Photoshop já reduz a imagem antes do ajuste |
+| Nome do arquivo | Sugerido a partir do produto e do preço POR (ex.: `Arroz Tipo 1 5 kg 19,90`). Ao digitar, a sugestão para de mudar; **Auto** volta a gerar. Caracteres proibidos em nomes de arquivo viram espaço. Se o arquivo já existir, o script pergunta antes de substituir |
+| Pasta de destino | Começa na Área de Trabalho; **Trocar pasta…** escolhe outra, que fica lembrada |
 | Deixar o PSD aberto | Desmarcado por padrão, para criar em sequência sem acumular janelas |
 
-Depois de salvar, a janela mantém modelo, textos, unidades, pastas e modo das imagens. A lista de imagens é esvaziada, para uma foto não ir para o produto errado, e o nome volta a ser automático. Se algo falhar, a cópia é fechada sem gravar e a janela volta com os mesmos dados.
+Depois de salvar, a janela mantém textos, unidades, pasta e modo das imagens. A lista de imagens é esvaziada, para uma foto não ir para o produto errado, e o nome volta a ser automático. Se algo falhar, a cópia é fechada sem gravar e a janela volta com os mesmos dados.
 
-O modelo não pode estar aberto no Photoshop durante a criação: o script pede para fechá-lo, para não descartar alterações não salvas dele.
+Na primeira execução, o script grava os dois modelos na pasta de dados do usuário (`IBD/modelos-textos-precos-1`) e, nas seguintes, só confere se estão íntegros. Os modelos não são decodificados de base64: ficam no script como texto que o próprio Photoshop lê. Depois de trocar um PSD em `apps/photoshop/templates/textos-precos/`, rode `node tools/embutir-modelos-textos.mjs`; o teste falha se o script estiver com modelos diferentes dos PSDs.
 
 ## Como usar o editor rápido
 
@@ -102,6 +101,6 @@ npm run catalog && npm test
 npm run build:site
 ```
 
-Há 14 cenários para o editor, 11 para o criador em série e 16 para o gerador histórico. Os do criador conferem a geometria dos arquivos gerados contra os PSDs de referência, a troca UN e /KG, imagens incorporadas e vinculadas, o ciclo de salvar e criar outro, o nome automático e a recuperação após falha. Eles cobrem validação dos dados, seleção da janela, troca nos dois sentidos, 20 alternâncias consecutivas, recuperação do tamanho após textos longos, guias, cancelamento e recuperação após falha. Os modelos incorporados no gerador são comparados byte a byte e por SHA-256 com os PSDs originais.
+Há 14 cenários para o editor, 14 para o criador em série e 16 para o gerador histórico. Os do criador conferem os modelos embutidos byte a byte, a geometria dos arquivos gerados contra os PSDs de referência, a troca UN e /KG, imagens incorporadas e vinculadas, o ciclo de salvar e criar outro, o nome automático e a recuperação após falha. Eles cobrem validação dos dados, seleção da janela, troca nos dois sentidos, 20 alternâncias consecutivas, recuperação do tamanho após textos longos, guias, cancelamento e recuperação após falha. Os modelos incorporados no gerador são comparados byte a byte e por SHA-256 com os PSDs originais.
 
 As chamadas de Photoshop, o Histórico e as medidas do texto são simulados nos testes locais. A aparência final, o comportamento do desfazer e o tempo de execução ainda precisam de conferência no Photoshop com a fonte original. Não há teste nativo do aplicativo neste ambiente.
