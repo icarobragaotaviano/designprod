@@ -127,7 +127,7 @@ button:disabled { cursor: default; opacity: .5; }
 }
 .filtro:hover { background: var(--hover); }
 .filtro[aria-pressed="true"] { border-color: #526898; background: #35425d; color: var(--texto); }
-..filtro .quantos { margin-left: auto; color: var(--texto-secundario); font-size: 11px; font-variant-numeric: tabular-nums; }
+.filtro .quantos { margin-left: auto; color: var(--texto-secundario); font-size: 11px; font-variant-numeric: tabular-nums; }
 .app-icone {
   display: inline-flex; align-items: center; justify-content: center;
   width: 25px; height: 25px; flex: none; border-radius: 3px;
@@ -231,12 +231,11 @@ button:disabled { cursor: default; opacity: .5; }
 }
 @media (max-width: 900px) {
   .propriedades { width: 100%; border-left: 0; border-top: 1px solid var(--divisor); overflow: visible; }
-  .topo-acoes .botao:first-child { display: none; }
   .cartao-topo { flex-wrap: wrap; }
   body { min-height: 100dvh; height: auto; overflow: auto; }
   .topo { min-height: 46px; flex-wrap: wrap; gap: 0 12px; padding: 0 12px; }
   .topo-marca { flex: 1; }
-  .topo-acoes { display: none; }
+  .topo-acoes { display: flex; flex-basis: 100%; margin: 0; padding: 0 0 8px; flex-wrap: wrap; }
   .navegacao { min-height: 46px; }
   .navegacao button { padding: 0 8px; font-size: 11px; }
   .barra-opcoes { padding: 8px 12px; gap: 10px; }
