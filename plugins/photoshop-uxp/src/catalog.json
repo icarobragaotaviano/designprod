@@ -330,6 +330,40 @@
       "doc": "docs/guias-e-sangria.md"
     },
     {
+      "id": "photoshop/marcas-medida",
+      "titulo": "Marcas de medida",
+      "descricao": "Transforma a seleção retangular em cota com rótulo editável — largura, altura ou as duas, em px, mm, cm ou pt. Roda sem diálogo, feito para atalho.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/marcas-medida.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "medida",
+        "cota",
+        "especificacao",
+        "handoff",
+        "selecao"
+      ],
+      "doc": "docs/marcas-medida.md"
+    },
+    {
+      "id": "photoshop/marcas-medida-opcoes",
+      "titulo": "Marcas de medida — opções",
+      "descricao": "Escolhe o que medir, unidade, casas decimais, posição da linha, fonte e tamanho do rótulo; grava para o atalho e marca a seleção atual.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/marcas-medida-opcoes.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "medida",
+        "cota",
+        "especificacao",
+        "handoff",
+        "opcoes"
+      ],
+      "doc": "docs/marcas-medida.md"
+    },
+    {
       "id": "photoshop/redimensionar-lote",
       "titulo": "Redimensionar em lote",
       "descricao": "Abre os arquivos de uma pasta, reduz para um lado máximo e salva em JPG ou PNG na pasta de saída. Não altera os originais.",

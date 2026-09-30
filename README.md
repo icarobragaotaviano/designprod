@@ -51,12 +51,15 @@ Não há dependências externas — só Node 18+.
 | Alinhar e distribuir camadas | Photoshop | Alinha pela seleção, pela tela ou por uma camada de referência, com espaço fixo em mm |
 | Kit de Produção (Actions) | Photoshop | Suíte de 9 actions (.atn): 150 DPI, atualizar vínculos, sangria, placeholder, revinculação, exportações JPEG/PNG e PDFs |
 | Editar textos e preços | Photoshop | Alterna entre modelos de um ou dois dígitos no PSD aberto, com nome, preços DE/POR, unidades, tela e guias |
+| Marcas de medida | Photoshop | A seleção vira cota com rótulo editável — largura, altura ou as duas, em px, mm, cm ou pt; roda por atalho, sem diálogo |
 
 A [família Auto layout](docs/auto-layout.md) traz para o Photoshop o que o auto layout do Figma faz: o grupo é o quadro, as camadas de dentro são os itens, e a regra de arrumação fica guardada no nome do grupo para ser reaplicada quando o conteúdo mudar. As contas ficam em `core/extendscript/ibd-layout.jsx`, sem nenhuma chamada de app — o mesmo motor vai servir Illustrator e InDesign.
 
 O [kit de guias e sangria](docs/guias-e-sangria.md) inclui instruções e exemplos. O [ZIP atualizado v1.1](downloads/kit-remendos-guias-e-sangria-v1.1.zip) inclui a criação de documentos de remendo; o [ZIP v1.0](downloads/kit-guias-e-sangria-v1.zip) fica como histórico. A lógica passou em 40 testes locais com contratos simulados; a execução dentro dos aplicativos Adobe ainda precisa ser validada.
 
 A [suíte de actions do Photoshop](docs/actions-photoshop.md) organiza rotinas ágeis de fechamento e manipulação de arquivos. O [ZIP do kit de actions v1.0](downloads/kit-actions-photoshop-v1.0.zip) entrega o conjunto unificado `ibd-producao.atn` e todos os arquivos avulsos prontos para importação.
+
+As [marcas de medida](docs/marcas-medida.md) são uma versão reescrita e ampliada do [Size Marks](https://github.com/romashamin/Size-Marks-PS), de Roman Shamin (MIT): medem as duas dimensões de uma vez, em unidades de impressão, com rótulo editável e desenho proporcional à resolução. Um script roda pelo atalho, sem perguntar nada; o outro grava as opções. São 36 verificações locais com o Photoshop simulado; a execução no aplicativo ainda precisa ser conferida.
 
 O [editor de textos e preços](docs/textos-e-precos.md) inclui os dois PSDs originais e aplica os dados no documento aberto, sem recriar o arquivo. A primeira versão do gerador fica preservada em [histórico](historico/photoshop/README.md). Há 30 cenários locais com Photoshop simulado; a conferência visual e de desempenho no aplicativo ainda está pendente.
 
@@ -90,6 +93,7 @@ Detalhes em [docs/guia-script.md](docs/guia-script.md).
 
 - [docs/textos-e-precos.md](docs/textos-e-precos.md) — editor de preços, modelos PSD, estrutura de camadas e testes
 - [docs/actions-photoshop.md](docs/actions-photoshop.md) — suíte de actions: rotinas, instalação, modo de botão e kit
+- [docs/marcas-medida.md](docs/marcas-medida.md) — cotas da seleção: atalho, opções, diferenças para o Size Marks e conferência no app
 - [docs/auto-layout.md](docs/auto-layout.md) — família auto layout: modelo, parâmetros e etiqueta `@auto`
 - [docs/site.md](docs/site.md) — vitrine do catálogo: como é montada e como publicar na Vercel
 - [docs/guias-e-sangria.md](docs/guias-e-sangria.md) — uso dos três scripts e download do kit
@@ -103,3 +107,5 @@ Detalhes em [docs/guia-script.md](docs/guia-script.md).
 ## Licença
 
 MIT — veja [LICENSE](LICENSE).
+
+Código derivado de terceiros, com o aviso de cada um, está registrado em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Hoje: as marcas de medida, derivadas do Size Marks (© 2014 Roman Shamin, MIT).

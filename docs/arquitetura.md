@@ -84,6 +84,16 @@ O preço é que a propriedade do filho fica invisível sem o painel Auto Layout.
 
 **Quando reavaliar:** se o XMP de camada se mostrar instável entre versões do Photoshop na Fase 2, as propriedades do filho passam para uma camada de dados dentro do grupo, invisível e travada. Detalhes em [auto-layout-v2.md](auto-layout-v2.md).
 
+## 11. Código de terceiros entra com o aviso dentro do arquivo
+
+**Decisão:** ferramenta derivada de projeto de terceiros ganha nome próprio, e o aviso de licença do original vai na íntegra no cabeçalho de cada arquivo com código derivado, além de uma seção em [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) com a origem fixada por commit. Um teste confere que o aviso continua lá.
+
+A licença MIT só permite copiar e modificar com o aviso junto. Um arquivo central de avisos não basta aqui, porque a vitrine entrega cada `.jsx` sozinho e serve os arquivos do `core/` avulsos: quem baixa um arquivo não leva o repositório. Com o aviso no próprio arquivo, ele viaja com qualquer cópia — inclusive a versão com a biblioteca embutida. O teste existe porque um aviso de licença é justamente o tipo de comentário que alguém apaga numa limpeza.
+
+O nome próprio evita sugerir que a versão é oficial ou endossada pelo autor original; o nome do original aparece só no crédito. O caso atual são as marcas de medida, derivadas do Size Marks ([marcas-medida.md](marcas-medida.md)).
+
+**Consequência:** o texto do aviso aparece repetido em mais de um arquivo e mais de uma vez no `.jsx` baixável. É proposital — é o custo de cada cópia estar em dia com a licença.
+
 ## Limites conhecidos
 
 - A ponte UXP → ExtendScript usa um evento não documentado do batchPlay. Ela falha de forma explícita e o painel cai no modo manual. Detalhes em [guia-uxp.md](guia-uxp.md).
