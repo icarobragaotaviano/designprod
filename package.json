@@ -22,7 +22,7 @@
     "test:pacote": "node tools/test-pacote.cjs",
     "test:standalone": "node tools/test-standalone.cjs",
     "test:actions": "node tools/test-actions.cjs",
-    "test:textos": "node tools/test-textos-precos.cjs && node tools/test-gerar-textos-precos.cjs"
+    "test:textos": "node tools/test-textos-precos.cjs && node tools/test-criar-textos-precos.cjs && node tools/test-gerar-textos-precos.cjs"
   },
   "license": "MIT"
 }
