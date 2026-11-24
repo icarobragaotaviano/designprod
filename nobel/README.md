@@ -18,7 +18,7 @@ Os aplicativos de folha iniciam diretamente no modo indicado no cartão. O corte
 - CorelDRAW Windows: importe o módulo BAS em um projeto VBA e associe o comando à barra. Ele abre a pasta da OS identificada no nome da arte.
 - Illustrator: execute o JSX pelo menu de scripts e selecione o SVG técnico.
 - TraceDraw: instale o plugin JS pelo menu de plugins. Use documento em mm e uma camada técnica separada.
-- VectorCraft: importe o SVG do gabarito ou do cartaz. Meça o formato e a reserva antes de usar o arquivo na produção.
+- VectorCraft: baixe **Conferir contornos de faca** e execute pelo menu de scripts com o documento aberto. Nomeie as camadas de corte FACA ou MEIO-CORTE. O relatório localiza traçados abertos e curvas exatamente duplicadas pela posição dos nós e das alças, inclusive em ordem inversa. A lista completa aparece no console. Sobreposições parciais e curvas aproximadas exigem conferência visual. Para intercâmbio, importe o SVG do gabarito ou do cartaz. Meça o formato e a reserva antes de usar o arquivo na produção.
 - PhotoCraft: execute o utilitário de inspeção com `-Pasta` e, se necessário, `-Cli` apontando para o executável instalado.
 - Photoshop: a vitrine principal mantém os JSX, ações e painel para preços, guias, sangria, remendos e exportação.
 

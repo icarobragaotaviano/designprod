@@ -17,7 +17,7 @@ for(const categoria of [...new Set(apps.map(a=>a[2]))]){
   const cards=apps.filter(a=>a[2]===categoria).map(([id,t,,desc])=>`<a class="cartao" href="${id}/"><h3>${t}</h3><p>${desc}</p></a>`).join('');
   secoes+=`<section><h2>${categoria}</h2><div class="catalogo">${cards}</div></section>`;
 }
-const integracoes=[['preparar-pasta.ps1','Windows · Preparar pasta da OS'],['abrir-os-corel.bas','CorelDRAW · Abrir pasta da arte'],['abrir-gabarito-illustrator.jsx','Illustrator · Abrir gabarito'],['trace-calendario.js','TraceDraw · Gabarito de calendário'],['inspecionar-photocraft.ps1','PhotoCraft · Inspecionar PSDs']];
+const integracoes=[['preparar-pasta.ps1','Windows · Preparar pasta da OS'],['abrir-os-corel.bas','CorelDRAW · Abrir pasta da arte'],['abrir-gabarito-illustrator.jsx','Illustrator · Abrir gabarito'],['trace-calendario.js','TraceDraw · Gabarito de calendário'],['conferir-faca-vectorcraft.js','VectorCraft · Conferir contornos de faca'],['inspecionar-photocraft.ps1','PhotoCraft · Inspecionar PSDs']];
 await mkdir(path.join(saida,'desktop'),{recursive:true});
 for(const [nome] of integracoes)await writeFile(path.join(saida,'desktop',nome),await arquivo('desktop/'+nome));
 secoes+='<section><h2>Utilitários de desktop</h2><div class="catalogo">'+integracoes.map(([nome,t])=>'<a download class="cartao" href="desktop/'+nome+'">'+t+'</a>').join('')+'</div></section>';
