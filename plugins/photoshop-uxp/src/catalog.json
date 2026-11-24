@@ -331,6 +331,24 @@
       ]
     },
     {
+      "id": "photoshop/gerar-ofertas-preto-dourado",
+      "titulo": "Ofertas preto e dourado",
+      "descricao": "Cria ofertas em story 1080×1920 ou horizontal 1920×1080 com textos, formas vetoriais, guias e cinco imagens. No layout aberto, edita só os elementos alterados, em um passo de histórico.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/gerar-ofertas-preto-dourado.jsx",
+      "versao": "2.0.0",
+      "tags": [
+        "ofertas",
+        "layout",
+        "textos",
+        "imagens",
+        "varejo",
+        "guias"
+      ],
+      "doc": "apps/photoshop/docs/ofertas-preto-dourado.md"
+    },
+    {
       "id": "photoshop/guias-selecao-margem",
       "titulo": "Remendo de adesivo — seleção e margem",
       "descricao": "Cria guias, seleciona a área total com margem e gera um novo documento mesclado na escala e nas cores do original.",
@@ -346,6 +364,40 @@
         "arte-final"
       ],
       "doc": "docs/guias-e-sangria.md"
+    },
+    {
+      "id": "photoshop/marcas-medida",
+      "titulo": "Marcas de medida",
+      "descricao": "Transforma a seleção retangular em cota com rótulo editável — largura, altura ou as duas, em px, mm, cm ou pt. Roda sem diálogo, feito para atalho.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/marcas-medida.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "medida",
+        "cota",
+        "especificacao",
+        "handoff",
+        "selecao"
+      ],
+      "doc": "docs/marcas-medida.md"
+    },
+    {
+      "id": "photoshop/marcas-medida-opcoes",
+      "titulo": "Marcas de medida — opções",
+      "descricao": "Escolhe o que medir, unidade, casas decimais, posição da linha, fonte e tamanho do rótulo; grava para o atalho e marca a seleção atual.",
+      "app": "photoshop",
+      "tipo": "script",
+      "arquivo": "apps/photoshop/scripts/marcas-medida-opcoes.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "medida",
+        "cota",
+        "especificacao",
+        "handoff",
+        "opcoes"
+      ],
+      "doc": "docs/marcas-medida.md"
     },
     {
       "id": "photoshop/redimensionar-lote",

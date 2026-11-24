@@ -1,0 +1,39 @@
+:root {
+  color-scheme: dark;
+  --surface:#181a1f; --stage-bg:#14161a; --paper:#20232a; --card:var(--paper); --raised:#282c35;
+  --ink:#e4e7ee; --ink-soft:#b6bcc8; --muted:#8890a0; --line:#2e333d; --line-soft:#242830; --rule:#3a404d;
+  --secondary:#68a8e8; --secondary-soft:rgba(104,168,232,.12); --accent:#f0c419; --accent-hover:#ddb211;
+  --accent-soft:rgba(240,196,25,.12); --on-accent:#16181d; --primary:var(--accent); --ok:#52b788; --warn:#e5a93c; --danger:#f29ca6;
+  --font-sans:'Space Grotesk',system-ui,sans-serif; --font-mono:'Space Mono',ui-monospace,monospace; --mono:var(--font-mono); --shell-max:1880px;
+  --canvas:var(--stage-bg); --painel:var(--paper); --hover:var(--raised); --divisor:var(--line); --foco:var(--secondary); --fonte:var(--font-sans);
+}
+body{color:var(--ink);background:radial-gradient(ellipse 85% 42% at 50% -10%,rgba(104,168,232,.065),transparent),var(--surface);font:400 13.5px/1.45 var(--font-sans);-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--on-accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select,textarea{background:var(--surface);color:var(--ink);border-color:var(--rule);border-radius:8px}
+input:focus,select:focus,textarea:focus{border-color:var(--secondary);box-shadow:0 0 0 3px rgba(104,168,232,.18)}
+input[type=number],.resultado-linha strong,.metric b,.version,.versao,.quantos,.app{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.ibd-nav,.topo{background:rgba(24,26,31,.9);backdrop-filter:blur(18px) saturate(155%);border-bottom:1px solid var(--line)}
+.ibd-nav{display:flex;align-items:center;justify-content:space-between;padding:8px clamp(16px,3vw,44px);color:var(--ink);max-width:var(--shell-max);margin:auto}
+.ibd-nav a{color:var(--ink);text-decoration:none}.ibd-sign{display:inline-flex;align-items:center;gap:10px;font:bold 20px var(--font-sans);letter-spacing:-.05em}
+.ibd-mark{display:inline-grid;place-content:center;grid-auto-flow:column;width:36px;height:36px;border-radius:10px;border:1px solid var(--rule);background:linear-gradient(var(--raised),var(--paper))}
+.ibd-dot{color:var(--accent)} .ibd-sub{font:600 9px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+body[data-app] main{max-width:1380px}body[data-app] form,body[data-app] article,.cartao{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:15px}
+body[data-app] button,body[data-app] .acao,.ibd-nav button{background:var(--raised);color:var(--ink);border:1px solid var(--rule);border-radius:8px;padding:8px 12px}
+body[data-app] button[type=submit]{background:var(--accent);color:var(--on-accent);font-weight:700}
+body[data-app] small{color:var(--muted)}body[data-app] #aviso{color:var(--danger)}body[data-app] .resultado-linha{border-color:var(--line)}
+body[data-app] h1{font-size:clamp(26px,3.5vw,36px);letter-spacing:-.04em}
+.topbar-inner,body[data-suite-module=folha] main{max-width:var(--shell-max)}
+.studio-bar:has(.mode-nav){display:block}.mode-nav[data-cols="6"]{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));width:100%}
+.mode-nav button{min-width:0}.topbar-inner .studio-status{display:flex;gap:6px;flex-wrap:wrap}
+.topo .sigla{background:var(--raised);color:var(--ink);border-color:var(--rule);border-radius:10px}
+.plataformas{display:flex;gap:6px;flex-wrap:wrap}.plataformas button{background:var(--raised);border:1px solid var(--rule);border-radius:999px;color:var(--ink-soft);padding:7px 12px}.plataformas button[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
+.cartao .app{color:var(--secondary);background:var(--secondary-soft)}.cartao .elo.principal{color:var(--secondary);background:var(--secondary-soft)}
+@media(max-width:1199px){.mode-nav[data-cols="6"]{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:767px){.mode-nav[data-cols="6"]{grid-template-columns:repeat(2,minmax(0,1fr))}.ibd-sub{display:none}.plataformas{gap:3px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media print{.ibd-nav,.topbar,.topo,.studio-bar,.mobile-nav,.zoom-bar,.plataformas{display:none!important}body,.stage,main{background:white!important;color:black!important;box-shadow:none!important}}
+
+body:has(.shell .header){--bg:var(--surface);--white:var(--paper);--primary:var(--accent);--deep:var(--secondary);--light:var(--raised);--shadow:0 12px 32px #0004}body:has(.shell .header) :is(.card,.panel,.box,.kpi){background:var(--paper);color:var(--ink)}body:has(.shell .header) .logo{background:var(--raised);color:var(--ink)}
+
+.plataformas{padding:12px;gap:4px}.plataformas button{font:600 11px var(--font-sans);padding:6px 9px}.cartao.selecionado,.filtro[aria-pressed=true]{background:var(--secondary-soft);border-color:var(--secondary)}.topo-marca h1{font-size:20px;letter-spacing:-.05em}.topo .subtitulo,.rotulo-secao,.titulo-painel,.brand-sub{font:600 10px var(--mono);letter-spacing:.1em;text-transform:uppercase}.grade{gap:12px}.cartao{padding:16px;box-shadow:inset 0 1px 0 #ffffff0a,0 12px 32px #0003}.cartao:hover{border-color:var(--secondary)}.cartao-pe .elo,.botao{border-radius:7px}.cartao-pe .elo[href^="/apps/"]{color:var(--secondary)}.detalhes-acoes .principal:hover{background:var(--accent-hover);color:var(--on-accent)}.topo,.barra-opcoes,.area-trabalho,.rodape{width:100%;max-width:var(--shell-max);margin-inline:auto}.cabecalho-painel h2{font:700 clamp(26px,3.5vw,36px)/1.08 var(--font-sans);letter-spacing:-.04em}.ibd-mark{font:700 18px var(--font-sans);align-content:center}.topo-marca .ibd-mark{color:var(--ink)}body:has(.shell .header) :is(.tabs,.sidebar-foot,.hint,.btn,.card,.pill,.step){background:var(--raised);color:var(--ink-soft);border-color:var(--rule)}body:has(.shell .header) :is(.tabs button.active,.btn.primary){background:var(--accent);color:var(--on-accent)}body:has(.shell .header) .field-label{color:var(--ink-soft)}body:has(.shell .header) .mode:has(input:checked){background:var(--secondary-soft);border-color:var(--secondary)}

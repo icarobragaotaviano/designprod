@@ -18,6 +18,16 @@
   var elContagem = document.getElementById('contagem');
   var elAcoes = document.getElementById('acoes-repo');
 
+  var plataforma = 'todas';
+  document.querySelectorAll('[data-plataforma]').forEach(function (botao) {
+    botao.addEventListener('click', function () {
+      plataforma = botao.dataset.plataforma;
+      estado.app = 'todos';
+      mostrarArea('biblioteca');
+      gravarEndereco();
+      render();
+    });
+  });
   var estado = { termo: '', app: 'todos', selecionado: null };
   var elDetalhes = document.getElementById('detalhes');
   var elResultados = document.getElementById('resultados');
@@ -132,6 +142,7 @@
     b.appendChild(quantos);
     b.addEventListener('click', function () {
       estado.app = app;
+      if(app !== 'todos') plataforma=app==='web'?'online':'desktop';
       mostrarArea('biblioteca');
       gravarEndereco();
       render();
@@ -176,6 +187,7 @@
 
   function gravarEndereco() {
     var partes = [];
+    if (plataforma !== 'todas') partes.push('plataforma=' + plataforma);
     if (estado.app !== 'todos') partes.push('app=' + encodeURIComponent(estado.app));
     if (estado.termo) partes.push('q=' + encodeURIComponent(estado.termo));
     var novo = partes.length ? '#' + partes.join('&') : ' ';
@@ -192,6 +204,7 @@
       var valor;
       try { valor = decodeURIComponent(par.substring(corte + 1)); } catch (e) { return; }
       if (chave === 'app' && appsPresentes.indexOf(valor) > -1) estado.app = valor;
+      if (chave === 'plataforma' && ['online','desktop'].indexOf(valor) !== -1) plataforma=valor;
       if (chave === 'q') { estado.termo = valor.toLowerCase(); elBusca.value = valor; }
     });
   }
@@ -216,7 +229,7 @@
     h2.appendChild(selecionar);
     var app = document.createElement('span');
     app.className = 'app';
-    app.textContent = nomeDoApp(f.app);
+    app.textContent = f.abrir ? 'Online' : 'Desktop · ' + nomeDoApp(f.app);
     topo.appendChild(iconeApp(f.app));
     topo.appendChild(h2);
     topo.appendChild(app);
@@ -241,6 +254,7 @@
     var pe = document.createElement('div');
     pe.className = 'cartao-pe';
 
+    if (f.abrir) pe.appendChild(elo(f.abrir,'Abrir app',false));
     if (f.baixar) {
       var rotuloBaixar = f.tipo === 'action' ? 'Baixar action' : 'Baixar';
       var baixar = elo(f.baixar, rotuloBaixar, false);
@@ -316,7 +330,7 @@
     var propriedades = document.createElement('dl');
     var itens = [
       ['Aplicativo', nomeDoApp(f.app)],
-      ['Tipo', f.tipo === 'action' ? 'Action' : 'Script'],
+      ['Tipo', f.abrir ? 'Online' : 'Desktop · '+f.tipo],
       ['Versão', 'v' + f.versao]
     ];
     if (f.baixarTamanho) itens.push(['Tamanho', f.baixarTamanho + ' KB']);
@@ -331,6 +345,7 @@
     elDetalhes.appendChild(propriedades);
     var acoes = document.createElement('div');
     acoes.className = 'detalhes-acoes';
+    if (f.abrir) acoes.appendChild(elo(f.abrir,'Abrir app',false));
     if (f.baixar) {
       var baixar = elo(f.baixar, f.tipo === 'action' ? 'Baixar action' : 'Baixar ferramenta', false);
       baixar.className = 'elo principal';
@@ -345,8 +360,9 @@
   /* Render ------------------------------------------------------------ */
 
   function render() {
+    document.querySelectorAll('[data-plataforma]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.plataforma===plataforma));});
     var visiveis = ferramentas.filter(function (f) {
-      return (estado.app === 'todos' || f.app === estado.app) && combina(f, estado.termo);
+      return (plataforma === 'todas' || plataforma === (f.abrir ? 'online' : 'desktop')) && (estado.app === 'todos' || f.app === estado.app) && combina(f, estado.termo);
     });
 
     Array.prototype.forEach.call(elFiltros.children, function (b) {
@@ -372,6 +388,7 @@
       limpar.textContent = 'Limpar busca';
       limpar.addEventListener('click', function () {
         estado.termo = '';
+        plataforma = 'todas';
         estado.app = 'todos';
         elBusca.value = '';
         gravarEndereco();

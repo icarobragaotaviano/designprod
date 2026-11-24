@@ -4,17 +4,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{MARCA}} — DesignProd</title>
-    <meta name="description" content="Ferramentas de produção Adobe do estúdio {{NOME_COMPLETO}}." />
+    <meta name="description" content="Aplicativos online e ferramentas de desktop do estúdio {{NOME_COMPLETO}}." />
     <meta name="color-scheme" content="dark" />
     <link rel="icon" href="data:image/svg+xml,{{FAVICON}}" />
     <link rel="stylesheet" href="styles.css" />
-  </head>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap"><meta name="theme-color" content="#181a1f"><link rel="stylesheet" href="/ibd-theme.css"></head>
   <body>
     <a class="pular" href="#conteudo">Pular para o conteúdo</a>
     <header class="topo">
       <div class="topo-marca">
-        <span class="sigla" aria-hidden="true">{{MARCA}}</span>
-        <h1>DesignProd</h1>
+        <span class="ibd-mark" aria-hidden="true">ib<span class="ibd-dot">.</span></span>
+        <h1>designprod<span class="ibd-dot">.</span></h1>
         <span class="subtitulo">Ferramentas de produção</span>
       </div>
       <nav class="navegacao" aria-label="Área de trabalho">
@@ -45,7 +45,7 @@
       <aside class="lateral" aria-label="Biblioteca">
         <h2 class="titulo-painel">Biblioteca</h2>
         <div class="rotulo-secao">Aplicativos</div>
-        <div class="filtros" id="filtros" role="group" aria-label="Filtrar por aplicativo"></div>
+        <div class="plataformas" role="group" aria-label="Plataforma"><button type="button" data-plataforma="todas" aria-pressed="true">Todas</button><button type="button" data-plataforma="online" aria-pressed="false">Online</button><button type="button" data-plataforma="desktop" aria-pressed="false">Desktop</button></div><div class="filtros" id="filtros" role="group" aria-label="Filtrar por aplicativo"></div>
         <div class="lateral-nota">
           <span class="indicador" aria-hidden="true"></span>
           <span>Ferramentas do estúdio<br/><small>{{NOME_COMPLETO}}</small></span>

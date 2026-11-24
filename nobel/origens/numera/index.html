@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IBD • Calculadora de numeração de blocos</title>
+<style>
+:root{--ink:#172b3d;--muted:#617487;--line:#dfe8ed;--primary:#087f77;--deep:#086a63;--bg:#f3f7f8;--white:#fff;--light:#eaf7f4;--warn:#fff6e4;--warnInk:#845400;--bad:#aa3434;--shadow:0 14px 38px rgba(19,50,62,.07)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;line-height:1.45}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #79c7ba;outline-offset:2px}.shell{max-width:1200px;margin:auto;padding:25px 22px 60px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:28px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:12px}.logo{background:#087f77;color:#fff;border-radius:14px;min-width:52px;min-height:52px;display:grid;place-items:center;font-size:19px;font-weight:900;letter-spacing:-1px;box-shadow:0 5px 14px #0c6e6540}.brand strong{display:block;font-size:15px}.brand small{color:var(--muted);font-size:12px}.tabs{display:flex;background:#e5eff1;padding:4px;border-radius:14px;gap:4px}.tabs button{border:0;border-radius:10px;padding:10px 15px;background:transparent;color:#4f6874;font-weight:700;font-size:13px}.tabs button.active{background:white;color:var(--deep);box-shadow:0 2px 7px #1234}
+.intro{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin-bottom:25px;flex-wrap:wrap}.eyebrow{font-size:11px;text-transform:uppercase;font-weight:850;letter-spacing:1.6px;color:var(--primary);margin:0 0 5px}h1{font-size:clamp(28px,4vw,41px);letter-spacing:-1.4px;line-height:1.1;margin:0 0 10px}h2{font-size:17px;letter-spacing:-.35px;margin:0}p{margin:0}.subtitle{color:var(--muted);max-width:630px;font-size:14px}.pill{border:1px solid #c3e6df;background:#e9f8f5;color:#0a7267;font-weight:800;font-size:11px;padding:8px 11px;border-radius:99px;white-space:nowrap}
+.layout{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:20px;align-items:start}.panel{background:white;border:1px solid var(--line);border-radius:21px;box-shadow:var(--shadow);overflow:hidden}.panel-inner{padding:23px}.panelhead{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:22px}.step{background:#e9f7f4;color:#098174;font-size:12px;font-weight:900;border-radius:8px;padding:5px 9px}.section-note{color:var(--muted);font-size:12px;margin-top:4px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:16px 13px}.field.wide{grid-column:1/-1}.field-label{display:flex;align-items:center;gap:5px;margin-bottom:7px;font-size:12px;font-weight:800;color:#314859}.input{width:100%;border:1px solid #cedce2;border-radius:11px;min-height:46px;background:#fff;color:var(--ink);font-weight:750;font-size:17px;padding:10px 12px;transition:border .15s}.input:focus{border-color:var(--primary)}.input::placeholder{color:#9cabb0;font-size:14px;font-weight:400}.helper{display:block;margin-top:5px;font-size:11px;color:var(--muted)}
+.hint-wrap{position:relative;display:inline-flex;align-items:center}.hint{display:grid;place-items:center;background:#edf3f5;border:1px solid #d5e1e4;color:#527785;border-radius:50%;width:18px;height:18px;font-size:11px;font-weight:900;padding:0;line-height:1}.tip{position:absolute;z-index:20;display:none;left:-70px;top:25px;width:245px;background:#1a3345;color:#fff;box-shadow:0 7px 22px #0002;border-radius:11px;padding:12px;font-size:12px;font-weight:450;line-height:1.48}.hint-wrap:hover .tip,.hint-wrap:focus-within .tip{display:block}.section-divider{height:1px;background:var(--line);margin:22px 0}.mini-title{font-weight:850;font-size:13px;margin-bottom:10px}.mode-list{display:grid;gap:9px}.mode{border:1px solid var(--line);border-radius:13px;display:flex;gap:11px;padding:12px;cursor:pointer;align-items:flex-start}.mode:has(input:checked){border-color:#3ea597;background:#f0faf7;box-shadow:inset 0 0 0 1px #3ea597}.mode input{accent-color:#087f77;margin-top:4px}.mode strong{font-size:12px;display:block;margin-bottom:3px}.mode small{display:block;color:var(--muted);line-height:1.45;font-size:11px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}.btn{border:1px solid #cbdde0;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:850;background:#fff;color:#36515e;min-height:41px;display:inline-flex;align-items:center;justify-content:center;gap:7px}.btn.primary{background:var(--primary);border-color:var(--primary);color:white}.btn:hover{filter:brightness(.95)}.btn:disabled{opacity:.45;cursor:not-allowed}.sidebar-foot{background:#f8fbfb;border-top:1px solid var(--line);padding:14px 23px;color:#697e88;font-size:11px}.right{display:grid;gap:18px}.result-panel{padding:22px}.result-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.overline{font-size:11px;color:var(--muted);margin-top:5px}.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.metric{padding:17px;border:1px solid var(--line);border-radius:13px;background:#fbfdfd;min-width:0}.metric.hero{background:var(--light);border-color:#ccebe5}.metric-label{color:#596f7b;font-size:11px;font-weight:700}.metric-value{font-size:clamp(22px,3vw,31px);font-weight:850;letter-spacing:-1px;white-space:nowrap}.metric-foot{font-size:11px;color:var(--muted)}.range{background:#133a42;color:white;border-radius:15px;padding:20px;margin-top:12px}.range-title{font-size:11px;color:#b0d4d7;text-transform:uppercase;letter-spacing:1.1px;font-weight:800}.range-value{font-size:clamp(25px,4vw,36px);letter-spacing:-.8px;font-weight:850;margin:6px 0}.range-details{font-size:12px;color:#c3dbdc}.notice{border-radius:12px;background:var(--warn);color:var(--warnInk);padding:12px 14px;font-size:12px;line-height:1.55;margin-top:12px}.notice.good{background:#eef8f5;color:#12675c}.error{display:none;background:#fff0ef;color:#a23838;border:1px solid #f1cbcb;border-radius:12px;padding:12px;margin:0 0 16px;font-size:13px}.table-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:18px 21px;border-bottom:1px solid var(--line)}.table-scroll{overflow:auto;max-height:425px}.data-table{width:100%;border-collapse:collapse;text-align:left;font-size:12px;white-space:nowrap}.data-table th{position:sticky;top:0;background:#f5f9fa;color:#536a77;padding:12px 17px;font-size:11px;z-index:1}.data-table td{padding:12px 17px;border-top:1px solid #edf1f3;font-weight:650}.data-table tr:nth-child(even) td{background:#fafcfc}.row-label{color:#0a7d75;font-weight:850}.table-footer{padding:13px 19px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid var(--line);flex-wrap:wrap}.table-footer small{color:var(--muted)}.pagination{display:flex;gap:6px}.pagination button{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:white;font-weight:800;color:#275661}.formula-panel{padding:19px 22px}.formula-panel summary{font-size:13px;font-weight:850;cursor:pointer}.formula-panel ul{margin:13px 0 0;padding-left:20px;color:#4c6370;font-size:12px;line-height:1.85}.formula-panel code{background:#edf5f4;color:#126960;border-radius:4px;padding:2px 5px;font-size:12px}.hidden{display:none!important}.glossary{padding:24px}.glossary-intro{margin-bottom:22px;color:var(--muted);font-size:13px}.terms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.term{border:1px solid var(--line);border-radius:13px;padding:16px}.term strong{display:block;font-size:13px;margin-bottom:6px}.term b{color:#008477}.term p{color:#566b79;font-size:12px;line-height:1.55}.footer-note{margin-top:16px;font-size:11px;color:#758994}.toast{position:fixed;z-index:100;bottom:23px;left:50%;transform:translateX(-50%);background:#193c3e;color:white;padding:10px 18px;border-radius:30px;font-size:12px;box-shadow:0 8px 25px #0003;display:none}
+@media(max-width:870px){.layout{grid-template-columns:1fr}.left{max-width:none}.shell{padding:18px 16px 48px}}@media(max-width:540px){.header{align-items:flex-start}.tabs{width:100%}.tabs button{flex:1}.shell{padding:16px 12px 36px}.panel-inner,.result-panel{padding:18px}.panel{border-radius:16px}.intro{margin-bottom:18px}h1{font-size:31px}.terms{grid-template-columns:1fr}.metric{padding:13px}.metric-value{font-size:24px}.table-top{padding:15px}.table-footer{padding:12px}.tip{left:-105px;max-width:210px}.range{padding:16px}}
+@media print{body{background:white}.header,.actions,.tabs,.table-footer,.footer-note,.notice,.formula-panel,.sidebar-foot{display:none!important}.shell{max-width:none;padding:0}.layout{grid-template-columns:1fr}.left{display:none}.panel{box-shadow:none}.table-scroll{max-height:none;overflow:visible}.data-table th{position:static}}
+
+.via-section{margin-top:15px}.via-title{font-weight:850;font-size:13px;margin:0 0 10px;display:flex;align-items:center;gap:7px}.via-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px}.via-card{border:1px solid #b8e1d8;background:#f0faf8;border-radius:13px;padding:15px;min-width:0}.via-label{display:block;color:#177a70;font-size:11px;letter-spacing:.8px;font-weight:900}.via-value{font-weight:850;font-size:clamp(17px,2vw,22px);white-space:nowrap;letter-spacing:-.4px;margin:4px 0}.via-foot{display:block;color:#587978;font-size:11px}
+@media(max-width:540px){.via-grid{grid-template-columns:1fr 1fr}.via-card{padding:11px}.via-value{font-size:16px}}
+@media(max-width:340px){.via-grid{grid-template-columns:1fr}}
+.tabs{flex-wrap:wrap;max-width:100%}#positionPage{max-width:680px}
+</style>
+</head>
+<body>
+<div class="shell" id="nbl-app">
+<header class="header"><div class="brand"><div class="logo">IBD</div><div><strong>Ferramentas de produção gráfica</strong><small>Cálculos de numeração · Blocos e talões</small></div></div><nav class="tabs" aria-label="Navegação"><button type="button" class="active" id="tabCalc" aria-pressed="true">Calculadora</button><button type="button" id="tabPosition" aria-pressed="false">Posição X/Y</button><button type="button" id="tabGloss" aria-pressed="false">Glossário técnico</button></nav></header>
+<section class="intro"><div><p class="eyebrow">Pré-impressão · Planejamento de produção</p><h1>Numeração de blocos</h1><p class="subtitle">Calcule folhas, jogos e intervalos de numeração. Confira cada via e gere um mapa para acompanhar a ordem de serviço.</p></div><span class="pill">● Cálculo instantâneo</span></section>
+<div id="calcPage" class="layout">
+<aside class="panel left"><div class="panel-inner"><div class="panelhead"><div><h2>Dados da ordem de serviço</h2><p class="section-note">Informe as quantidades do trabalho.</p></div><span class="step">01</span></div>
+<div class="fields">
+<div class="field wide"><label class="field-label" for="os">Referência da OS <span style="font-weight:400;color:var(--muted)">(opcional)</span></label><input id="os" class="input" type="text" maxlength="50" placeholder="Ex.: OS 1042" style="font-size:14px;font-weight:550"></div>
+<div class="field"><label class="field-label" for="nb">Blocos (NB)<span class="hint-wrap"><button class="hint" type="button" aria-label="O que é NB?">i</button><span class="tip" role="tooltip">NB: número de blocos ou talões que serão produzidos no lote.</span></span></label><input class="input" id="nb" type="number" min="1" max="10000" step="1" value="100" inputmode="numeric"></div>
+<div class="field"><label class="field-label" for="nf">Folhas por bloco (NF)<span class="hint-wrap"><button class="hint" type="button" aria-label="O que é NF?">i</button><span class="tip" role="tooltip">NF: total de folhas físicas em cada bloco, somando todas as vias. Exemplo: 50 folhas por bloco, contando todas as vias.</span></span></label><input class="input" id="nf" type="number" min="1" max="100000" step="1" value="50" inputmode="numeric"></div>
+<div class="field"><label class="field-label" for="qv">Quantidade de vias (QV)<span class="hint-wrap"><button class="hint" type="button" aria-label="O que é QV?">i</button><span class="tip" role="tooltip">QV: quantidade de folhas que formam um mesmo jogo (original e cópias). Escolha de 1 a 6 vias.</span></span></label><select class="input" id="qv"><option value="1">1 via</option><option selected value="2">2 vias</option><option value="3">3 vias</option><option value="4">4 vias</option><option value="5">5 vias</option><option value="6">6 vias</option></select></div>
+<div class="field"><label class="field-label" for="ni">Número inicial (NI)<span class="hint-wrap"><button class="hint" type="button" aria-label="O que é NI?">i</button><span class="tip" role="tooltip">NI: primeiro número da tiragem, incluindo todas as vias. Você pode digitar zeros à esquerda, por exemplo 0001.</span></span></label><input class="input" id="ni" type="text" inputmode="numeric" pattern="[0-9]+" value="1001" maxlength="12" autocomplete="off"></div>
+<div class="field wide"><label class="field-label" for="digits">Dígitos mínimos da numeração<span class="hint-wrap"><button class="hint" type="button" aria-label="O que são dígitos mínimos?">i</button><span class="tip" role="tooltip">Completa os números com zeros à esquerda para visualização e exportação. Se a numeração ultrapassar a largura escolhida, o aplicativo preserva o número inteiro.</span></span></label><select class="input" id="digits" style="font-size:14px"><option value="3">3 dígitos (001)</option><option selected value="4">4 dígitos (0001)</option><option value="5">5 dígitos (00001)</option><option value="6">6 dígitos (000001)</option><option value="8">8 dígitos (00000001)</option></select></div>
+</div>
+<div class="section-divider"></div><div class="mini-title">Como as vias serão numeradas? <span class="hint-wrap"><button class="hint" type="button" aria-label="Explicação dos modos">i</button><span class="tip" role="tooltip">No talão autocopiativo, as vias do mesmo jogo costumam repetir a numeração. Sua anotação também descreve uma alternativa de faixas sequenciais separadas por via.</span></span></div>
+<div class="mode-list"><label class="mode"><input type="radio" name="mode" value="repeated"><span><strong>Mesmo número em todas as vias</strong><small>Original e cópias compartilham a numeração do jogo. Padrão para talões autocopiativos.</small></span></label><label class="mode"><input type="radio" name="mode" value="sequential" checked><span><strong>Faixas completas por via (como na anotação)</strong><small>Cada via ocupa uma faixa contínua de todo o lote. Exemplo: V1 1001–3500; V2 3501–6000.</small></span></label></div>
+<div class="actions"><button type="button" class="btn primary" id="copyReport">▣ Copiar resumo</button><button type="button" class="btn" id="reset">↺ Restaurar exemplo</button></div>
+</div><div class="sidebar-foot">Dica: passe o mouse ou toque em <strong>ⓘ</strong> para aprender os termos técnicos.</div></aside>
+<main class="right" aria-live="polite"><section class="panel result-panel"><div class="result-head"><div><h2>Resultado do cálculo</h2><p class="overline">Atualizado automaticamente conforme os campos</p></div><span class="step">02</span></div><div id="error" class="error" role="alert"></div><div id="results"><div class="cards"><div class="metric"><div class="metric-label">Total de folhas · TF</div><div class="metric-value" id="rTF">5.000</div><div class="metric-foot">Folhas físicas no lote</div></div><div class="metric"><div class="metric-label">Folhas por via · TFPV</div><div class="metric-value" id="rTFPV">2.500</div><div class="metric-foot">Em todos os blocos</div></div><div class="metric hero"><div class="metric-label">Jogos por bloco</div><div class="metric-value" id="rJBP">25</div><div class="metric-foot">Folhas por bloco ÷ vias</div></div><div class="metric hero"><div class="metric-label">Jogos no lote</div><div class="metric-value" id="rJT">2.500</div><div class="metric-foot">Jogos físicos completos</div></div></div><div class="range"><div class="range-title">Numeração geral — início → fim</div><div class="range-value" id="rRange">1001 → 6000</div><div class="range-details" id="rRangeInfo">5.000 números únicos · 2 vias por jogo</div></div><div class="via-section"><div class="via-title">Numeração de cada via · lote completo <span class="hint-wrap"><button class="hint" type="button" aria-label="O que é faixa por via?">i</button><span class="tip" role="tooltip">Cada faixa abaixo reúne todas as folhas de uma via, considerando os blocos da ordem de serviço inteira. O mapa por bloco aparece logo abaixo.</span></span></div><div class="via-grid" id="viaRanges"></div></div><div class="notice good" id="modeNotice"></div></div></section>
+<section class="panel"><div class="table-top"><div><h2>Mapa de numeração por bloco</h2><p class="section-note">Intervalos de cada via, prontos para conferência.</p></div><button type="button" class="btn" id="csv">↓ Exportar CSV</button></div><div id="tableBox"><div class="table-scroll"><table class="data-table"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div><div class="table-footer"><small id="pagingText">Mostrando 1–10 de 10 blocos</small><div class="pagination"><button id="prev" type="button" aria-label="Página anterior">←</button><button id="next" type="button" aria-label="Próxima página">→</button></div></div></div></section>
+<details class="panel formula-panel"><summary>Ver fórmulas e critérios usados</summary><ul><li><code>TF = NB × NF</code> — total de folhas físicas.</li><li><code>TFPV = TF ÷ QV</code> — folhas por via no lote.</li><li><code>Jogos por bloco = NF ÷ QV</code>.</li><li id="formulaMode">No modo por via, a faixa de uma via inteira é calculada antes da próxima via.</li><li>Intervalos inclusivos: <code>Fim = Início + quantidade − 1</code>, para não contar um número extra.</li></ul></details>
+</main></div>
+<section id="positionPage" class="panel hidden" aria-labelledby="positionTitle">
+  <div class="panel-inner">
+    <div class="panelhead"><div>
+      <h2 id="positionTitle">Posição da numeração na cópia</h2>
+      <p class="section-note">Duplique o 000000 mantendo o mesmo ponto de referência do objeto. Use as coordenadas da numeração original em milímetros.</p>
+    </div></div>
+    <div class="fields">
+      <div><label class="field-label" for="sourceX">X original (mm)</label><input class="input" id="sourceX" inputmode="decimal" value="197"></div>
+      <div><label class="field-label" for="sourceY">Y original (mm)</label><input class="input" id="sourceY" inputmode="decimal" value="71,7"></div>
+      <div class="field wide"><label class="field-label" for="offsetX">Deslocamento horizontal (mm)</label><input class="input" id="offsetX" inputmode="decimal" value="216" aria-describedby="offsetHelp">
+        <small class="helper" id="offsetHelp">Meça da borda esquerda de um retângulo até a borda esquerda do outro. Use valor positivo para a direita e negativo para a esquerda. Os 216 mm são a estimativa do exemplo.</small></div>
+      <div class="field wide"><label class="field-label" for="offsetY">Deslocamento vertical (mm)</label><input class="input" id="offsetY" inputmode="decimal" value="0" aria-describedby="offsetYHelp">
+        <small class="helper" id="offsetYHelp">Meça entre as bordas superiores dos dois retângulos. Use valor positivo se o Y aumentar nesse sentido na régua do programa, negativo se diminuir ou zero para manter a altura.</small></div>
+    </div>
+    <div class="section-divider"></div>
+    <p class="mini-title">Coordenadas da cópia</p>
+    <output id="positionResult" class="via-value" aria-live="polite"></output>
+  </div>
+</section>
+<section id="glossPage" class="panel glossary hidden"><h2>Glossário de produção gráfica</h2><p class="glossary-intro">Os mesmos termos da anotação, com explicações rápidas para aplicação na ordem de serviço e na produção.</p><div class="terms"><div class="term"><strong><b>NB</b> · Número de blocos</strong><p>Quantidade de talões ou blocos acabados a produzir no pedido.</p></div><div class="term"><strong><b>NF</b> · Número de folhas</strong><p>Folhas físicas que formam um bloco, incluindo as vias. Não confundir com número de jogos.</p></div><div class="term"><strong><b>TF</b> · Total de folhas</strong><p>Soma de todas as folhas físicas necessárias no lote: número de blocos vezes folhas por bloco.</p></div><div class="term"><strong><b>QV</b> · Quantidade de vias</strong><p>Quantidade de folhas em cada jogo, como original e cópia. Um jogo de 2 vias contém 2 folhas.</p></div><div class="term"><strong><b>NI</b> · Numeração inicial</strong><p>Primeiro número da sequência, inclusive. Pode aparecer com zeros à esquerda: 0001.</p></div><div class="term"><strong><b>Fim da numeração</b></strong><p>Último número efetivamente impresso no intervalo. O manuscrito também utiliza “NF” para este termo; no app separamos as denominações para evitar ambiguidade.</p></div><div class="term"><strong><b>TFPV</b> · Total de folhas por via</strong><p>Quantidade de folhas de uma via em todo o lote. Calcula-se TF ÷ QV.</p></div><div class="term"><strong><b>NFV1 / NFV2</b> · Numeração final das vias</strong><p>Último número destinado a cada via no lote inteiro. No modo sequencial, NFV1 = NI + TFPV − 1; NFV2 = NFV1 + TFPV.</p></div><div class="term"><strong>Jogo</strong><p>Conjunto de folhas que representa um documento, geralmente original e cópias. Com 50 jogos de 2 vias, há 100 folhas no bloco.</p></div><div class="term"><strong>Numeração inclusiva</strong><p>Uma série de 0001 a 0050 contém 50 números, e não 49. Por isso, subtrai-se 1 ao calcular seu fim.</p></div><div class="term"><strong>Talão autocopiativo</strong><p>Bloco com vias que transferem a escrita para as cópias. Normalmente as vias de um mesmo jogo possuem o mesmo número.</p></div><div class="term"><strong>Mapa de numeração</strong><p>Tabela de conferência da numeração inicial e final de cada bloco e via, útil para produção, montagem e controle de qualidade.</p></div></div><p class="footer-note">Antes de imprimir, confirme o padrão de numeração, a ordem das vias e o layout com a OS aprovada.</p></section>
+<p class="footer-note">Ferramenta de apoio à produção. Confirme com a ordem de serviço se “folhas por bloco” inclui todas as vias e qual modo de numeração foi solicitado.</p></div><div class="toast" id="toast" role="status">Resumo copiado!</div>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);let page=0,current=null;
+const fmt=n=>new Intl.NumberFormat('pt-BR').format(n);
+const getMode=()=>document.querySelector('input[name="mode"]:checked').value;
+const padded=(n,w)=>String(n).padStart(w,'0');
+const range=(a,b,w)=>padded(a,w)+' – '+padded(b,w);
+const pageSize=20;
+function viaInterval(via,c){
+  const start=c.ni+(c.mode==='repeated'?0:via*c.all);
+  return [start,start+c.all-1];
+}
+function renderVias(c){
+  const wrapper=$('viaRanges');wrapper.innerHTML='';
+  for(let v=0;v<c.qv;v++){
+    const [start,end]=viaInterval(v,c);
+    const card=document.createElement('div');card.className='via-card';
+    const label=document.createElement('span');label.className='via-label';label.textContent='VIA '+(v+1);
+    const value=document.createElement('div');value.className='via-value';value.textContent=range(start,end,c.digits);
+    const info=document.createElement('span');info.className='via-foot';info.textContent=fmt(c.all)+' números nesta via';
+    card.append(label,value,info);wrapper.appendChild(card);
+  }
+}
+function validate(){
+  const nb=Number($('nb').value),nf=Number($('nf').value),qv=Number($('qv').value),raw=$('ni').value.trim(),ni=Number(raw),digits=Number($('digits').value),mode=getMode();
+  let err='';
+  if(!$('nb').value||!Number.isSafeInteger(nb)||nb<1||nb>10000)err='Informe uma quantidade de blocos entre 1 e 10.000.';
+  else if(!$('nf').value||!Number.isSafeInteger(nf)||nf<1||nf>100000)err='Informe de 1 a 100.000 folhas por bloco.';
+  else if(!Number.isSafeInteger(qv)||qv<1||qv>6)err='Escolha uma quantidade válida de vias.';
+  else if(!/^\d{1,12}$/.test(raw)||!Number.isSafeInteger(ni))err='O número inicial deve conter somente algarismos, por exemplo 0001.';
+  else if(nf%qv!==0)err='As '+fmt(nf)+' folhas por bloco não podem ser divididas igualmente entre '+qv+' vias. Ajuste a quantidade de folhas ou de vias.';
+  const tf=nb*nf,per=nf/qv,all=tf/qv,unique=mode==='repeated'?all:tf,end=ni+unique-1;
+  if(!err&&(!Number.isSafeInteger(end)||end>999999999999))err='O número final ultrapassa o limite de 12 dígitos. Reduza o lote ou a numeração inicial.';
+  return {nb,nf,qv,ni,raw,digits,mode,tf,per,all,unique,end,error:err};
+}
+function interval(row,via,c){
+  const offset=c.mode==='repeated'?(row*c.per):(via*c.all+row*c.per);
+  const start=c.ni+offset;return [start,start+c.per-1];
+}
+function paint(){
+  const c=validate();current=c;
+  $('error').style.display=c.error?'block':'none';$('error').textContent=c.error;
+  $('results').classList.toggle('hidden',!!c.error);$('tableBox').classList.toggle('hidden',!!c.error);$('csv').disabled=!!c.error;$('copyReport').disabled=!!c.error;
+  if(c.error)return;
+  $('rTF').textContent=fmt(c.tf);$('rTFPV').textContent=fmt(c.all);$('rJBP').textContent=fmt(c.per);$('rJT').textContent=fmt(c.all);
+  $('rRange').textContent=padded(c.ni,c.digits)+' → '+padded(c.end,c.digits);
+  $('rRangeInfo').textContent=fmt(c.unique)+' números diferentes · '+fmt(c.all)+' jogos físicos · '+c.qv+(c.qv===1?' via':' vias')+' por jogo';
+  renderVias(c);
+  const repeat=c.mode==='repeated';
+  $('modeNotice').className='notice '+(repeat?'good':'');
+  $('modeNotice').textContent=repeat?'Modo de números repetidos: cada jogo usa a mesma numeração em todas as vias.':'Modo conforme o desenho: cada via recebe uma faixa completa e contínua ao longo de todos os blocos. A via seguinte só começa depois do último número da via anterior.';
+  $('formulaMode').textContent=repeat?'Vias repetidas: todas as vias recebem a mesma faixa por jogo. Para o lote completo, o fim de cada via é NI + TFPV − 1.':'Faixas por via em todo o lote: início da via k = NI + (k − 1) × TFPV; fim da via k = início + TFPV − 1. No bloco b, a via k começa em início da via k + (b − 1) × (NF ÷ QV).';
+  renderTable(c);
+}
+function renderTable(c){
+  const maxPage=Math.ceil(c.nb/pageSize)-1;page=Math.min(page,maxPage);
+  $('thead').innerHTML='<tr><th>Bloco</th>'+Array.from({length:c.qv},(_,i)=>'<th>Via '+(i+1)+'</th>').join('')+'</tr>';
+  let rows='';const start=page*pageSize,stop=Math.min(start+pageSize,c.nb);
+  for(let i=start;i<stop;i++){
+    rows+='<tr><td class="row-label">'+String(i+1).padStart(2,'0')+'</td>';
+    for(let v=0;v<c.qv;v++){const r=interval(i,v,c);rows+='<td>'+range(r[0],r[1],c.digits)+'</td>';}rows+='</tr>';
+  }
+  $('tbody').innerHTML=rows;$('pagingText').textContent='Mostrando '+fmt(start+1)+'–'+fmt(stop)+' de '+fmt(c.nb)+' blocos';$('prev').disabled=page===0;$('next').disabled=page===maxPage;
+}
+function report(c){
+  let lines=['IBD | MAPA DE NUMERAÇÃO DE BLOCOS'];const os=$('os').value.trim();if(os)lines.push('OS: '+os);
+  lines.push('Blocos (NB): '+fmt(c.nb),'Folhas por bloco (NF): '+fmt(c.nf),'Vias (QV): '+c.qv,'Numeração inicial (NI): '+padded(c.ni,c.digits),'Modo: '+(c.mode==='repeated'?'Mesmo número por jogo, repetido em todas as vias':'Faixas sequenciais distintas por via'),'Total de folhas (TF): '+fmt(c.tf),'Folhas por via no lote (TFPV): '+fmt(c.all),'Jogos por bloco: '+fmt(c.per),'Jogos no lote: '+fmt(c.all),'Números diferentes: '+fmt(c.unique),'Numeração geral: '+padded(c.ni,c.digits)+' a '+padded(c.end,c.digits),'');
+  lines.push('', 'FAIXAS POR VIA NO LOTE COMPLETO');
+  for(let v=0;v<c.qv;v++){const r=viaInterval(v,c);lines.push('Via '+(v+1)+' | '+range(r[0],r[1],c.digits)+' | '+fmt(c.all)+' números');}
+  lines.push('', 'MAPA POR BLOCO');
+  for(let i=0;i<c.nb;i++){let vias=[];for(let v=0;v<c.qv;v++){const r=interval(i,v,c);vias.push('V'+(v+1)+': '+range(r[0],r[1],c.digits));}lines.push('Bloco '+(i+1)+' | '+vias.join(' | '));}return lines.join('\n');
+}
+function csv(c){
+  const rows=[];const os=$('os').value.trim();rows.push(['OS',os],['Modo',c.mode==='repeated'?'Vias com mesma sequência':'Faixas sequenciais por via'],['NB',c.nb],['NF',c.nf],['QV',c.qv],['TF',c.tf],['TFPV',c.all],[],['Faixas por via — lote completo'],['Via','Inicio','Fim','Folhas por via'],...Array.from({length:c.qv},(_,v)=>{const r=viaInterval(v,c);return [v+1,padded(r[0],c.digits),padded(r[1],c.digits),c.all];}),[],['Bloco',...Array.from({length:c.qv},(_,i)=>'Via '+(i+1)+' início'),...Array.from({length:c.qv},(_,i)=>'Via '+(i+1)+' fim')]);
+  for(let i=0;i<c.nb;i++){const ini=[],fim=[];for(let v=0;v<c.qv;v++){const r=interval(i,v,c);ini.push(padded(r[0],c.digits));fim.push(padded(r[1],c.digits));}rows.push([i+1,...ini,...fim]);}
+  // Aspas em todos os campos para preservar zeros e evitar que fórmulas sejam executadas na planilha.
+  const quote=v=>'"'+String(v??'').replace(/"/g,'""').replace(/^[=+@\-\t\r]/,'\u0027$&')+'"';
+  const data='\ufeff'+rows.map(row=>row.map(quote).join(';')).join('\r\n');
+  const blob=new Blob([data],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mapa_numeracao_blocos_por_via.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+function toast(text){const el=$('toast');el.textContent=text;el.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.style.display='none',2600);}
+const positionFields = ['sourceX', 'sourceY', 'offsetX', 'offsetY'];
+const mmFormat = new Intl.NumberFormat('pt-BR', {useGrouping: false, maximumFractionDigits: 6});
+function updatePosition() {
+  const values = positionFields.map(id => {
+    const raw = $(id).value.trim();
+    return /^[+-]?(?:\d+(?:[.,]\d*)?|[.,]\d+)$/.test(raw) ? Number(raw.replace(',', '.')) : NaN;
+  });
+  const [x, y, dx, dy] = values;
+  const copyX = x + dx;
+  const copyY = y + dy;
+  $('positionResult').textContent = Number.isFinite(copyX) && Number.isFinite(copyY)
+    ? 'X = ' + mmFormat.format(copyX) + ' mm · Y = ' + mmFormat.format(copyY) + ' mm'
+    : 'Preencha os quatro campos com medidas válidas em milímetros.';
+}
+for (const id of positionFields) $(id).addEventListener('input', updatePosition);
+updatePosition();
+
+const pages = [['tabCalc', 'calcPage'], ['tabPosition', 'positionPage'], ['tabGloss', 'glossPage']];
+for (const [tab] of pages) {
+  $(tab).addEventListener('click', () => {
+    for (const [button, panel] of pages) {
+      $(panel).classList.toggle('hidden', button !== tab);
+      $(button).classList.toggle('active', button === tab);
+      $(button).setAttribute('aria-pressed', String(button === tab));
+    }
+  });
+}
+for(const id of ['os','nb','nf','qv','ni','digits'])$(id).addEventListener('input',()=>{page=0;paint();});
+for(const radio of document.querySelectorAll('input[name="mode"]'))radio.addEventListener('change',()=>{page=0;paint();});
+$('prev').addEventListener('click',()=>{page--;paint();});$('next').addEventListener('click',()=>{page++;paint();});
+$('csv').addEventListener('click',()=>{if(current&&!current.error){csv(current);toast('Arquivo CSV gerado.');}});
+$('copyReport').addEventListener('click',async()=>{if(!current||current.error)return;const content=report(current);try{await navigator.clipboard.writeText(content);toast('Resumo e mapa copiados!');}catch(e){const ta=document.createElement('textarea');ta.value=content;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Resumo e mapa copiados!');}catch(err){toast('Não foi possível copiar neste navegador.');}ta.remove();}});
+$('reset').addEventListener('click',()=>{ $('os').value='';$('nb').value='100';$('nf').value='50';$('qv').value='2';$('ni').value='1001';$('digits').value='4';document.querySelector('input[value="sequential"]').checked=true;page=0;paint();toast('Exemplo restaurado.');});
+paint();
+})();
+</script>
+</body>
+</html>

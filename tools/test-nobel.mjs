@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {consumo,grades,gabarito,ofertas,cartaz,remendo} from '../nobel/calculos.mjs';
+import {buildDefaultOrderReferences} from '../nobel/origens/os/model.js';
+const refs=buildDefaultOrderReferences('0123-004567');
+assert.ok(refs.path.endsWith('0123\\Pedido 4567'));
+assert.ok(refs.link.endsWith('id=4567'));
+assert.equal(consumo({tiragem:500,rendimento:1,acerto:0,formas:1,perda:0,largura:660,altura:960,gramatura:250}).kg,79.2);
+assert.deepEqual(consumo({tiragem:1001,rendimento:8,acerto:10,formas:2,perda:5,largura:328,altura:478,gramatura:250}).total,153);
+assert.equal(grades({largura:660,altura:960,pecaL:328,pecaA:478,refilo:0,fibra:'altura'})[0].total,4);
+const guia=gabarito({largura:210,altura:150,sangria:3,reserva:11,seguranca:3,lado:'superior'});
+assert.equal(guia.distancia,14);assert.match(guia.svg,/y1="17"/);
+assert.throws(()=>ofertas('1;A;10;9;kg\n1;B;12;8;kg'));
+const [p]=ofertas('1;A & B;109,90;9,99;kg');
+assert.match(cartaz(p,'A5'),/A &amp; B/);
+const reparo=remendo({width:2000,height:1000},{largura:1000,x:1,y:1,recorteL:100,recorteA:50,margem:3});
+assert.deepEqual([reparo.esquerda,reparo.topo,reparo.w,reparo.h],[0,0,208,108]);
+console.log('Casos Nobel validados.');

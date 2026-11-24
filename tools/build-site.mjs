@@ -188,6 +188,15 @@ async function empacotarPainel() {
   };
 }
 
+nomesApps.web='Navegador';
+const {apps,desktop} = await import('../nobel/catalogo.mjs');
+for(const [id,titulo,categoria,descricao] of apps) ferramentas.push({id:'web/'+id,titulo,descricao,app:'web',tipo:'app',versao:marca.versao,abrir:'/apps/'+id+'/',tags:[categoria]});
+for(const [nome,rotulo] of desktop){
+  const [editor,titulo]=rotulo.split(' · ');
+  const app=editor.toLowerCase();
+  nomesApps[app]=editor;
+  ferramentas.push({id:'desktop/'+nome,titulo,descricao:rotulo,app,tipo:'utilitário',versao:marca.versao,baixar:'/apps/desktop/'+nome,baixarNome:nome,baixarTamanho:Math.max(1,Math.ceil((await stat(path.join(RAIZ,'nobel/desktop',nome))).size/1024))});
+}
 const dados = { marca: catalogo.marca, versao: catalogo.versao, nomesApps, acoes, ferramentas };
 
 /* 4. Escrever a saida --------------------------------------------------- */
@@ -196,6 +205,10 @@ await rm(SAIDA, { recursive: true, force: true });
 await mkdir(SAIDA, { recursive: true });
 
 dados.painel = await empacotarPainel();
+for(const [id,titulo] of [['painel','Painel de ferramentas do Photoshop'],['renomear','Renomear camadas selecionadas'],['limpar','Limpar nomes de camadas']]){
+  ferramentas.push({id:'desktop/uxp/'+id,titulo,descricao:'Disponível no painel UXP do Photoshop.',app:'photoshop',tipo:'plugin',versao:dados.painel.versao,baixar:dados.painel.ccx,baixarNome:dados.painel.nome,baixarTamanho:dados.painel.tamanho});
+}
+await cp(path.join(RAIZ,'docs/ibd-theme.css'),path.join(SAIDA,'ibd-theme.css'));
 
 // CSS: mesmos tokens do painel, mesma fonte unica.
 const mapaTokens = {
@@ -266,3 +279,5 @@ const relativa = path.relative(RAIZ, SAIDA);
 console.log(`Site pronto em ${relativa}: ${ferramentas.length} ferramentas, ${prontos.length} prontas para baixar.`);
 console.log(`Painel UXP: ${dados.painel.nome} (${dados.painel.tamanho} KB) pronto para download.`);
 console.log(repo ? `Origem: ${repo.url}${repo.ref ? ' (' + repo.ref + ')' : ' — branch desconhecida'}` : 'Sem origem git: links do GitHub omitidos.');
+
+await import('./build-nobel.mjs');

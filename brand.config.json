@@ -8,15 +8,15 @@
   "site": "",
   "suporte": "",
   "cores": {
-    "fundo": "#222222",
-    "superficie": "#323232",
-    "texto": "#F2F2F2",
-    "textoSecundario": "#AFAFAF",
-    "acento": "#4069FD",
-    "acentoTexto": "#FFFFFF",
-    "borda": "#444444",
-    "erro": "#FF9B91",
-    "sucesso": "#7EE2B8"
+    "fundo": "#181a1f",
+    "superficie": "#20232a",
+    "texto": "#e4e7ee",
+    "textoSecundario": "#b6bcc8",
+    "acento": "#f0c419",
+    "acentoTexto": "#16181d",
+    "borda": "#3a404d",
+    "erro": "#f29ca6",
+    "sucesso": "#52b788"
   },
   "menuScripts": "IBD",
   "versao": "0.1.0"

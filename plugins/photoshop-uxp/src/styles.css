@@ -109,3 +109,5 @@ button:disabled, button[disabled] { background: var(--painel-superficie); color:
 .rodape.erro { color: var(--painel-erro); }
 .rodape.sucesso { color: var(--painel-sucesso); }
 .vazio { padding: 24px 16px; color: var(--painel-secundario); font-size: 12px; text-align: center; }
+
+body{--painel-fundo:#181a1f;--painel-texto:#e4e7ee;--painel-secundario:#b6bcc8;--painel-borda:#2e333d;--painel-superficie:#20232a;--painel-controle-borda:#3a404d;--painel-hover:#282c35;font-family:"Space Grotesk",system-ui,sans-serif} :focus-visible{outline:2px solid #f0c419;outline-offset:2px}
