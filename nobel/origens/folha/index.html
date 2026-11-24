@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#181a1f">
+  <title>Folha v6 · Estúdio de Imposição Gráfica e Pré-Impressão · IBD</title>
+  <meta name="description" content="Folha v6 — Estúdio de imposição gráfica, sugestões automáticas de folha por tamanho da peça, ganging, editorial, CTP e grandes formatos.">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="./engine.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body data-suite-module="folha">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-group">
+        <a class="brand" href="./" aria-label="Folha — Estúdio de Imposição Gráfica IBD">
+          <span class="brand-mark" aria-hidden="true">ib<span>.</span></span>
+          <span class="brand-text">
+            <span class="brand-name">folha<span class="brand-dot">.</span></span>
+            <span class="brand-sub">ESTÚDIO DE IMPOSIÇÃO GRÁFICA · IBD</span>
+          </span>
+        </a>
+        <span class="version" title="Folha v6 Standalone">v6 · standalone</span>
+      </div>
+
+      <nav class="suite-switcher" role="tablist" aria-label="Aplicativo Folha">
+        <a class="suite-tab active" href="./" role="tab" aria-selected="true" aria-current="page">
+          <span>01</span> Folha Imposição
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="suiteViewFolha" class="suite-view" aria-label="Folha Imposição Gráfica">
+      <div class="studio-bar">
+        <nav class="mode-nav" aria-label="Modo de trabalho">
+          <button id="flatTab" type="button" class="active">
+            <span class="mode-head"><span class="mode-index">01</span><strong>Peças avulsas</strong></span>
+            <small>Ganging e imposição comercial</small>
+          </button>
+          <button id="bookTab" type="button">
+            <span class="mode-head"><span class="mode-index">02</span><strong>Editorial</strong></span>
+            <small>Cadernos e encadernação</small>
+          </button>
+          <button id="visualTab" type="button">
+            <span class="mode-head"><span class="mode-index">03</span><strong>Grandes formatos</strong></span>
+            <small>Comunicação visual</small>
+          </button>
+          <button id="freeTab" type="button">
+            <span class="mode-head"><span class="mode-index">04</span><strong>Montagem rápida</strong></span>
+            <small>Visualização livre</small>
+          </button>
+          <button id="compareTab" type="button">
+            <span class="mode-head"><span class="mode-index">05</span><strong>Comparar folhas</strong></span>
+            <small>Tamanhos lado a lado</small>
+          </button>
+          <button id="suggestTab" type="button">
+            <span class="mode-head"><span class="mode-index">06</span><strong>Sugerir folha</strong></span>
+            <small>Indicações por peça</small>
+          </button>
+        </nav>
+
+        <div class="studio-status" role="toolbar" aria-label="Ferramentas e status da montagem">
+          <button id="undo" type="button" title="Desfazer última alteração" aria-label="Desfazer última alteração">↶ <span class="btn-label">Desfazer</span></button>
+          <button id="redo" type="button" title="Refazer alteração" aria-label="Refazer alteração">↷ <span class="btn-label">Refazer</span></button>
+          <button id="openGlossary" type="button" class="glossary-trigger" aria-haspopup="dialog" title="Abrir Glossário Técnico de Pré-Impressão e Acabamento">
+            📖 <span>Glossário</span>
+          </button>
+          <span id="status" class="status-badge" role="status">Montagem validada</span>
+        </div>
+      </div>
+
+      <div class="workspace" id="workspace">
+        <!-- 1. Configurar: Painel Esquerdo -->
+        <aside class="panel settings" id="paneConfig" data-mobile-pane="config" aria-label="1. Configurar parâmetros do trabalho">
+          <div class="panel-header">
+            <div>
+              <span class="step-eyebrow">ETAPA 1</span>
+              <h2>Configurar Trabalho</h2>
+            </div>
+            <button type="button" class="text-link-btn" id="expandAllGroups" title="Expandir ou recolher grupos avançados">Expandir tudo</button>
+          </div>
+
+          <div class="reactive-bar">
+            <span id="calcFeedback" class="calc-feedback">⚡ Cálculo automático ativo em tempo real (mm)</span>
+            <button id="applySettings" type="button" class="apply-inline-btn" title="Consolidar medidas e recalcular agora">Recalcular</button>
+          </div>
+
+          <div class="fields" id="fields"></div>
+        </aside>
+
+        <!-- 2. Visualizar: Painel Central (Palco da Folha + Sugestões + Indicadores) -->
+        <section class="canvaspanel panel" id="paneStage" data-mobile-pane="stage" aria-label="2. Visualizar folha de impressão">
+          <div class="stage-view-block" id="stageViewBlock">
+            <div class="toolbar">
+              <div class="canvas-heading">
+                <div class="canvas-title-row">
+                  <span class="step-eyebrow">ETAPA 2 · PALCO TÉCNICO</span>
+                  <button type="button" class="info-btn" data-term="imposition" aria-label="Explicação sobre Imposição Gráfica">ⓘ</button>
+                </div>
+                <h2 id="canvasTitle">Montagem da folha</h2>
+                <small id="dimensions"></small>
+              </div>
+              <div class="toolbar-controls">
+                <div class="faces" role="group" aria-label="Face da folha">
+                  <button id="front" type="button" class="active">1ª Passada · Frente (Reto)</button>
+                  <button id="back" type="button">2ª Passada · Verso (Retiro)</button>
+                </div>
+                <button type="button" id="toggleStageFocus" class="stage-focus-btn" aria-pressed="false" title="Expandir ou restaurar área do desenho da folha (atalho: F)">⛶ Foco</button>
+              </div>
+            </div>
+
+            <div id="sheetNav" class="sheet-nav" role="tablist" aria-label="Seleção de caderno"></div>
+
+            <div class="stage-shell">
+              <div class="stage" id="stage" aria-label="Diagrama em escala da folha de impressão"></div>
+              <div class="zoom-bar" role="toolbar" aria-label="Controles de zoom da folha">
+                <button type="button" id="zoomOut" title="Diminuir zoom (−)" aria-label="Diminuir zoom">−</button>
+                <input type="range" id="zoomRange" min="50" max="500" step="10" value="100" aria-label="Escala de zoom em porcentagem">
+                <button type="button" id="zoomIn" title="Aumentar zoom (+)" aria-label="Aumentar zoom">+</button>
+                <button type="button" id="zoomReset" class="zoom-pct" title="Ajustar folha à tela (100% e centralizar)">100%</button>
+                <button type="button" id="zoom200" title="Zoom 200% para conferência de marcas e sangria">200%</button>
+                <button type="button" id="toggleMarksBtn" class="active" title="Remover ou restaurar todas as marcas técnicas na visualização sem perder as opções individuais">✂ Marcas visíveis</button>
+                <button type="button" id="togglePreflightBtn" class="active" title="Mostrar ou ocultar alertas do Preflight na visualização da folha">👁 Alertas visíveis</button>
+                <span class="zoom-hint">Scroll / Pinça: zoom · Arraste: mover</span>
+              </div>
+            </div>
+
+            <div class="legend" aria-label="Legenda técnica da folha">
+              <span class="leg-item"><i class="dot front-dot"></i> Frente / Linha de corte final</span>
+              <span class="leg-item blue"><i class="dot back-dot"></i> Verso / Área de segurança</span>
+              <span class="leg-item amber"><i class="bar-mark"></i> Pinça, esquadro &amp; furação CTP</span>
+              <span class="leg-item"><i class="dash-mark"></i> Sangria, dobras, serrilha &amp; faca</span>
+            </div>
+
+            <p id="convention" class="note convention-box"></p>
+
+            <!-- Galeria Interativa de Sugestões de Folhas (Aba 06 · Sugerir folha) -->
+            <div id="suggestGallery" class="suggest-gallery" hidden aria-live="polite"></div>
+          </div>
+
+          <!-- Bloco de Resultados / Indicadores da Montagem -->
+          <div class="result-view-block" id="resultViewBlock">
+            <div class="result-header">
+              <div>
+                <span class="step-eyebrow">INDICADORES DA MONTAGEM</span>
+                <h2>Resumo Quantitativo</h2>
+              </div>
+              <button type="button" class="info-btn" data-term="usage" aria-label="Explicação sobre Indicadores de Produção e Aproveitamento">ⓘ</button>
+            </div>
+
+            <div class="metrics" id="metrics" aria-label="Indicadores de produção"></div>
+
+            <details class="reading" id="planDetails" open>
+              <summary>Conferência do boneco, acabamentos e enobrecimentos</summary>
+              <div id="plan" class="plan-content"></div>
+            </details>
+          </div>
+        </section>
+
+        <!-- 3. Conferir: Painel Direito (Inspetor + Preflight + Guia Rápido) -->
+        <aside class="right" id="paneCheck" data-mobile-pane="check" aria-label="3. Conferir inspeção e validação técnica">
+          <section class="panel inspector-panel" id="inspectorSection">
+            <div class="panel-header">
+              <div>
+                <span class="step-eyebrow">ETAPA 3 · INSPEÇÃO</span>
+                <h2>Inspetor da Montagem</h2>
+              </div>
+              <span class="pill" id="inspectorBadge">Coordenadas X/Y</span>
+            </div>
+            <p id="selectionHelp">Clique em qualquer peça, página ou caderno na folha para inspecionar ou editar sua posição.</p>
+            <div id="inspector"></div>
+            <button id="reset" type="button" class="wide">↺ Restaurar montagem automática</button>
+            <p class="note">Origem <code>(0, 0)</code> no canto superior esquerdo da folha. Coordenadas <code>X/Y</code> em milímetros na linha de corte final.</p>
+          </section>
+
+          <section class="panel checks" id="preflightSection">
+            <div class="panel-header">
+              <div>
+                <div class="canvas-title-row">
+                  <span class="step-eyebrow">VALIDAÇÃO GEOMÉTRICA</span>
+                  <button type="button" class="info-btn" data-term="preflight" aria-label="Explicação sobre Preflight Geométrico">ⓘ</button>
+                </div>
+                <h2>Preflight &amp; Acabamento</h2>
+              </div>
+              <label class="preflight-toggle" title="Exibir ou ocultar os erros e avisos visualmente sobre a folha">
+                <input type="checkbox" id="showPreflightCheck" checked>
+                Mostrar na folha
+              </label>
+            </div>
+            <div id="checks"></div>
+          </section>
+
+          <section class="panel reference-card">
+            <div class="panel-header">
+              <h2>Referência Rápida de Oficina</h2>
+              <button type="button" class="text-link-btn" id="openGlossaryFromRef">Ver glossário completo →</button>
+            </div>
+            <ul class="ref-list">
+              <li>
+                <strong>Padrão Nobel:</strong>
+                <b>T9</b> (<code>220 × 380 mm</code>), <b>T8</b> (<code>238 × 328 mm</code>) e <b>T4</b> (<code>328 × 478 mm</code>) derivados da folha inteira <code>66 × 96 cm</code>.
+                <button type="button" class="info-btn" data-term="nobel_t8" aria-label="Explicação sobre Padrão Nobel T9, T8 e T4">ⓘ</button>
+              </li>
+              <li>
+                <strong>Sugestões por Peça:</strong>
+                Na aba <b>06 · Sugerir folha</b>, informe apenas a medida da peça para receber o ranking automático nas folhas Nobel, digitais e offset com corte misto otimizado.
+              </li>
+              <li>
+                <strong>Medianizes &amp; Creep:</strong>
+                Calha central ajustável para fresagem/cola e compensação de encavalamento (<em>shingling</em>) em direção à lombada.
+                <button type="button" class="info-btn" data-term="creep" aria-label="Explicação sobre Creep e Shingling">ⓘ</button>
+              </li>
+              <li>
+                <strong>Interferências &amp; Enobrecimentos:</strong>
+                Furação, serrilha/picote, numeração, blocagem, laminação BOPP/Soft Touch, verniz UV localizado (+1 matriz), hot stamping, relevo e faca especial.
+                <button type="button" class="info-btn" data-term="spot_uv" aria-label="Explicação sobre Verniz UV Localizado e Acabamentos">ⓘ</button>
+              </li>
+            </ul>
+          </section>
+        </aside>
+      </div>
+
+      <!-- Elementos legados ocultos para compatibilidade interna do script -->
+      <div class="hidden" hidden aria-hidden="true">
+        <input id="modelName" value="Imposição">
+        <select id="templates"><option value=""></option></select>
+        <button id="save" type="button" tabindex="-1"></button>
+        <button id="export" type="button" tabindex="-1"></button>
+        <button id="printSheet" type="button" tabindex="-1"></button>
+      </div>
+    </section>
+
+    <footer>
+      <div>
+        <strong>Folha v6 · Estúdio de Imposição Gráfica IBD</strong> — Imposição comercial, sugestões inteligentes de folhas, editorial, CTP e grandes formatos.
+      </div>
+    </footer>
+  </main>
+
+  <!-- Barra de Navegação Inferior por Tarefa (Mobile e Tablet < 1200px) -->
+  <nav id="mobileNav" class="mobile-nav" data-folha-only aria-label="Navegação por etapas no celular e tablet">
+    <button type="button" data-mobile-tab="config">
+      <span class="mnav-icon" aria-hidden="true">⚙</span>
+      <span>Configurar</span>
+    </button>
+    <button type="button" data-mobile-tab="stage" class="active">
+      <span class="mnav-icon" aria-hidden="true">▧</span>
+      <span>Folha</span>
+    </button>
+    <button type="button" data-mobile-tab="check">
+      <span class="mnav-icon" aria-hidden="true">✓</span>
+      <span>Conferir</span>
+      <small id="mobileCheckBadge" class="mnav-badge" hidden>0</small>
+    </button>
+    <button type="button" data-mobile-tab="result">
+      <span class="mnav-icon" aria-hidden="true">▤</span>
+      <span>Resultado</span>
+    </button>
+  </nav>
+
+  <!-- Popover Contextual de Termo Técnico (ⓘ) -->
+  <div id="termPopover" class="term-popover" role="dialog" aria-modal="false" aria-labelledby="popoverTermTitle" hidden>
+    <div class="term-popover-header">
+      <span id="popoverTermCategory" class="term-cat-badge">Categoria</span>
+      <button type="button" id="closeTermPopover" class="icon-close-btn" aria-label="Fechar explicação">×</button>
+    </div>
+    <h4 id="popoverTermTitle" class="term-popover-title">Termo técnico</h4>
+    <p id="popoverTermDef" class="term-popover-def"></p>
+    <div id="popoverTermUse" class="term-popover-meta"></div>
+    <div id="popoverTermExample" class="term-popover-example"></div>
+    <div id="popoverTermRelated" class="term-popover-related"></div>
+    <div class="term-popover-footer">
+      <button type="button" id="openGlossaryFromPopover" class="text-link-btn">Ver no glossário completo →</button>
+    </div>
+  </div>
+
+  <!-- Modal / Gaveta de Glossário Técnico Centralizado -->
+  <div id="glossaryModal" class="glossary-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="glossaryModalTitle" hidden>
+    <div class="glossary-modal">
+      <header class="glossary-modal-header">
+        <div>
+          <span class="step-eyebrow">REFERÊNCIA TÉCNICA DE PRÉ-IMPRESSÃO, IMPRESSÃO E ACABAMENTO</span>
+          <h2 id="glossaryModalTitle">Glossário Técnico do Folha</h2>
+        </div>
+        <button type="button" id="closeGlossary" class="secondary-action" aria-label="Fechar glossário e voltar ao trabalho">✕ Voltar ao trabalho</button>
+      </header>
+
+      <div class="glossary-controls">
+        <div class="glossary-search-wrap">
+          <input type="search" id="glossarySearch" placeholder="Buscar termo, sigla ou conceito (ex.: pinça, sangria, Nobel, sheetwise, creep, LPI, ilhós)…" aria-label="Buscar termo técnico no glossário">
+          <span id="glossaryCount" class="glossary-count"></span>
+        </div>
+        <div id="glossaryCategories" class="glossary-categories" role="tablist" aria-label="Filtrar por categoria técnica"></div>
+      </div>
+
+      <div id="glossaryList" class="glossary-list" tabindex="0" aria-label="Lista de termos técnicos"></div>
+    </div>
+  </div>
+</body>
+</html>

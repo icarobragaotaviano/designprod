@@ -266,3 +266,5 @@ const relativa = path.relative(RAIZ, SAIDA);
 console.log(`Site pronto em ${relativa}: ${ferramentas.length} ferramentas, ${prontos.length} prontas para baixar.`);
 console.log(`Painel UXP: ${dados.painel.nome} (${dados.painel.tamanho} KB) pronto para download.`);
 console.log(repo ? `Origem: ${repo.url}${repo.ref ? ' (' + repo.ref + ')' : ' — branch desconhecida'}` : 'Sem origem git: links do GitHub omitidos.');
+
+await import('./build-nobel.mjs');

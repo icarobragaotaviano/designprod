@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#181a1f">
+  <title>OS Maneger · Ordens de Serviço &amp; Atendimento de Balcão · IBD</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;family=Material+Symbols+Outlined&amp;icon_names=add,calendar_month,content_copy,delete,download,edit,filter_alt_off,folder_copy,open_in_new,pause,play_arrow,print,refresh,search,support_agent,swap_vert,table_chart,timer,upload,view_agenda,view_kanban,view_list&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-group">
+        <a class="brand" href="./" aria-label="OS Maneger — Controle de OS e Atendimento de Balcão">
+          <span class="brand-mark" aria-hidden="true">ib<span>.</span></span>
+          <span class="brand-text">
+            <span class="brand-name">os maneger<span class="brand-dot">.</span></span>
+            <span class="brand-sub">ORDENS DE SERVIÇO &amp; BALCÃO · IBD</span>
+          </span>
+        </a>
+        <span class="version" title="OS Maneger · Fila de OS + Atendimento de Balcão">v6 · standalone</span>
+      </div>
+
+      <nav class="suite-switcher" role="tablist" aria-label="Áreas do OS Maneger">
+        <button id="area-tab-os" type="button" class="suite-tab active" role="tab" aria-selected="true">
+          <span>01</span> Ordens de Serviço <em id="area-badge-os" class="area-tab-badge">0</em>
+        </button>
+        <button id="area-tab-counter" type="button" class="suite-tab" role="tab" aria-selected="false">
+          <span>02</span> Atendimento de Balcão <em id="area-badge-counter" class="area-tab-badge">0</em>
+          <em id="area-badge-running" class="area-running-badge" hidden>● 0</em>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="heading">
+      <div>
+        <small id="heading-eyebrow">01 · GESTÃO DE DESIGN &amp; PRODUÇÃO</small>
+        <h1 id="heading-title">Ordens de serviço<span class="brand-dot">.</span></h1>
+      </div>
+      <div class="heading-actions">
+        <div class="backup-tools">
+          <button id="drive-backup" type="button" title="Backup privado completo (OS + Balcão + Impressoras) no Google Drive">Backup Drive</button>
+          <button id="backup" type="button" disabled>Baixar backup</button>
+          <button id="restore" type="button" disabled>Restaurar backup</button>
+          <input id="backupfile" type="file" accept=".json,application/json" hidden>
+        </div>
+        <button id="manage-printers" type="button">Impressoras</button>
+        <button id="new-counter-top" type="button" class="primary" hidden>Novo atendimento</button>
+        <button id="new" type="button" class="primary" disabled>Nova OS</button>
+      </div>
+    </section>
+
+    <div id="os-section">
+    <section id="metrics" aria-label="Filtrar por etapa"></section>
+
+    <section class="queue">
+      <div class="tools">
+        <div class="queue-tabs" role="tablist" aria-label="Filtro de fila ativa e arquivadas">
+          <button id="queue-active" type="button" aria-pressed="true">Fila ativa</button>
+          <button id="queue-archived" type="button" aria-pressed="false">Arquivados · Concluído e Repassado</button>
+        </div>
+        <label class="search">
+          <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
+          <input id="search" type="search" aria-label="Buscar ordem" placeholder="Buscar nº da OS, cliente ou serviço…">
+          <kbd class="search-kbd" aria-hidden="true" title="Atalho: pressione / para buscar">/</kbd>
+        </label>
+      </div>
+
+      <div class="view-tools">
+        <div class="view-switch" role="group" aria-label="Modo de visualização (estilo Notion)">
+          <button id="view-simple" type="button" aria-pressed="true" title="Lista simples minimalista com número da OS clicável">Lista simples</button>
+          <button id="view-table" type="button" aria-pressed="false" title="Tabela estilo banco de dados do Notion">Tabela</button>
+          <button id="view-board" type="button" aria-pressed="false" title="Quadro Kanban por status">Quadro · Kanban</button>
+          <button id="view-list" type="button" aria-pressed="false" title="Fichas completas expandidas">Detalhado</button>
+        </div>
+        <div class="view-tools-right">
+          <label class="copy-mode-field" title="Define o que é copiado ao clicar em Cliente, Pedido, OS ou Item">
+            <span>Ao clicar copiar</span>
+            <select id="copy-mode">
+              <option value="single">Individual (só o clicado)</option>
+              <option value="complete">Completo (Cliente-Pedido-Item)</option>
+            </select>
+          </label>
+          <button id="all-orders" type="button">Todas as OS ativas</button>
+        </div>
+      </div>
+
+      <div class="advanced-filters">
+        <label>Status<select id="filter-status"><option value="">Todos os status</option></select></label>
+        <label>Complexidade<select id="filter-complexity"><option value="">Todas</option><option value="none">Sem classificação</option></select></label>
+        <label>Impressora<select id="filter-printer"><option value="">Todas</option><option value="none">Sem impressora</option></select></label>
+        <label>Urgência<select id="filter-urgency"><option value="">Todas</option><option value="urgent">Urgentes</option><option value="normal">Normais</option></select></label>
+        <label>Prazo<select id="filter-deadline"><option value="">Todos</option><option value="overdue">Atrasadas</option><option value="today">Vencem hoje</option><option value="ontime">Dentro do prazo</option><option value="none">Sem prazo</option></select></label>
+        <label>Ordenar por<select id="sort">
+          <option value="dynamic" selected>Fila dinâmica (Automática)</option>
+          <option value="status">Fila por etapa de status</option>
+          <option value="queue">Ordem manual da fila</option>
+          <option value="deadline">Prazo mais próximo</option>
+          <option value="urgent">Urgentes primeiro</option>
+          <option value="updated">Atualização mais recente</option>
+          <option value="number">Número da OS</option>
+          <option value="complexity">Maior complexidade</option>
+          <option value="progress">Maior progresso</option>
+        </select></label>
+      </div>
+
+      <p class="board-help" id="board-help" hidden>Clique em um card para abrir a janela centralizada. Arraste pela alça ⠿ para mudar o status ou solte em "Concluído" / "Repassado" para arquivar. OS em Prova ou Pausadas ficam no fim (apenas Pausadas esmaecem).</p>
+      <div class="filter"><span id="count" aria-live="polite"></span><button hidden id="clear" type="button">Limpar filtros</button></div>
+      <div id="dynamic-queue-bar" class="dynamic-queue-bar" hidden></div>
+      <div id="rows"></div>
+    </section>
+    </div>
+
+    <section id="counter-section" class="counter-section" hidden aria-label="Atendimento de Balcão — Criação e Ajuste">
+      <div id="counter-metrics" class="counter-metrics" aria-label="Indicadores do balcão"></div>
+
+      <div class="queue counter-queue">
+        <div class="tools">
+          <div class="queue-tabs" role="tablist" aria-label="Filtro de atendimentos ativos e finalizados">
+            <button id="counter-tab-active" type="button" aria-pressed="true">Ativos no balcão</button>
+            <button id="counter-tab-archived" type="button" aria-pressed="false">Finalizados &amp; Convertidos em OS</button>
+          </div>
+          <label class="search">
+            <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
+            <input id="counter-search" type="search" aria-label="Buscar atendimento de balcão" placeholder="Buscar cliente, serviço, código BAL-, telefone ou nº opcional…">
+          </label>
+        </div>
+
+        <div class="advanced-filters counter-filters">
+          <label>Tipo de serviço
+            <select id="counter-filter-service">
+              <option value="">Todos os serviços</option>
+              <option value="criacao">Criação de Arte</option>
+              <option value="ajuste">Ajuste de Arquivo</option>
+              <option value="fechamento">Fechamento / Pré-impressão</option>
+              <option value="vetorizacao">Vetorização / Redesenho</option>
+              <option value="orcamento">Orçamento / Diagramação</option>
+            </select>
+          </label>
+          <label>Status
+            <select id="counter-filter-status">
+              <option value="">Todos os status</option>
+            </select>
+          </label>
+          <label>Canal
+            <select id="counter-filter-channel">
+              <option value="">Todos os canais</option>
+              <option value="balcao">Balcão presencial</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="email">E-mail</option>
+              <option value="telefone">Telefone</option>
+            </select>
+          </label>
+          <label>Prioridade / Timer
+            <select id="counter-filter-urgent">
+              <option value="">Todos</option>
+              <option value="running">Cronômetro rodando</option>
+              <option value="urgent">Cliente aguardando no balcão</option>
+            </select>
+          </label>
+          <label>Ordenar por
+            <select id="counter-sort">
+              <option value="smart" selected>Automática (Timer &amp; Balcão)</option>
+              <option value="elapsed">Maior tempo cronometrado</option>
+              <option value="updated">Atualização mais recente</option>
+              <option value="created">Mais recentes primeiro</option>
+              <option value="revisions">Mais rodadas de ajuste</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="filter">
+          <span id="counter-count" aria-live="polite"></span>
+          <button hidden id="counter-clear" type="button">Limpar filtros</button>
+        </div>
+
+        <div id="counter-rows" class="counter-cards-grid"></div>
+      </div>
+    </section>
+
+    <footer>
+      <span id="mode" role="status">Carregando fila…</span>
+      <button id="refresh" type="button">Atualizar fila</button>
+    </footer>
+    <p id="message" role="alert"></p>
+  </main>
+
+  <dialog id="os-detail" aria-labelledby="detail-title">
+    <div class="detail-header">
+      <div><small>DETALHES DA ORDEM DE SERVIÇO</small><h2 id="detail-title">Ordem de serviço</h2></div>
+      <button type="button" id="detail-close" aria-label="Fechar detalhes da OS">×</button>
+    </div>
+    <p id="detail-error" class="error" role="alert"></p>
+    <div id="detail-content"></div>
+  </dialog>
+
+  <dialog id="editor" class="editor-dialog">
+    <form id="form" class="editor-form">
+      <div class="dialogtop">
+        <div>
+          <small>CADASTRO / EDIÇÃO</small>
+          <h2 id="caption">Nova OS</h2>
+        </div>
+        <button type="button" class="close icon-close" aria-label="Fechar">×</button>
+      </div>
+      <div class="dialog-body">
+        <div class="pair">
+          <label><span>Número da OS</span><input name="number" placeholder="Ex.: 42-123 ou 0042-000123" required maxlength="15" autocomplete="off" aria-describedby="hint"></label>
+          <label><span>Serviço <small>(caixa alta automática)</small></span><input name="title" class="uppercase-input" maxlength="160" placeholder="EX.: CARTÃO DE VISITA · FRENTE E VERSO"></label>
+        </div>
+        <span id="hint">Cliente (até 4 dígitos) + traço + pedido (até 6 dígitos). Zeros à esquerda são preenchidos automaticamente.</span>
+
+        <fieldset class="dates-editor-box" id="editor-dates-box">
+          <legend>Cronograma da OS &amp; Prazo de Finalização <small>(Fortaleza · UTC−3)</small></legend>
+          <input type="hidden" name="deadline">
+          <input type="hidden" name="printedAt">
+          <input type="hidden" name="receivedAt">
+          <input type="hidden" name="productionDate">
+          <div class="osm-dates-grid">
+            <div class="deadline-field">
+              <span>1. Data de impressão da OS</span>
+              <button type="button" id="choose-printed-at" class="date-pick-btn" aria-haspopup="dialog"><span id="printed-at-value">Selecionar data e hora</span></button>
+            </div>
+            <div class="deadline-field">
+              <div class="date-field-head">
+                <span>2. Data de recebimento</span>
+                <button type="button" id="received-now-btn" class="date-quick-now" title="Preencher com data e hora atual">Agora</button>
+              </div>
+              <button type="button" id="choose-received-at" class="date-pick-btn" aria-haspopup="dialog"><span id="received-at-value">Selecionar data e hora</span></button>
+            </div>
+            <div class="deadline-field">
+              <span>3. Data de produção</span>
+              <button type="button" id="choose-production-date" class="date-pick-btn" aria-haspopup="dialog"><span id="production-date-value">Selecionar data e hora</span></button>
+            </div>
+          </div>
+          <div id="print-deadline-preview" class="print-deadline-banner" aria-live="polite">
+            <div class="print-deadline-main">
+              <span class="print-deadline-label">Prazo de finalização para impressão (máx. 24h do recebimento)</span>
+              <strong id="deadline-value">Aguardando datas</strong>
+            </div>
+            <span id="deadline-hint" class="print-deadline-rule">Informe recebimento e/ou produção para calcular automaticamente.</span>
+          </div>
+        </fieldset>
+
+        <fieldset class="items-picker-box" id="editor-items-box">
+          <legend>Itens do pedido <small>(padrão 6 dígitos · 000000)</small></legend>
+          <div class="item-quick-add">
+            <input id="editor-item-number-input" type="text" maxlength="80" inputmode="numeric" placeholder="Nº do item (ex.: 1, 12 ou vários: 1, 2, 15)" autocomplete="off">
+            <input id="editor-item-label-input" type="text" maxlength="120" placeholder="Descrição opcional (ex. CAPA / MIOLO)" autocomplete="off">
+            <button type="button" id="editor-item-add-btn">+ Adicionar item</button>
+          </div>
+          <div id="editor-items-list" class="items-chips-list" aria-live="polite"></div>
+          <p class="note" id="editor-items-hint">Zeros à esquerda são preenchidos até 6 dígitos (ex.: 12 vira 000012). Uma OS pode ter vários itens.</p>
+        </fieldset>
+
+        <div class="pair">
+          <label><span>Etapa</span><select name="status"></select></label>
+          <label><span>Complexidade</span><select name="complexity"><option value="">Sem classificação</option></select></label>
+        </div>
+        <div class="pair">
+          <label><span>Responsável pela nota</span><input name="owner" maxlength="160" placeholder="Vendedor ou quem repassou a OS"></label>
+          <label class="check editor-urgent-check"><input name="urgent" type="checkbox"> Marcar como urgente</label>
+        </div>
+        <div class="pair">
+          <div class="osm-ref-field">
+            <div class="date-field-head">
+              <label for="editor-link">Link de referência</label>
+              <div class="ref-auto-controls">
+                <span id="link-mode-badge" class="ref-mode-badge" hidden>Auto</span>
+                <button type="button" id="link-reset-btn" class="date-quick-now" hidden title="Restaurar link padrão do pedido">↺ Padrão</button>
+              </div>
+            </div>
+            <input id="editor-link" name="link" type="url" maxlength="2000" placeholder="https://www.nblgrafica.com/admin/?imprimastore=pedidos/detalhes&amp;id=101560">
+          </div>
+          <div class="osm-ref-field">
+            <div class="date-field-head">
+              <label for="editor-path">Caminho da pasta ou arquivo</label>
+              <div class="ref-auto-controls">
+                <span id="path-mode-badge" class="ref-mode-badge" hidden>Auto</span>
+                <button type="button" id="path-reset-btn" class="date-quick-now" hidden title="Restaurar diretório padrão do pedido">↺ Padrão</button>
+              </div>
+            </div>
+            <input id="editor-path" name="path" maxlength="2000" placeholder="Q:\0 - 2019\0 - OS SITE\2514\Pedido 101560">
+          </div>
+        </div>
+        <div class="osm-ref-field">
+          <div class="date-field-head">
+            <label for="editor-print-link">Link de impressão da OS (PDF)</label>
+            <div class="ref-auto-controls">
+              <span id="print-link-mode-badge" class="ref-mode-badge" hidden>Auto</span>
+              <button type="button" id="print-link-reset-btn" class="date-quick-now" hidden title="Restaurar link padrão de impressão da OS">↺ Padrão</button>
+            </div>
+          </div>
+          <input id="editor-print-link" name="printLink" type="url" maxlength="2000" placeholder="https://www.nblgrafica.com/admin/extras/imprimir/pedido.php?id=101560">
+        </div>
+        <div class="editor-inline-links">
+          <a id="openlink" target="_blank" rel="noopener noreferrer" hidden>Abrir pedido no site ↗</a>
+          <a id="openprintlink" class="print-pdf-inline-link" target="_blank" rel="noopener noreferrer" hidden title="Abre a página oficial de impressão do pedido no site NBL para baixar/salvar em PDF">🖨 Imprimir / Baixar OS (PDF) ↗</a>
+          <button type="button" id="copy" hidden>Copiar caminho</button>
+        </div>
+
+        <div class="attachments-box" id="editor-attachments-box">
+          <div class="attachments-header">
+            <div>
+              <strong>Anexos da OS (PDFs e Imagens)</strong>
+              <span class="note" id="editor-attachments-hint">Salvos de forma privada no Google Drive (ou Supabase Storage) para acesso em qualquer dispositivo.</span>
+            </div>
+            <label class="attach-picker-btn" tabindex="0">
+              <input id="editor-attach-input" type="file" accept="application/pdf,image/*" multiple hidden>
+              <span>+ PDF ou Imagem</span>
+            </label>
+          </div>
+          <div id="editor-attach-dropzone" class="attach-dropzone">
+            Arraste PDFs ou imagens aqui, ou cole uma imagem (<kbd>Ctrl+V</kbd>).
+          </div>
+          <div id="editor-attach-status" class="attach-status" aria-live="polite" hidden></div>
+          <div id="editor-attach-list" class="attach-editor-list"></div>
+        </div>
+
+        <fieldset class="printers-picker-box" id="editor-printers-box">
+          <legend>Impressoras utilizadas <small>(pode marcar mais de uma)</small></legend>
+          <div id="editor-printers-list" class="printer-chips-picker" role="group" aria-label="Selecionar impressoras usadas na OS"></div>
+          <div class="printer-quick-add">
+            <input id="editor-printer-add-input" type="text" maxlength="80" placeholder="Cadastrar nova impressora (ex. Konica C3070, Heidelberg GTO)">
+            <button type="button" id="editor-printer-add-btn">+ Cadastrar e marcar</button>
+            <button type="button" id="editor-printer-manage-btn" class="link-muted-btn">Gerenciar lista</button>
+          </div>
+          <p class="note" id="editor-printers-hint"></p>
+        </fieldset>
+
+        <fieldset class="reminders-editor-box" id="editor-reminders-box">
+          <legend>Lembretes / Comentários rápidos <small>(transitórios · bem visíveis na OS)</small></legend>
+          <div class="reminder-quick-add">
+            <input id="editor-reminder-input" type="text" maxlength="500" placeholder="Ex.: Conferir cor antes de rodar · Ligar para aprovação" autocomplete="off">
+            <button type="button" id="editor-reminder-add-btn">+ Adicionar lembrete</button>
+          </div>
+          <div id="editor-reminders-list" class="reminders-chips-list" aria-live="polite"></div>
+        </fieldset>
+
+        <label class="knowledge-notes-field">
+          <span>Observações · Base de Conhecimento <small>(especificidades do trabalho para lembrar depois)</small></span>
+          <textarea name="notes" rows="4" maxlength="20000" placeholder="Registre especificidades deste trabalho: papel/gramatura, faca, dobra, perfil de cor, código Pantone, observações técnicas de produção para futuros pedidos..."></textarea>
+        </label>
+        <p class="error" role="alert"></p>
+      </div>
+      <div class="actions">
+        <button type="button" id="delete-order" class="danger-text" hidden>Excluir OS</button>
+        <button type="button" class="close">Cancelar</button>
+        <button class="primary" id="save">Salvar OS</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="login">
+    <div id="cloud-login-panel" class="cloud-login-panel" hidden>
+      <span class="step-eyebrow">CONTA GOOGLE · SUPABASE INTEGRADO</span>
+      <h2>Entrar com Google no app</h2>
+      <p class="note">Autentique sua conta Google diretamente aqui no app para sincronizar a fila via Supabase entre dispositivos e anexar PDFs e imagens no Google Drive.</p>
+      <p id="cloud-login-hint" class="note"></p>
+      <p class="error" id="cloud-login-error" role="alert"></p>
+      <div id="google-signin-slot" class="google-gsi-slot" hidden></div>
+      <div class="cloud-login-actions">
+        <a id="open-official-origin" class="primary official-origin-btn" href="https://folha-imposicao.vercel.app" hidden>Abrir domínio oficial para login Google ↗</a>
+        <button type="button" id="gmail-signin" class="primary google-signin-btn">
+          <span class="google-g" aria-hidden="true">G</span>
+          <span>Continuar com Google no app</span>
+        </button>
+        <button type="button" id="open-cloud-config-from-login" hidden>Ajustes de nuvem / Google Client ID</button>
+        <button type="button" id="use-local-fallback" class="link-muted-btn">Continuar em modo offline local</button>
+      </div>
+    </div>
+    <form id="auth">
+      <h2>Acesso da equipe</h2>
+      <label>Senha da fila compartilhada<input id="password" type="password" autocomplete="current-password" required></label>
+      <p class="error" role="alert"></p>
+      <button class="primary">Entrar</button>
+    </form>
+  </dialog>
+
+  <dialog id="cloud-config" aria-labelledby="cloud-config-title">
+    <form id="cloud-config-form">
+      <div class="dialogtop">
+        <div>
+          <span class="step-eyebrow">NUVEM · SUPABASE &amp; GOOGLE DRIVE</span>
+          <h2 id="cloud-config-title">Ajustes de Nuvem &amp; Google Drive</h2>
+        </div>
+        <button type="button" id="cloud-config-close" aria-label="Fechar">×</button>
+      </div>
+      <p class="note" id="cloud-config-source-note">Integração com Supabase via variáveis da Vercel ou ajuste local abaixo.</p>
+      <label>Google OAuth Client ID (login direto no app)<input id="cloud-google-client-id" type="text" placeholder="123456789-xxxx.apps.googleusercontent.com" autocomplete="off"></label>
+      <label>Supabase Project URL<input id="cloud-supabase-url" type="url" placeholder="https://seu-projeto.supabase.co" autocomplete="off"></label>
+      <label>Supabase Anon Key (pública)<textarea id="cloud-supabase-key" rows="2" placeholder="eyJhbGciOi..." autocomplete="off"></textarea></label>
+      <div class="pair">
+        <label><span>Pasta de anexos no Drive</span><input id="cloud-drive-folder" maxlength="120" placeholder="OS Maneger - Anexos"></label>
+        <label><span>Pasta de backups no Drive</span><input id="cloud-drive-backup-folder" maxlength="120" placeholder="IBD Suite - Backups"></label>
+      </div>
+      <label class="check"><input id="cloud-require-gmail" type="checkbox"> Exigir e-mail @gmail.com</label>
+      <p class="error" id="cloud-config-error" role="alert"></p>
+      <div class="actions">
+        <button type="button" id="cloud-config-clear" class="danger-text">Limpar config local</button>
+        <button type="button" id="cloud-config-cancel">Cancelar</button>
+        <button type="submit" class="primary" id="cloud-config-save">Salvar ajustes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="restore-dialog">
+    <form id="restore-form">
+      <h2>Restaurar backup</h2>
+      <p id="restore-summary"></p>
+      <label class="check"><input id="overwrite" type="checkbox"> Atualizar também as OS com o mesmo número</label>
+      <p>As demais OS serão mantidas com seus itens, lembretes, anexos, impressoras e base de conhecimento.</p>
+      <p class="error" role="alert"></p>
+      <div class="actions">
+        <button id="restore-cancel" type="button">Cancelar</button>
+        <button id="restore-confirm" class="primary">Restaurar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="delete-dialog" aria-labelledby="delete-title">
+    <form id="delete-form">
+      <small>EXCLUSÃO DE ORDEM</small>
+      <h2 id="delete-title">Excluir OS?</h2>
+      <p id="delete-description"></p>
+      <p>Esta ação remove a ordem, itens, lembretes e o checklist. Para recuperar depois, será necessário um backup anterior.</p>
+      <p class="error" id="delete-error" role="alert"></p>
+      <div class="actions">
+        <button type="button" id="delete-cancel">Cancelar</button>
+        <button id="delete-confirm" class="danger">Excluir OS</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="deadline-picker" aria-labelledby="picker-title">
+    <small>PLANEJAMENTO</small>
+    <h2 id="picker-title">Definir prazo</h2>
+    <p id="calendar-selection" aria-live="polite"></p>
+    <div class="calendar-shortcuts">
+      <button type="button" id="calendar-now">Agora</button>
+      <button type="button" id="calendar-today">Hoje</button>
+      <button type="button" id="calendar-tomorrow">Amanhã</button>
+    </div>
+    <div class="calendar-nav">
+      <button type="button" id="calendar-prev" aria-label="Mês anterior">‹</button>
+      <h3 id="calendar-title" aria-live="polite"></h3>
+      <button type="button" id="calendar-next" aria-label="Próximo mês">›</button>
+    </div>
+    <div class="calendar-week" aria-hidden="true"><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span><span>D</span></div>
+    <div id="calendar-days" role="group" aria-label="Dias do mês"></div>
+    <div class="time-picker">
+      <div><strong>Horário</strong><p>Fortaleza · UTC−3</p></div>
+      <label>Hora<select id="deadline-hour"></select></label>
+      <span class="time-colon" aria-hidden="true">:</span>
+      <label>Minuto<select id="deadline-minute"></select></label>
+    </div>
+    <div class="calendar-actions">
+      <button type="button" id="calendar-clear">Sem prazo</button>
+      <button type="button" id="calendar-cancel">Cancelar</button>
+      <button type="button" class="primary" id="calendar-apply">Aplicar</button>
+    </div>
+  </dialog>
+
+  <dialog id="printers-dialog" aria-labelledby="printers-dialog-title">
+    <div class="dialogtop">
+      <div>
+        <small>PARQUE GRÁFICO</small>
+        <h2 id="printers-dialog-title">Cadastro de Impressoras</h2>
+      </div>
+      <button type="button" id="printers-dialog-close" aria-label="Fechar cadastro de impressoras">×</button>
+    </div>
+    <p class="note">Cadastre as impressoras da gráfica para vinculá-las às OS (uma ou várias máquinas por OS) e filtrar a fila rapidamente.</p>
+    <form id="printer-form" class="printer-manager-form">
+      <div class="pair">
+        <label>Nome da impressora<input id="printer-name" required maxlength="80" placeholder="Ex.: Konica Minolta C3070" autocomplete="off"></label>
+        <label>Tipo / Tecnologia<select id="printer-category"><option value="">Opcional</option></select></label>
+      </div>
+      <label>Observações / Especificações<input id="printer-notes" maxlength="240" placeholder="Ex.: Até SRA3 · 350 g/m² · CMYK" autocomplete="off"></label>
+      <p class="error" id="printer-form-error" role="alert"></p>
+      <div class="actions">
+        <button type="button" id="printer-cancel-edit" hidden>Cancelar edição</button>
+        <button type="submit" class="primary" id="printer-save-btn">Cadastrar impressora</button>
+      </div>
+    </form>
+    <div id="printers-list" class="printers-catalog-list" aria-live="polite"></div>
+    <div class="actions">
+      <button type="button" id="printers-done-btn">Fechar</button>
+    </div>
+  </dialog>
+
+  <dialog id="drive-backup-dialog" class="drive-backup-dialog" aria-labelledby="drive-backup-title">
+    <div class="dialogtop">
+      <div>
+        <small>GOOGLE DRIVE · BACKUP PRIVADO DOS 3 APPS</small>
+        <h2 id="drive-backup-title">Backups da Suíte no Google Drive</h2>
+      </div>
+      <button type="button" id="drive-backup-close" class="icon-close" aria-label="Fechar janela de backup">×</button>
+    </div>
+    <div class="osm-drive-backup-body">
+      <div id="drive-backup-conn" class="drive-conn-card"></div>
+      <div id="drive-backup-snapshot" class="drive-snapshot-summary"></div>
+      <p class="note">Os backups são salvos exclusivamente na sua conta Google Drive com escopo mínimo (<code>drive.file</code>) e permissão 100% privada — nenhum link público é gerado.</p>
+      <div class="drive-backup-cta-row">
+        <button type="button" class="primary" id="drive-backup-create">☁ Criar backup agora no Drive</button>
+        <button type="button" id="drive-backup-download">↓ Baixar cópia local (.json)</button>
+        <button type="button" id="drive-backup-refresh">↻ Atualizar lista</button>
+      </div>
+      <p id="drive-backup-status" class="drive-backup-status" role="status" aria-live="polite"></p>
+      <div class="drive-backup-list-wrap">
+        <h3>Backups recentes no Drive</h3>
+        <div id="drive-backup-list" class="drive-backup-list" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" id="drive-backup-done">Fechar</button>
+    </div>
+  </dialog>
+
+  <dialog id="counter-editor" class="editor-dialog counter-editor-dialog" aria-labelledby="counter-caption">
+    <form id="counter-form" class="editor-form">
+      <div class="dialogtop">
+        <div>
+          <small>ATENDIMENTO DE BALCÃO · CRIAÇÃO &amp; AJUSTE</small>
+          <h2 id="counter-caption">Novo atendimento de balcão</h2>
+        </div>
+        <button type="button" class="counter-close icon-close" aria-label="Fechar">×</button>
+      </div>
+      <div class="dialog-body">
+        <div class="counter-modal-timer-box" id="counter-modal-timer-box">
+          <div class="counter-modal-timer-left">
+            <span class="counter-modal-timer-label">CRONÔMETRO DO ATENDIMENTO</span>
+            <strong id="counter-modal-timer-readout" class="counter-timer-digits">00:00:00</strong>
+            <small id="counter-modal-timer-sub" class="note">Inicie para medir o tempo de criação ou ajuste em tempo real.</small>
+          </div>
+          <div class="counter-modal-timer-actions">
+            <button type="button" id="counter-modal-timer-toggle" class="primary">▶ Iniciar</button>
+            <button type="button" id="counter-modal-timer-add5" title="Somar 5 minutos manualmente">+5m</button>
+            <button type="button" id="counter-modal-timer-add15" title="Somar 15 minutos manualmente">+15m</button>
+            <button type="button" id="counter-modal-timer-reset" title="Zerar cronômetro">Zerar</button>
+          </div>
+        </div>
+
+        <div class="pair">
+          <label><span>Serviço / Assunto <small>(caixa alta automática)</small></span><input name="title" class="uppercase-input" maxlength="160" placeholder="EX.: AJUSTE DE LOGO PARA CARTÃO DE VISITA"></label>
+          <label><span>Tipo de serviço</span>
+            <select name="serviceType">
+              <option value="criacao">Criação de Arte</option>
+              <option value="ajuste">Ajuste de Arquivo</option>
+              <option value="fechamento">Fechamento / Pré-impressão</option>
+              <option value="vetorizacao">Vetorização / Redesenho</option>
+              <option value="orcamento">Orçamento / Diagramação</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="pair">
+          <label><span>Nome do cliente / solicitante <small>(opcional)</small></span><input name="customerName" maxlength="160" placeholder="Ex.: Maria (Balcão) ou Clínica Solar"></label>
+          <label><span>WhatsApp / Telefone / E-mail <small>(opcional)</small></span><input name="customerContact" maxlength="120" placeholder="Ex.: (85) 99999-0000"></label>
+        </div>
+
+        <div class="pair">
+          <label><span>Status do atendimento</span><select name="status"></select></label>
+          <label><span>Canal de atendimento</span>
+            <select name="channel">
+              <option value="balcao">Balcão presencial</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="email">E-mail</option>
+              <option value="telefone">Telefone</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="pair">
+          <label><span>Situação do arquivo</span>
+            <select name="fileStatus">
+              <option value="cliente_trouxe">Cliente trouxe arquivo</option>
+              <option value="sem_arquivo">Criar do zero (sem arquivo)</option>
+              <option value="reenvio">Aguardando reenvio / referência</option>
+              <option value="aprovado">Arte aprovada</option>
+            </select>
+          </label>
+          <label><span>Designer / Atendente</span><input name="attendant" maxlength="160" placeholder="Quem está fazendo a criação ou ajuste"></label>
+        </div>
+
+        <fieldset class="counter-optional-ids-box">
+          <legend>Identificação formal <small>(totalmente opcional — preencha só se já tiver)</small></legend>
+          <div class="pair">
+            <label><span>Nº do cliente <small>(opcional · até 4 dígitos)</small></span><input name="clientNumber" maxlength="4" inputmode="numeric" placeholder="Sem número ainda"></label>
+            <label><span>Nº do pedido <small>(opcional · até 6 dígitos)</small></span><input name="orderNumber" maxlength="6" inputmode="numeric" placeholder="Sem número ainda"></label>
+          </div>
+        </fieldset>
+
+        <div class="pair">
+          <label><span>Tempo estimado <small>(minutos · opcional)</small></span><input name="estimatedMinutes" type="number" min="0" max="1440" step="5" placeholder="Ex.: 30"></label>
+          <label><span>Rodadas de ajuste</span><input name="revisionsCount" type="number" min="0" max="99" step="1" value="0"></label>
+        </div>
+
+        <label class="check editor-urgent-check"><input name="urgent" type="checkbox"> Cliente aguardando no balcão (prioridade imediata)</label>
+
+        <label class="knowledge-notes-field">
+          <span>Briefing · Instruções de Criação e Ajuste</span>
+          <textarea name="briefing" rows="4" maxlength="20000" placeholder="Descreva medidas, cores, textos, alterações pedidas pelo cliente, fontes, referências visuais e observações de acabamento..."></textarea>
+        </label>
+
+        <div class="attachments-box" id="counter-attachments-box">
+          <div class="attachments-header">
+            <div>
+              <strong>Referências &amp; Arquivos do Balcão (PDFs e Imagens)</strong>
+              <span class="note">Salvos no Google Drive ou Supabase Storage e levados automaticamente se converter em OS.</span>
+            </div>
+            <label class="attach-picker-btn" tabindex="0">
+              <input id="counter-attach-input" type="file" accept="application/pdf,image/*" multiple hidden>
+              <span>+ PDF ou Imagem</span>
+            </label>
+          </div>
+          <div id="counter-attach-dropzone" class="attach-dropzone">
+            Arraste referências, PDFs ou imagens aqui, ou cole (<kbd>Ctrl+V</kbd>).
+          </div>
+          <div id="counter-attach-status" class="attach-status" aria-live="polite" hidden></div>
+          <div id="counter-attach-list" class="attach-editor-list"></div>
+        </div>
+
+        <div id="counter-sessions-box" class="counter-sessions-box" hidden>
+          <strong>Histórico de sessões cronometradas</strong>
+          <ul id="counter-sessions-list" class="counter-sessions-list"></ul>
+        </div>
+
+        <p class="error" id="counter-form-error" role="alert"></p>
+      </div>
+      <div class="actions">
+        <button type="button" id="counter-delete-btn" class="danger-text" hidden>Excluir</button>
+        <button type="button" id="counter-promote-btn" hidden>↗ Gerar OS Formal</button>
+        <button type="button" class="counter-close">Cancelar</button>
+        <button class="primary" id="counter-save-btn" type="submit">Salvar atendimento</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="counter-delete-dialog" aria-labelledby="counter-delete-title">
+    <form id="counter-delete-form">
+      <small>EXCLUSÃO DE ATENDIMENTO</small>
+      <h2 id="counter-delete-title">Excluir atendimento de balcão?</h2>
+      <p id="counter-delete-description"></p>
+      <p>Esta ação remove o registro, histórico do cronômetro e referências vinculadas.</p>
+      <p class="error" id="counter-delete-error" role="alert"></p>
+      <div class="actions">
+        <button type="button" id="counter-delete-cancel">Cancelar</button>
+        <button id="counter-delete-confirm" class="danger">Excluir atendimento</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
