@@ -6,6 +6,10 @@ Um repositório único para todas as ferramentas de produção: os scripts nasce
 
 ---
 
+## Projeto Nobel · aplicativos de produção gráfica
+
+O [plano de desenvolvimento](docs/nobel/README.md) reúne o escopo dos mini apps para Android e desktop, os adaptadores para seis editores, a integração com o Kodak Preps, o backlog e os critérios de homologação na gráfica.
+
 ## Como funciona
 
 ```
