@@ -31,3 +31,7 @@ Os diretórios em `origens/` são cópias dos projetos da mesma conta GitHub. Fi
 - [Folha · 50ead7c](https://github.com/icarobragaotaviano/ibd-folha/tree/50ead7c62dc7cc95995a6beb32918dfe4e8f46e7)
 - [OS Maneger · 35e87ce](https://github.com/icarobragaotaviano/ibd-os-maneger/tree/35e87cea0019f2804b3f3d895404b8266ce50e7f)
 - [Numera-bloco · d105e84](https://github.com/icarobragaotaviano/numera-bloco/tree/d105e8455dcc009172dcd3f76b5f2174570df802)
+
+## Gabarito nativo de Wire-o
+
+No app Gabarito de acabamento, informe as dimensões, a sangria, a reserva de furação e a borda. Os botões BAS e JSX baixam comandos com as medidas daquela revisão. No CorelDRAW Windows, importe o BAS no editor de VBA e execute a macro CriarGabarito identificada pelo sufixo. No Illustrator, escolha o JSX em Arquivo → Scripts → Outro script. O resultado é um documento novo no formato acabado, com sangria configurada e uma camada técnica bloqueada e não imprimível. Salve o mestre como CDR ou AI. A prova SVG cotada continua disponível separadamente.

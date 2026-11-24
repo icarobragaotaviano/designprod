@@ -33,7 +33,7 @@ for(const [id,titulo,,descricao,origem,modo] of apps){
       if(!nome.endsWith('.sql')) arquivos.set(nome,await arquivo('origens/'+origem+'/'+nome));
     }
   }else{
-    for(const nome of ['bancada.mjs','calculos.mjs','estilo.css'])arquivos.set(nome,await arquivo(nome));
+    for(const nome of ['bancada.mjs','calculos.mjs','gabarito-editores.mjs','estilo.css'])arquivos.set(nome,await arquivo(nome));
     for(const nome of ['model.js','storage.js'])arquivos.set(nome,await arquivo('origens/os/'+nome));
     arquivos.set('index.html',head(titulo,base)+`<body data-app="${id}"><main><h1>${titulo}</h1><p>${descricao}</p><div class="painel"><form><fieldset aria-label="Parâmetros"></fieldset><button type="submit">${id==='enderecos'?'Localizar OS':'Gerar resultado'}</button></form><article><h2>Resultado</h2><div id="resultado"></div><p role="status" id="aviso"></p></article></div></main><script type="module" src="bancada.mjs"></script></body></html>`);
   }

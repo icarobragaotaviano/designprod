@@ -1,3 +1,4 @@
+import {scriptIllustrator, moduloCorel} from './gabarito-editores.mjs';
 import {consumo, grades, gabarito, ofertas, cartaz, remendo} from './calculos.mjs';
 import {parseOrderNumberParts, effectiveOrderLink, effectiveOrderPath, effectiveOrderPrintLink} from './model.js';
 import {localList} from './storage.js';
@@ -106,6 +107,11 @@ async function renderizar(){
       if(!/^\d{6}$/.test(dados.item))throw Error('Informe um item de seis dígitos.');
       const r=gabarito(dados);
       linha('Distância à borda',numero(r.distancia)+' mm');
+      const nome = [dados.os ? parseOrderNumberParts(dados.os).formatted : 'avulso',dados.item,'rev'+dados.revisao].join('_');
+      const script = (texto) => url(new Blob([texto],{type:'text/plain;charset=utf-8'}));
+      link('Criar no CorelDRAW (.bas)',script(moduloCorel(dados)),nome+'.bas');
+      link('Criar no Illustrator (.jsx)',script(scriptIllustrator(dados)),nome+'.jsx');
+      saida.append(elemento('p','CorelDRAW Windows: importe o BAS no editor VBA e execute CriarGabarito. Illustrator: use Arquivo → Scripts → Outro script. Cada comando cria um documento novo.'));
       svg('Baixar prova técnica SVG',r.svg,'gabarito-cotado.svg');
       link('Baixar medidas JSON',url(new Blob([JSON.stringify({versaoContrato:1,os:dados.os ? parseOrderNumberParts(dados.os).formatted : null,item:dados.item,revisao:dados.revisao,estado:'em_prova',produto:'calendario',unidade:'mm',origem:'superior_esquerdo_do_corte',corte:{largura:dados.largura,altura:dados.altura},sangria:Object.fromEntries(['superior','direita','inferior','esquerda'].map(l=>[l,dados.sangria])),acabamento:{tipo:'wire_o',lado:dados.lado,reserva:dados.reserva,segurancaAdicional:dados.seguranca},perfil:{id:'nobel-wire-o',versao:1}},null,2)],{type:'application/json'})),'medidas-gabarito.json');
     }else if(id==='ofertas'){
