@@ -21,6 +21,7 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { reunirVersoes } from './familias-site.mjs';
+import { familiaImposicao } from '../nobel/imposicao/versoes.mjs';
 import { APPS } from './lib/meta.mjs';
 import { resolverIncludes, cabecalho } from './lib/incluir.mjs';
 
@@ -196,7 +197,11 @@ for(const [nome,rotulo] of desktop){
   const [editor,titulo]=rotulo.split(' · ');
   const app=editor.toLowerCase();
   nomesApps[app]=editor;
-  ferramentas.push({id:'desktop/'+nome,titulo,descricao:rotulo,app,tipo:'utilitário',versao:marca.versao,baixar:'/apps/desktop/'+nome,baixarNome:nome,baixarTamanho:Math.max(1,Math.ceil((await stat(path.join(RAIZ,'nobel/desktop',nome))).size/1024))});
+  const id='desktop/'+nome;
+  const imposicao=familiaImposicao.includes(id);
+  const descricao=imposicao?'Monte duas folhas alinhadas em escala real, com a arte de impressão e a faca de corte.':rotulo;
+  const docUrl=imposicao && repo && repo.ref ? `${repo.url}/blob/${repo.ref}/docs/fluxos-de-producao.md#imposição-de-arte-e-corte` : undefined;
+  ferramentas.push({id,titulo,descricao,docUrl,app,tipo:'utilitário',versao:marca.versao,baixar:'/apps/desktop/'+nome,baixarNome:nome,baixarTamanho:Math.max(1,Math.ceil((await stat(path.join(RAIZ,'nobel/desktop',nome))).size/1024))});
 }
 reunirVersoes(ferramentas);
 const dados = { marca: catalogo.marca, versao: catalogo.versao, nomesApps, acoes, ferramentas };

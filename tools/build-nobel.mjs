@@ -15,13 +15,14 @@ await mkdir(saida,{recursive:true});
 await writeFile(path.join(saida,'estilo.css'),estilo);
 
 await mkdir(path.join(saida,'desktop'),{recursive:true});
-const geometriaRemendo = (await arquivo('remendo/janela.js')).toString('utf8');
+const geometrias = new Map([
+  ['/* @ibd-remendo-janela */', (await arquivo('remendo/janela.js')).toString('utf8')],
+  ['/* @ibd-imposicao-grade */', (await arquivo('imposicao/grade.js')).toString('utf8')]
+]);
 for (const [nome] of integracoes) {
-  const codigo = await arquivo('desktop/'+nome);
-  const completo = nome.startsWith('remendo-adesivo-') && !nome.endsWith('.bas')
-    ? codigo.toString('utf8').replace('/* @ibd-remendo-janela */',geometriaRemendo)
-    : codigo;
-  await writeFile(path.join(saida,'desktop',nome),completo);
+  let codigo = (await arquivo('desktop/'+nome)).toString('utf8');
+  for (const [marcador, geometria] of geometrias) codigo = codigo.replace(marcador, () => geometria);
+  await writeFile(path.join(saida,'desktop',nome),codigo);
 }
 for(const [id,titulo,,descricao,origem,modo] of apps){
   const base='/apps/'+id+'/';

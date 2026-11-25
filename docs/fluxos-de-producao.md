@@ -29,3 +29,19 @@ Teste a primeira peça no equipamento de destino. Os testes automatizados cobrem
 - **Illustrator.** Abra o JSX por Arquivo → Scripts → Outro script. Para o exportador PDF, salve o mestre em AI e tenha uma predefinição aprovada pelo fornecedor.
 - **Photoshop.** Escolha o perfil no app Preparar Lote de Imagens e execute o PSJS gerado pelo menu Arquivo → Scripts. O script escreve cópias e o relatório na subpasta `_PREPRESS_OK`.
 - **Windows.** Abra o lançador BAT com o PowerShell correspondente ao lado. Para OS, baixe primeiro o passaporte JSON do catálogo e informe seu caminho no prompt.
+
+## Imposição de arte e corte
+
+Em **Desktop**, busque **Imposição de arte e corte** e escolha o editor. Baixe o arquivo pelo catálogo para obter o script autônomo. Abra a arte, selecione uma peça e execute a versão correspondente.
+
+| Editor | Execução | Seleção e contorno |
+| --- | --- | --- |
+| Illustrator | Execute o `.jsx` em Arquivo → Scripts → Outro script. | Traçado simples fechado para extrair a faca. O modo retangular aceita uma arte ou grupo. O deslocamento do traçado é calculado para polígonos convexos de lados retos. |
+| CorelDRAW para Windows | Importe o `.bas` em um projeto VBA e execute `MontarArteEFaca`. | Converta o contorno em curva fechada simples ou use a faca retangular para a seleção. O deslocamento usa o contorno nativo. |
+| Affinity | Execute o `.js` na edição com suporte a scripts. Trabalhe em um documento com pranchetas. | Selecione um objeto convertido em curvas. A cópia mantém a geometria e o estilo vetorial básico. Para a faca vetorial, use um traçado fechado simples. O deslocamento do traçado é calculado para polígonos convexos de lados retos. |
+| VectorCraft | Execute o `.js` pelo menu de scripts. | Use uma curva fechada simples para a faca vetorial ou escolha o modo retangular. O deslocamento usa Offset Path. |
+| TraceDraw | Carregue o `.js` como plug-in de script e execute **Montar arte e faca**. | Use uma curva fechada simples ou a faca retangular. O deslocamento usa o contorno nativo. |
+
+O formato inicial é **T4 (328 × 478 mm)**. Para T8, informe **238 × 328 mm**. Use o intervalo entre peças e a margem da folha em milímetros. Informe a quantidade manual ou `0` para preencher a grade na orientação atual. Se a capacidade superar 500, informe uma quantidade manual de até 500. A faca sai com traço vermelho de 0,25 pt e sem preenchimento. Use deslocamento positivo para fora e negativo para dentro. Com deslocamento zero, o traçado curvo mantém sua geometria. Para uma faca retangular, o deslocamento é aplicado aos quatro lados da caixa.
+
+**ARTE** e **FACA** têm o mesmo tamanho e as mesmas coordenadas locais. Quando você ativa as cruzes, há quatro em cada folha e a margem mínima é de 8 mm. São referências visuais de registro. Use as marcas do equipamento quando o seu plotter exigir leitura óptica. Exporte as duas saídas em escala 1:1. Aplique o nome da cor especial de corte exigido pelo RIP quando o fluxo usar uma tinta técnica.

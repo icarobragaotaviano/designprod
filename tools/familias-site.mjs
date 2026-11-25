@@ -1,8 +1,10 @@
+import { familiaImposicao } from '../nobel/imposicao/versoes.mjs';
 import { familiaRemendo } from '../nobel/remendo/versoes.mjs';
 
 const desktop = nome => 'desktop/' + nome;
 const familias = [
     familiaRemendo,
+    familiaImposicao,
     ['web/preto-tac','web/preflight',desktop('auditar-arte-corel.bas'),desktop('auditar-arte-illustrator.jsx')],
     ['web/fechamento','photoshop/actions/salvar-pdf-x1a',desktop('fechar-pdf-corel.bas'),desktop('fechar-pdf-illustrator.jsx')],
     ['web/gabarito','web/dobras','illustrator/guias-selecao-margem',desktop('abrir-gabarito-illustrator.jsx'),desktop('trace-calendario.js')],
