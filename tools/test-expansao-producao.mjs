@@ -56,3 +56,27 @@ for(const [nome] of desktop)assert.ok(readFileSync(new URL('../nobel/desktop/'+n
 for(const [arquivo] of desktop.filter(([p])=>p.endsWith('.jsx')))new vm.Script(readFileSync(new URL('../nobel/desktop/'+arquivo,import.meta.url),'utf8').replace(/^#target[^\n]*\n/,''));
 new vm.Script('const CONFIG={};\n'+readFileSync(new URL('../nobel/producao/lote-ps.txt',import.meta.url),'utf8'));
 console.log('Expansão de produção validada.');
+
+function testarCorte(tipo){
+  const arquivo=readFileSync(new URL('../nobel/desktop/exportar-corte-illustrator.jsx',import.meta.url),'utf8').replace(/^#target[^\n]*\n/,'');
+  const pt=72/25.4;
+  const nos=[[0,0],[100*pt,0],[100*pt,50*pt],[0,50*pt]].map(anchor=>({anchor,leftDirection:anchor,rightDirection:anchor}));
+  const caminho={typename:'PathItem',closed:true,pathPoints:nos,geometricBounds:[0,50*pt,100*pt,0]};
+  const inverso={...caminho,pathPoints:[...nos].reverse()};
+  let saida='', mensagem='';
+  function Janela(){
+    this.show=()=>1;
+    this.add=t=>t==='group'?{add(){}}:t==='dropdownlist'?{get selection(){return {text:tipo};},set selection(v){}}:{};
+  }
+  const destino={name:'prova.'+tipo.toLowerCase(),open(){return true;},write(s){saida=s;return true;},close(){}};
+  vm.runInNewContext(arquivo,{app:{documents:[{}],activeDocument:{selection:[caminho,inverso]}},Window:Janela,File:{saveDialog:()=>destino},alert:t=>{mensagem=t;}});
+  assert.match(mensagem,/100 × 50 mm/);
+  return saida;
+}
+const svgCorte=testarCorte('SVG');
+assert.match(svgCorte,/width="100mm" height="50mm"/);
+assert.equal((svgCorte.match(/<path /g)||[]).length,1);
+const dxfCorte=testarCorte('DXF');
+assert.match(dxfCorte,/\$INSUNITS\n70\n4/);
+assert.equal((dxfCorte.match(/LWPOLYLINE/g)||[]).length,1);
+assert.match(dxfCorte,/\n90\n4\n70\n1/);

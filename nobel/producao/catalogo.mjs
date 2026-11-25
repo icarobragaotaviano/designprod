@@ -21,6 +21,7 @@ export const desktopProducao = [
   ['fechar-pdf-corel.bas','CorelDRAW · Fechar PDF com estilo'],
   ['fechar-pdf-illustrator.jsx','Illustrator · Fechar PDF com predefinição'],
   ['camada-tecnica-illustrator.jsx','Illustrator · Gerar camada de corte, vinco ou branco'],
+  ['exportar-corte-illustrator.jsx','Illustrator · Exportar corte SVG ou DXF'],
   ['conferir-corte-illustrator.jsx','Illustrator · Conferir contornos de corte'],
   ['pastas-passaporte.ps1','Windows · Criar pastas e passaporte técnico'],
   ['pastas-passaporte.bat','Windows · Abrir criador de pastas']
