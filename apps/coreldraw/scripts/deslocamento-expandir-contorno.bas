@@ -49,9 +49,10 @@ Public Sub DeslocarExpandirContorno()
     End If
 
     entrada = InputBox( _
-        "Deslocamento mm (+ fora / - dentro); canto (M=Mitra, R=Arredondado, C=Chanfrado); espessura pt:", _
+        "Selecao: " & doc.SelectionRange.Count & " objeto(s)" & vbCrLf & _
+        "Config rapida: desloc mm (+ fora/- dentro) ; canto (M/R/C) ; pt ; CMYK ; manter (S/N):", _
         "IBD — Deslocamento + Expandir + Contorno", _
-        "2;M;1")
+        "2;M;1;0,100,0,0;S")
     If Trim$(entrada) = "" Then Exit Sub
 
     partes = Split(entrada, ";")
@@ -73,22 +74,30 @@ Public Sub DeslocarExpandirContorno()
         Exit Sub
     End If
 
-    entradaCor = InputBox( _
-        "Cor CMYK do contorno (C,M,Y,K de 0 a 100 — padrao Magenta corte):", _
-        "IBD — Cor do contorno", _
-        "0,100,0,0")
-    If Trim$(entradaCor) = "" Then Exit Sub
+    If UBound(partes) >= 3 Then
+        entradaCor = Trim$(partes(3))
+    Else
+        entradaCor = InputBox( _
+            "Cor CMYK do contorno (C,M,Y,K de 0 a 100 — padrao Magenta corte):", _
+            "IBD — Cor do contorno", _
+            "0,100,0,0")
+        If Trim$(entradaCor) = "" Then Exit Sub
+    End If
     If Not LerCmyk(entradaCor, cmykVals) Then
         MsgBox "Cor CMYK invalida. Use quatro numeros separados por virgula (ex: 0,100,0,0).", vbExclamation, "IBD — Contorno deslocado"
         Exit Sub
     End If
 
-    respManter = MsgBox( _
-        "Manter os objetos originais intactos?", _
-        vbYesNoCancel + vbQuestion, _
-        "IBD — Manter original")
-    If respManter = vbCancel Then Exit Sub
-    manterOriginal = (respManter = vbYes)
+    If UBound(partes) >= 4 Then
+        manterOriginal = (UCase$(Trim$(partes(4))) <> "N")
+    Else
+        respManter = MsgBox( _
+            "Manter os objetos originais intactos?", _
+            vbYesNoCancel + vbQuestion, _
+            "IBD — Manter original")
+        If respManter = vbCancel Then Exit Sub
+        manterOriginal = (respManter = vbYes)
+    End If
 
     unificarFormas = False
     If doc.SelectionRange.Count > 1 Then

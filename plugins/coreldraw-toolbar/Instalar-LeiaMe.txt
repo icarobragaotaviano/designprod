@@ -1,0 +1,11 @@
+IBD Ferramentas — Barra de Ferramentas com Icones para CorelDRAW (v0.1.0)
+
+Como instalar e criar os botoes com icone:
+1. Extraia este ZIP em uma pasta fixa (ex: C:\IBD_Ferramentas\).
+2. No CorelDRAW, abra o editor VBA (Alt + F11).
+3. Clique com o botao direito em GlobalMacros > Importar Arquivo... e importe:
+   - Todos os arquivos .bas da pasta scripts\
+   - O arquivo IBD_InstalarBarraFerramentas.bas
+4. Execute a macro GlobalMacros.IBD_BarraFerramentas.InstalarBarraIBD (F5).
+5. Quando solicitado, informe o caminho da pasta "icones\" (ex: C:\IBD_Ferramentas\icones\).
+6. A barra "IBD Ferramentas" aparecera no topo do CorelDRAW com todos os iconezinhos!

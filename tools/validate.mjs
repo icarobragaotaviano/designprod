@@ -95,21 +95,35 @@ try {
   erros.push(`vercel.json ilegivel: ${e.message}`);
 }
 
-/* 5. Manifest do plugin UXP -------------------------------------------- */
+/* 5. Manifests dos plugins instalaveis (UXP e CEP) -------------------- */
 
-const manifestPath = path.join(RAIZ, 'plugins', 'photoshop-uxp', 'manifest.json');
+for (const uxpNome of ['photoshop-uxp', 'indesign-uxp']) {
+  const manifestPath = path.join(RAIZ, 'plugins', uxpNome, 'manifest.json');
+  try {
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    for (const campo of ['id', 'name', 'version', 'main', 'host', 'manifestVersion']) {
+      if (manifest[campo] === undefined) erros.push(`${uxpNome}/manifest.json: campo obrigatorio ausente: ${campo}`);
+    }
+    if (manifest.version && !/^\d+\.\d+\.\d+$/.test(manifest.version)) {
+      erros.push(`${uxpNome}/manifest.json: version precisa ser x.y.z`);
+    }
+    const principal = path.join(path.dirname(manifestPath), manifest.main || '');
+    await access(principal).catch(() => erros.push(`${uxpNome}/manifest.json: "main" aponta para arquivo inexistente (${manifest.main})`));
+  } catch (e) {
+    erros.push(`${uxpNome}/manifest.json ilegivel: ${e.message}`);
+  }
+}
+
+const cepManifestPath = path.join(RAIZ, 'plugins', 'adobe-cep', 'CSXS', 'manifest.xml');
 try {
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
-  for (const campo of ['id', 'name', 'version', 'main', 'host', 'manifestVersion']) {
-    if (manifest[campo] === undefined) erros.push(`manifest.json: campo obrigatorio ausente: ${campo}`);
+  const cepXml = await readFile(cepManifestPath, 'utf8');
+  for (const tag of ['<ExtensionManifest', 'ExtensionBundleId=', 'ILST', 'AEFT', './index.html', './host/runner.jsx']) {
+    if (!cepXml.includes(tag)) erros.push(`adobe-cep/CSXS/manifest.xml: trecho obrigatorio ausente (${tag})`);
   }
-  if (manifest.version && !/^\d+\.\d+\.\d+$/.test(manifest.version)) {
-    erros.push('manifest.json: version precisa ser x.y.z');
-  }
-  const principal = path.join(path.dirname(manifestPath), manifest.main || '');
-  await access(principal).catch(() => erros.push(`manifest.json: "main" aponta para arquivo inexistente (${manifest.main})`));
+  await access(path.join(RAIZ, 'plugins', 'adobe-cep', 'index.html')).catch(() => erros.push('adobe-cep: index.html ausente'));
+  await access(path.join(RAIZ, 'plugins', 'adobe-cep', 'host', 'runner.jsx')).catch(() => erros.push('adobe-cep: host/runner.jsx ausente'));
 } catch (e) {
-  erros.push(`manifest.json do plugin ilegivel: ${e.message}`);
+  erros.push(`adobe-cep/CSXS/manifest.xml ilegivel: ${e.message}`);
 }
 
 /* Resultado ------------------------------------------------------------ */

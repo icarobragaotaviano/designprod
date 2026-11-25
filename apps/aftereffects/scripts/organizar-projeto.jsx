@@ -21,16 +21,41 @@
 
   var ESTRUTURA = ['01_COMPS', '02_PRECOMPS', '03_IMAGENS', '04_VIDEO', '05_AUDIO', '06_SOLIDOS'];
 
-  var opcoes = IBD.ui.formulario('Organizar projeto', [
+  var opcoes = IBD.ui.formulario('Organizar pastas do projeto', [
+    {
+      id: 'previa',
+      tipo: 'preview',
+      grupo: 'Estrutura de pastas',
+      largura: 360,
+      altura: 86,
+      legenda: function (v) {
+        return v.separarPrecomps ? '01_COMPS · 02_PRECOMPS · 03_IMAGENS · 04_VIDEO · 05_AUDIO · 06_SOLIDOS' : '01_COMPS · 03_IMAGENS · 04_VIDEO · 05_AUDIO · 06_SOLIDOS';
+      },
+      desenhar: function (g, w, h, v, d) {
+        var pastasPrev = v.separarPrecomps
+          ? ['01_COMPS', '02_PRECOMPS', '03_IMAGENS', '04_VIDEO', '05_AUDIO', '06_SOLIDOS']
+          : ['01_COMPS', '03_IMAGENS', '04_VIDEO', '05_AUDIO', '06_SOLIDOS'];
+        for (var k = 0; k < pastasPrev.length; k++) {
+          var col = k % 3, row = Math.floor(k / 3);
+          var px = 14 + col * 114, py = 14 + row * 32;
+          d.retangulo(g, px, py, 104, 24, d.cor(32, 38, 48, 1), d.cor(104, 168, 232, 0.8), 1);
+          d.texto(g, pastasPrev[k], px + 8, py + 5, d.cor(228, 231, 238, 1), 9, true);
+        }
+      }
+    },
     {
       id: 'separarPrecomps',
       rotulo: 'Separar precomps',
+      grupo: 'Regras de organização',
       tipo: 'booleano',
       padrao: true,
       ajuda: 'Composicoes usadas dentro de outras vao para 02_PRECOMPS.'
     },
-    { id: 'confirmar', rotulo: 'Mover itens ja organizados', tipo: 'booleano', padrao: false }
-  ]);
+    { id: 'confirmar', rotulo: 'Mover itens ja organizados', grupo: 'Regras de organização', tipo: 'booleano', padrao: false }
+  ], 'Organizar projeto', {
+    subtitulo: 'Cria as pastas padrão no painel Project e classifica os itens',
+    largura: 420
+  });
 
   if (!opcoes) return;
 

@@ -1,0 +1,8 @@
+IBD Ferramentas — Painel Encaixavel do After Effects (v0.1.0)
+
+Como instalar:
+1. Copie o arquivo "IBD Ferramentas Painel.jsx" para a pasta ScriptUI Panels:
+   - macOS: /Applications/Adobe After Effects [Versao]/Scripts/ScriptUI Panels/
+   - Windows: C:\Program Files\Adobe\Adobe After Effects [Versao]\Support Files\Scripts\ScriptUI Panels\
+2. Reinicie o After Effects.
+3. Abra em Janela (Window) > IBD Ferramentas Painel.jsx e encaixe onde preferir.

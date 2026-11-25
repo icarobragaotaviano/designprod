@@ -13,5 +13,6 @@ Thumbs.db
 .idea/
 tmp/
 plugins/*/src/bundle/
+plugins/*/bundle/
 site/publico/
 .vercel/

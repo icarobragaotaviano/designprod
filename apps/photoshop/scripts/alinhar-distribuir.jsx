@@ -75,21 +75,41 @@
 
   var resposta = IBD.ui.formulario('Alinhar e distribuir — ' + camadas.length + ' camadas', [
     {
-      id: 'referencia', rotulo: 'Alinhar em relação a', tipo: 'escolha', opcoes: listar(REFERENCIAS),
+      id: 'previa',
+      tipo: 'preview',
+      grupo: 'Prévia do alinhamento',
+      largura: 380,
+      altura: 100,
+      legenda: function (v) {
+        return 'Ref.: ' + (v.referencia || 'Seleção') + ' · H: ' + (v.horizontal || 'Não alterar') + ' · V: ' + (v.vertical || 'Não alterar');
+      },
+      desenhar: function (g, w, h, v, d) {
+        d.retangulo(g, 36, 10, w - 72, h - 20, d.cor(30, 34, 42, 1), d.cor(120, 130, 150, 0.7), 1);
+        d.linha(g, w / 2, 12, w / 2, h - 12, d.cor(240, 196, 25, 0.35), 1);
+        d.retangulo(g, 60, 24, 52, 22, d.cor(104, 168, 232, 0.4), d.cor(104, 168, 232, 1), 1.5);
+        d.retangulo(g, 132, 24, 80, 22, d.cor(104, 168, 232, 0.4), d.cor(104, 168, 232, 1), 1.5);
+        d.retangulo(g, 232, 24, 62, 22, d.cor(104, 168, 232, 0.4), d.cor(104, 168, 232, 1), 1.5);
+      }
+    },
+    {
+      id: 'referencia', rotulo: 'Alinhar em relação a', grupo: 'Alinhamento', tipo: 'escolha', opcoes: listar(REFERENCIAS),
       padrao: salvas.referencia || 'Área das camadas selecionadas'
     },
-    { id: 'horizontal', rotulo: 'Horizontal', tipo: 'escolha', opcoes: listar(HORIZONTAIS), padrao: salvas.horizontal || 'Não alterar' },
-    { id: 'vertical', rotulo: 'Vertical', tipo: 'escolha', opcoes: listar(VERTICAIS), padrao: salvas.vertical || 'Não alterar' },
+    { id: 'horizontal', rotulo: 'Horizontal', grupo: 'Alinhamento', tipo: 'escolha', opcoes: listar(HORIZONTAIS), padrao: salvas.horizontal || 'Não alterar' },
+    { id: 'vertical', rotulo: 'Vertical', grupo: 'Alinhamento', tipo: 'escolha', opcoes: listar(VERTICAIS), padrao: salvas.vertical || 'Não alterar' },
     {
-      id: 'distribuir', rotulo: 'Distribuir', tipo: 'escolha', opcoes: listar(DISTRIBUICOES),
+      id: 'distribuir', rotulo: 'Distribuir', grupo: 'Distribuição e medida', tipo: 'escolha', opcoes: listar(DISTRIBUICOES),
       padrao: salvas.distribuir || 'Não distribuir',
       ajuda: 'A distribuição roda depois do alinhamento e mantém a primeira e a última camada no lugar.'
     },
-    { id: 'unidade', rotulo: 'Unidade', tipo: 'escolha', opcoes: ['px', 'mm', 'cm', 'pt'], padrao: salvas.unidade || 'px' },
-    { id: 'espaco', rotulo: 'Espaço fixo', tipo: 'numero', padrao: salvas.espaco === undefined ? 10 : salvas.espaco },
-    { id: 'comEfeitos', rotulo: 'Medir incluindo efeitos de camada', tipo: 'booleano', padrao: !!salvas.comEfeitos },
-    { id: 'incluirOcultas', rotulo: 'Incluir camadas ocultas', tipo: 'booleano', padrao: !!salvas.incluirOcultas }
-  ], 'Aplicar');
+    { id: 'unidade', rotulo: 'Unidade', grupo: 'Distribuição e medida', tipo: 'escolha', opcoes: ['px', 'mm', 'cm', 'pt'], presets: ['px', 'mm', 'cm', 'pt'], padrao: salvas.unidade || 'px' },
+    { id: 'espaco', rotulo: 'Espaço fixo', grupo: 'Distribuição e medida', tipo: 'numero', presets: [0, 5, 10, 20], padrao: salvas.espaco === undefined ? 10 : salvas.espaco },
+    { id: 'comEfeitos', rotulo: 'Medir incluindo efeitos de camada', grupo: 'Opções', tipo: 'booleano', padrao: !!salvas.comEfeitos },
+    { id: 'incluirOcultas', rotulo: 'Incluir camadas ocultas', grupo: 'Opções', tipo: 'booleano', padrao: !!salvas.incluirOcultas }
+  ], 'Aplicar', {
+    subtitulo: camadas.length + ' camadas selecionadas · alinhamento e distribuição combinados',
+    largura: 455
+  });
 
   if (!resposta) return;
   IBD.prefs.gravar(ID, resposta);

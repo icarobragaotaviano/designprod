@@ -91,10 +91,20 @@ if (!doc) {
     );
 
     const grpCfg = col.addGroup('Configuracao');
+    const PRESETS_MM = [0, 3, 5, 10, 15, 20];
+    const cbPreset = grpCfg.addComboBox(
+      'Predefinicao rapida',
+      ['Personalizada', '3 mm (Fina)', '5 mm (Padrao)', '10 mm (Generosa)', '15 mm (Catalogo)', '20 mm (Ampla)'],
+      0
+    );
+    let ultimoPresetIdx = 0;
     const margEdit = grpCfg.addUnitValueEditor('Margem interna', UnitType.Pixel, unidades[idxUnid].tipo, 5 * mmToPx, 0, null);
     margEdit.value = 5 * mmToPx; // Workaround SDK: maxValue null zera valor inicial no construtor
     const chkPreview = grpCfg.addCheckBox('Pre-visualizacao ao vivo', true);
-    const infoStatus = grpCfg.addStaticText('Area util', '-');
+
+    const grpPrevia = col.addGroup('Previa calculada');
+    const infoStatus = grpPrevia.addStaticText('Area util', '-');
+    const infoGuias = grpPrevia.addStaticText('Guias internas', '-');
 
     const montarComandos = () => {
       const m = margEdit.value;
@@ -108,16 +118,31 @@ if (!doc) {
     };
 
     const atualizarPreview = () => {
+      if (cbPreset.selectedIndex !== ultimoPresetIdx) {
+        ultimoPresetIdx = cbPreset.selectedIndex;
+        if (ultimoPresetIdx > 0) {
+          margEdit.value = PRESETS_MM[ultimoPresetIdx] * mmToPx;
+        }
+      } else if (ultimoPresetIdx > 0) {
+        const esperado = PRESETS_MM[ultimoPresetIdx] * mmToPx;
+        if (Math.abs(margEdit.value - esperado) > 0.05) {
+          cbPreset.selectedIndex = 0;
+          ultimoPresetIdx = 0;
+        }
+      }
+
       doc.clearPreviews();
       const cmds = montarComandos();
       if (!cmds) {
         infoStatus.text = 'Margem invalida ou maior que a area util';
+        infoGuias.text = 'Reduza o valor abaixo da metade da prancheta';
         return;
       }
       const m = margEdit.value;
       const utilW = ((alvo.w - 2 * m) * pxToMm).toFixed(1);
       const utilH = ((alvo.h - 2 * m) * pxToMm).toFixed(1);
       infoStatus.text = utilW + ' x ' + utilH + ' mm';
+      infoGuias.text = '4 guias a ' + (m * pxToMm).toFixed(1) + ' mm de cada borda';
 
       if (chkPreview.value) {
         const cb = CompoundCommandBuilder.create();

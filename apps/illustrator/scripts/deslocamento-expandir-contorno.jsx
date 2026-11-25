@@ -29,36 +29,83 @@
 
   var salvas = IBD.prefs.ler(ID);
 
-  var opcoes = IBD.ui.formulario('Deslocamento + Expandir + Contorno', [
+  function corRgbaPreview(preset) {
+    if (!preset) return [236 / 255, 72 / 255, 153 / 255, 1];
+    if (preset.indexOf('Vermelho') === 0) return [235 / 255, 58 / 255, 58 / 255, 1];
+    if (preset.indexOf('Ciano') === 0) return [0 / 255, 188 / 255, 242 / 255, 1];
+    if (preset.indexOf('Preto') === 0) return [215 / 255, 220 / 255, 230 / 255, 1];
+    if (preset.indexOf('Personalizado') === 0) return [240 / 255, 196 / 255, 25 / 255, 1];
+    return [236 / 255, 72 / 255, 153 / 255, 1];
+  }
+
+  var opcoes = IBD.ui.formulario('Gerar contorno deslocado e expandido', [
+    {
+      id: 'previa',
+      tipo: 'preview',
+      grupo: 'Prévia do deslocamento',
+      largura: 390,
+      altura: 122,
+      legenda: function (v) {
+        var off = Number(v.deslocamentoMm);
+        var sinal = (!isNaN(off) && off > 0) ? '+' : '';
+        return 'Offset ' + (isNaN(off) ? '?' : sinal + off) + ' mm · ' + (v.cantos || 'Mitra') + ' · traço ' + (v.espessuraPt || 1) + ' pt';
+      },
+      desenhar: function (g, w, h, v, d) {
+        var bw = 116, bh = 54;
+        var bx = (w - bw) / 2, by = (h - bh) / 2;
+        d.retangulo(g, bx, by, bw, bh, d.cor(38, 44, 56, 1), d.cor(120, 130, 150, 1), 1);
+        var off = Number(v.deslocamentoMm);
+        if (isNaN(off)) off = 2;
+        var px = Math.max(-18, Math.min(22, off * 4));
+        var ew = Math.max(20, bw + 2 * px);
+        var eh = Math.max(12, bh + 2 * px);
+        var ex = (w - ew) / 2, ey = (h - eh) / 2;
+        var esp = Math.max(1, Math.min(4, Number(v.espessuraPt) || 1));
+        var col = corRgbaPreview(v.corPreset);
+        if (v.cantos === 'Arredondado') {
+          d.circulo(g, ex, ey, ew, eh, null, col, esp);
+        } else {
+          d.retangulo(g, ex, ey, ew, eh, null, col, esp);
+        }
+      }
+    },
     {
       id: 'deslocamentoMm',
       rotulo: 'Deslocamento (mm)',
+      grupo: 'Deslocamento e cantos',
       tipo: 'numero',
+      presets: [-3, -2, 2, 3, 5],
       padrao: salvas.deslocamentoMm === undefined ? 2 : salvas.deslocamentoMm,
       ajuda: 'Positivo expande para fora; negativo retrai para dentro.'
     },
     {
       id: 'cantos',
       rotulo: 'Cantos (Join)',
+      grupo: 'Deslocamento e cantos',
       tipo: 'escolha',
       opcoes: ['Mitra (reto)', 'Arredondado', 'Chanfrado'],
+      presets: ['Mitra (reto)', 'Arredondado', 'Chanfrado'],
       padrao: salvas.cantos || 'Mitra (reto)'
     },
     {
       id: 'limiteMitra',
       rotulo: 'Limite de mitra',
+      grupo: 'Deslocamento e cantos',
       tipo: 'numero',
       padrao: salvas.limiteMitra === undefined ? 4 : salvas.limiteMitra
     },
     {
       id: 'espessuraPt',
       rotulo: 'Espessura contorno (pt)',
+      grupo: 'Traço e cor',
       tipo: 'numero',
+      presets: [0.5, 1, 1.5, 2],
       padrao: salvas.espessuraPt === undefined ? 1 : salvas.espessuraPt
     },
     {
       id: 'corPreset',
       rotulo: 'Cor do contorno',
+      grupo: 'Traço e cor',
       tipo: 'escolha',
       opcoes: [
         'Magenta corte (0,100,0,0)',
@@ -67,27 +114,39 @@
         'Preto (0,0,0,100)',
         'Personalizado (CMYK)'
       ],
+      cores: [
+        { curto: 'Magenta', valor: 'Magenta corte (0,100,0,0)', rgb: [230, 0, 126] },
+        { curto: 'Vermelho', valor: 'Vermelho (0,100,100,0)', rgb: [220, 30, 30] },
+        { curto: 'Ciano', valor: 'Ciano (100,0,0,0)', rgb: [0, 160, 230] },
+        { curto: 'Preto', valor: 'Preto (0,0,0,100)', rgb: [30, 30, 35] }
+      ],
       padrao: salvas.corPreset || 'Magenta corte (0,100,0,0)'
     },
     {
       id: 'cmykCustom',
       rotulo: 'CMYK custom (C,M,Y,K)',
+      grupo: 'Traço e cor',
       tipo: 'texto',
       padrao: salvas.cmykCustom || '0, 100, 100, 0'
     },
     {
       id: 'manterOriginal',
       rotulo: 'Duplicar antes de aplicar (manter original)',
+      grupo: 'Comportamento',
       tipo: 'booleano',
       padrao: salvas.manterOriginal === undefined ? true : !!salvas.manterOriginal
     },
     {
       id: 'unificar',
       rotulo: 'Unificar formas resultantes (Pathfinder Add)',
+      grupo: 'Comportamento',
       tipo: 'booleano',
       padrao: !!salvas.unificar
     }
-  ], 'Executar');
+  ], 'Executar', {
+    subtitulo: doc.selection.length + ' objeto(s) selecionado(s) · Offset Path XML + traço limpo',
+    largura: 455
+  });
 
   if (!opcoes) return;
 

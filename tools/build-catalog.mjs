@@ -24,8 +24,10 @@ if (problemas.length) {
 const destino = path.join(RAIZ, 'catalog.json');
 await writeFile(destino, JSON.stringify(catalogo, null, 2) + '\n', 'utf8');
 
-// O plugin le uma copia local para nao depender da arvore do repo em runtime.
-const copiaPlugin = path.join(RAIZ, 'plugins', 'photoshop-uxp', 'src', 'catalog.json');
-await writeFile(copiaPlugin, JSON.stringify(catalogo, null, 2) + '\n', 'utf8');
+// Os paineis leem uma copia local para nao depender da arvore do repo em runtime.
+const textoCatalogo = JSON.stringify(catalogo, null, 2) + '\n';
+await writeFile(path.join(RAIZ, 'plugins', 'photoshop-uxp', 'src', 'catalog.json'), textoCatalogo, 'utf8');
+await writeFile(path.join(RAIZ, 'plugins', 'indesign-uxp', 'src', 'catalog.json'), textoCatalogo, 'utf8');
+await writeFile(path.join(RAIZ, 'plugins', 'adobe-cep', 'catalog.json'), textoCatalogo, 'utf8');
 
 console.log(`catalog.json atualizado: ${catalogo.ferramentas.length} ferramentas.`);

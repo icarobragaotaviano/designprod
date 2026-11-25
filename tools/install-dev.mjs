@@ -207,6 +207,45 @@ for (const [appId, lista] of Object.entries(padroesActions)) {
   }
 }
 
+/* Painel After Effects + Extensao CEP -------------------------------- */
+
+const painelAeOrigem = path.join(RAIZ, 'plugins', 'aftereffects-dock', 'IBD Ferramentas Painel.jsx');
+if (await existe(painelAeOrigem)) {
+  const pastasAe = [];
+  for (const padrao of (padroes.aftereffects || [])) pastasAe.push(...(await expandir(padrao)));
+  for (const pasta of pastasAe) {
+    const destinoPainel = path.join(pasta, `${marca.nome} Ferramentas Painel.jsx`);
+    if (apenasListar) {
+      console.log(`aftereffects (painel dock): ${pasta}`);
+    } else if (remover) {
+      if (await existe(destinoPainel)) {
+        const conteudo = await readFile(destinoPainel, 'utf8').catch(() => '');
+        if (conteudo.includes(MARCADOR)) { await unlink(destinoPainel); removidos++; }
+      }
+    } else {
+      const lancador = [
+        MARCADOR,
+        '// painel encaixavel gerado por tools/build-plugin.mjs aftereffects-dock',
+        `#include "${painelAeOrigem.split(path.sep).join('/')}"`,
+        ''
+      ].join('\n');
+      try {
+        await writeFile(destinoPainel, lancador, 'utf8');
+        instalados++;
+      } catch (e) {}
+    }
+  }
+}
+
+const pastaCepExt = process.platform === 'darwin'
+  ? path.join(os.homedir(), 'Library', 'Application Support', 'Adobe', 'CEP', 'extensions')
+  : (process.platform === 'win32'
+      ? path.join(process.env['APPDATA'] || path.join(os.homedir(), 'AppData', 'Roaming'), 'Adobe', 'CEP', 'extensions')
+      : null);
+if (pastaCepExt && apenasListar) {
+  console.log(`adobe-cep (pasta extensoes): ${pastaCepExt}`);
+}
+
 if (semPasta.length) {
   console.warn(`\nPasta nao encontrada para: ${semPasta.join(', ')}.`);
   console.warn('O app pode nao estar instalado, ou usar caminho diferente. Veja docs/instalacao.md.');

@@ -68,6 +68,7 @@
             <h2 id="titulo-favoritos">Favoritos</h2>
             <div class="favoritos-acoes">
               <span id="resultados-favoritos"></span>
+              <button type="button" id="empacotar-favoritos" class="botao" hidden>Gerar plugin dos favoritos</button>
               <button type="button" id="limpar-favoritos" class="botao secundario" hidden>Limpar favoritos</button>
             </div>
           </div>
@@ -181,6 +182,15 @@ Windows
             </p>
           </details>
         </article>
+        <article class="instalar-suite">
+          <h3>Plugins instaláveis para todos os softwares</h3>
+          <p>
+            Além do Photoshop, baixe painéis nativos com barra de ícones para <strong>InDesign UXP</strong>,
+            extensão <strong>CEP universal</strong> (Illustrator, After Effects, InDesign e Photoshop),
+            <strong>Painel After Effects</strong> e <strong>Barra CorelDRAW com ícones .ico</strong>.
+          </p>
+          <div id="paineis-suite" class="suite-grade"></div>
+        </article>
       </div>
       <p class="ressalva">
         <strong>Antes de usar em produção:</strong> os scripts foram escritos contra as APIs
@@ -198,11 +208,68 @@ Windows
           <p class="miudo">Selecione uma ferramenta para ver os detalhes.</p>
         </div>
         <div class="ajuda-painel">
-          <h3>Seu fluxo, dentro do Photoshop</h3>
-          <p>Use o painel para acessar as ferramentas sem sair do aplicativo.</p>
-          <button type="button" id="ajuda-instalar" class="botao secundario">Como instalar o painel</button>
+          <h3>Seu fluxo, dentro dos softwares</h3>
+          <p>Instale os painéis ou gere um plugin personalizado com seu próprio ícone em segundos.</p>
+          <button type="button" id="ajuda-instalar" class="botao secundario">Ver pacotes instaláveis</button>
         </div>
       </aside>
+    </div>
+
+    <div class="modal-backdrop" id="modal-plugin" hidden role="dialog" aria-modal="true" aria-labelledby="modal-plugin-titulo">
+      <div class="modal-cartao">
+        <div class="modal-topo">
+          <div>
+            <h2 id="modal-plugin-titulo">Gerar plugin com ícone</h2>
+            <p class="miudo" id="modal-plugin-subtitulo"></p>
+          </div>
+          <button type="button" id="fechar-modal-plugin" class="botao secundario" aria-label="Fechar janela">Fechar</button>
+        </div>
+
+        <div class="modal-corpo">
+          <div class="modal-previa">
+            <span class="previa-badge" id="plugin-previa-badge" aria-hidden="true"></span>
+            <div>
+              <strong id="plugin-previa-rotulo">Meu Plugin</strong>
+              <span class="miudo" id="plugin-previa-formato">Photoshop UXP (.ccx)</span>
+            </div>
+          </div>
+
+          <div class="modal-campos">
+            <label class="campo-linha">
+              <span>Nome do plugin / botão</span>
+              <input id="plugin-nome" type="text" maxlength="48" placeholder="Ex: Margem Segura IBD" />
+            </label>
+            <label class="campo-linha">
+              <span>Software e formato de pacote</span>
+              <select id="plugin-formato">
+                <option value="photoshop-uxp">Photoshop UXP (.ccx instalável)</option>
+                <option value="indesign-uxp">InDesign UXP 18.5+ (.ccx instalável)</option>
+                <option value="adobe-cep">Illustrator / After Effects / CEP Universal (.zip)</option>
+                <option value="coreldraw-barra">CorelDRAW Barra com Ícone .ico (.zip)</option>
+                <option value="aftereffects-painel">After Effects Script (.jsx)</option>
+                <option value="tracedraw">TraceDraw Plugin (.js)</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="campo-grupo">
+            <span class="rotulo-bloco">Escolha o iconezinho</span>
+            <div class="grade-icones" id="plugin-grade-icones" role="radiogroup" aria-label="Ícones disponíveis"></div>
+          </div>
+
+          <div class="campo-grupo">
+            <span class="rotulo-bloco">Cor do ícone</span>
+            <div class="paleta-cores" id="plugin-paleta-cores" role="radiogroup" aria-label="Cores do ícone"></div>
+          </div>
+
+          <p class="miudo" id="plugin-feedback" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="modal-pe">
+          <button type="button" id="plugin-cancelar" class="botao secundario">Cancelar</button>
+          <button type="button" id="plugin-confirmar" class="botao">Baixar plugin pronto</button>
+        </div>
+      </div>
     </div>
 
     <footer class="rodape">
@@ -211,6 +278,8 @@ Windows
     </footer>
 
     <script id="dados" type="application/json">{{DADOS}}</script>
+    <script src="icones.js"></script>
+    <script src="plugin-builder.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

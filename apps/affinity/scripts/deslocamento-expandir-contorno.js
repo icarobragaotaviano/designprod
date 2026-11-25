@@ -50,6 +50,14 @@ if (!doc) {
   notaSdk.isFullWidth = true;
 
   const grp = col.addGroup('Parametros');
+  const PRESETS_OFFSET = [null, 2, 3, -2, 0.5];
+  const cbPreset = grp.addComboBox(
+    'Predefinicao rapida',
+    ['Personalizada', 'Sangria +2 mm', 'Faca meio-corte +3 mm', 'Recuo interno -2 mm', 'Contorno fino +0,5 mm'],
+    0
+  );
+  let ultimoPresetIdx = 0;
+
   const editOffset = grp.addUnitValueEditor('Deslocamento (+ / -)', UnitType.Pixel, UnitType.Millimetre, 2 * mmToPx, -500 * mmToPx, 500 * mmToPx);
   editOffset.value = 2 * mmToPx;
   const cbCanto = grp.addComboBox('Cantos', CANTOS, 0);
@@ -59,6 +67,30 @@ if (!doc) {
   const cbCor = grp.addComboBox('Cor do contorno', CORES.map((c) => c.nome), 0);
   const chkManter = grp.addCheckBox('Manter objeto original', true);
   const chkUnificar = grp.addCheckBox('Unificar resultados (Union)', false);
+
+  const grpPrevia = col.addGroup('Previa calculada');
+  const txtPreviaContorno = grpPrevia.addStaticText('Operacao', '');
+  const atualizarPreviaContorno = () => {
+    if (cbPreset.selectedIndex !== ultimoPresetIdx) {
+      ultimoPresetIdx = cbPreset.selectedIndex;
+      const valMm = PRESETS_OFFSET[ultimoPresetIdx];
+      if (valMm !== null) editOffset.value = valMm * mmToPx;
+    } else if (ultimoPresetIdx > 0) {
+      const esperado = PRESETS_OFFSET[ultimoPresetIdx] * mmToPx;
+      if (Math.abs(editOffset.value - esperado) > 0.05) {
+        cbPreset.selectedIndex = 0;
+        ultimoPresetIdx = 0;
+      }
+    }
+    const mm = (editOffset.value / mmToPx);
+    const dir = mm >= 0 ? 'Expandir +' : 'Recuar ';
+    const canto = CANTOS[cbCanto.selectedIndex] || 'Mitra (reto)';
+    const pt = editStroke.value > 0 ? editStroke.value.toFixed(1) : '1.0';
+    const cor = (CORES[cbCor.selectedIndex] || CORES[0]).nome;
+    txtPreviaContorno.text = dir + mm.toFixed(1) + ' mm | ' + canto + ' · ' + pt + ' pt (' + cor + ')';
+  };
+  dlg.onControlValueChangedHandler = atualizarPreviaContorno;
+  atualizarPreviaContorno();
 
   function extrairPontosBezier(curve) {
     const beziers = curve.beziers;

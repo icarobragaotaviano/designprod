@@ -119,16 +119,43 @@
 
   var campos = [
     {
-      id: 'direcao', rotulo: 'Direção', tipo: 'escolha', opcoes: listar(DIRECOES),
+      id: 'previa',
+      tipo: 'preview',
+      grupo: 'Prévia do arranjo',
+      largura: 390,
+      altura: 108,
+      legenda: function (v) {
+        return (v.direcao || 'Horizontal') + ' · espaço ' + (v.gap || 0) + ' ' + (v.unidade || 'px') + ' · ' + (v.alinhamento || 'Início');
+      },
+      desenhar: function (g, w, h, v, d) {
+        var dir = String(v.direcao || '').indexOf('Vertical') === 0 ? 'V' : 'H';
+        var pad = 14;
+        d.retangulo(g, 36, 10, w - 72, h - 20, d.cor(30, 34, 42, 1), d.cor(82, 104, 152, 1), 1);
+        var tamanhos = dir === 'H' ? [[52, 46], [68, 32], [44, 54]] : [[110, 16], [140, 16], [90, 16]];
+        var gapVis = Math.max(4, Math.min(20, Number(v.gap) || 8));
+        var cx = 36 + pad, cy = 10 + pad;
+        for (var k = 0; k < tamanhos.length; k++) {
+          var bw = tamanhos[k][0], bh = tamanhos[k][1];
+          d.retangulo(g, cx, cy, bw, bh, d.cor(104, 168, 232, 0.35), d.cor(104, 168, 232, 1), 1.5);
+          if (dir === 'H') cx += bw + gapVis;
+          else cy += bh + Math.min(8, gapVis);
+        }
+      }
+    },
+    {
+      id: 'direcao', rotulo: 'Direção', grupo: 'Fluxo e espaço', tipo: 'escolha', opcoes: listar(DIRECOES),
+      presets: listar(DIRECOES),
       padrao: specInicial ? rotuloDe(DIRECOES, specInicial.direcao) : (salvas.direcao || 'Horizontal — em linha')
     },
-    { id: 'unidade', rotulo: 'Unidade', tipo: 'escolha', opcoes: ['px', 'mm', 'cm', 'pt'], padrao: unidade },
+    { id: 'unidade', rotulo: 'Unidade', grupo: 'Fluxo e espaço', tipo: 'escolha', opcoes: ['px', 'mm', 'cm', 'pt'], presets: ['px', 'mm', 'cm', 'pt'], padrao: unidade },
     {
-      id: 'gap', rotulo: 'Espaço entre itens', tipo: 'numero',
+      id: 'gap', rotulo: 'Espaço entre itens', grupo: 'Fluxo e espaço', tipo: 'numero',
+      presets: [0, 8, 16, 24, 32],
       padrao: specInicial ? paraUnidade(specInicial.gap) : (salvas.gap === undefined ? 24 : salvas.gap)
     },
     {
-      id: 'padding', rotulo: 'Preenchimento', tipo: 'texto',
+      id: 'padding', rotulo: 'Preenchimento', grupo: 'Fluxo e espaço', tipo: 'texto',
+      presets: ['0', '16', '24', '16 24'],
       padrao: padInicial
         ? padInicial[0] === padInicial[1] && padInicial[1] === padInicial[2] && padInicial[2] === padInicial[3]
           ? String(paraUnidade(padInicial[0]))
@@ -137,46 +164,49 @@
       ajuda: 'Um valor para os quatro lados, dois para vertical e horizontal, ou quatro: topo direita base esquerda.'
     },
     {
-      id: 'distribuicao', rotulo: 'Eixo principal', tipo: 'escolha', opcoes: listar(DISTRIBUICOES),
+      id: 'distribuicao', rotulo: 'Eixo principal', grupo: 'Alinhamento e quebra', tipo: 'escolha', opcoes: listar(DISTRIBUICOES),
       padrao: specInicial ? rotuloDe(DISTRIBUICOES, specInicial.distribuicao) : (salvas.distribuicao || 'Início'),
       ajuda: 'As opções de espaço repartem a sobra do quadro e ignoram o espaço entre itens.'
     },
     {
-      id: 'alinhamento', rotulo: 'Eixo transversal', tipo: 'escolha', opcoes: listar(ALINHAMENTOS),
+      id: 'alinhamento', rotulo: 'Eixo transversal', grupo: 'Alinhamento e quebra', tipo: 'escolha', opcoes: listar(ALINHAMENTOS),
       padrao: specInicial ? rotuloDe(ALINHAMENTOS, specInicial.alinhamento) : (salvas.alinhamento || 'Início')
     },
     {
-      id: 'ajuste', rotulo: 'Medida do quadro', tipo: 'escolha', opcoes: listar(AJUSTES),
+      id: 'ajuste', rotulo: 'Medida do quadro', grupo: 'Alinhamento e quebra', tipo: 'escolha', opcoes: listar(AJUSTES),
       padrao: specInicial ? rotuloDe(AJUSTES, specInicial.ajuste) : (salvas.ajuste || 'Abraçar o conteúdo')
     },
     {
-      id: 'quebra', rotulo: 'Quebrar em', tipo: 'numero',
+      id: 'quebra', rotulo: 'Quebrar em', grupo: 'Alinhamento e quebra', tipo: 'numero',
       padrao: specInicial ? paraUnidade(specInicial.quebra) : (salvas.quebra === undefined ? 0 : salvas.quebra),
       ajuda: 'Medida do quadro no eixo principal a partir da qual os itens passam para a linha seguinte. 0 não quebra.'
     },
     {
-      id: 'gapLinha', rotulo: 'Espaço entre linhas', tipo: 'numero',
+      id: 'gapLinha', rotulo: 'Espaço entre linhas', grupo: 'Alinhamento e quebra', tipo: 'numero',
       padrao: specInicial ? paraUnidade(specInicial.gapLinha) : (salvas.gapLinha === undefined ? 24 : salvas.gapLinha)
     },
     {
-      id: 'ordem', rotulo: 'Ordem dos itens', tipo: 'escolha', opcoes: listar(ORDENS),
+      id: 'ordem', rotulo: 'Ordem dos itens', grupo: 'Opções', tipo: 'escolha', opcoes: listar(ORDENS),
       padrao: specInicial ? rotuloDe(ORDENS, specInicial.ordem) : (salvas.ordem || 'Do documento')
     },
-    { id: 'comEfeitos', rotulo: 'Medir incluindo efeitos de camada', tipo: 'booleano', padrao: !!salvas.comEfeitos },
-    { id: 'incluirOcultas', rotulo: 'Incluir camadas ocultas', tipo: 'booleano', padrao: !!salvas.incluirOcultas },
+    { id: 'comEfeitos', rotulo: 'Medir incluindo efeitos de camada', grupo: 'Opções', tipo: 'booleano', padrao: !!salvas.comEfeitos },
+    { id: 'incluirOcultas', rotulo: 'Incluir camadas ocultas', grupo: 'Opções', tipo: 'booleano', padrao: !!salvas.incluirOcultas },
     {
-      id: 'redimensionar', rotulo: 'Deixar "Esticar" alterar o tamanho', tipo: 'booleano',
+      id: 'redimensionar', rotulo: 'Deixar "Esticar" alterar o tamanho', grupo: 'Opções', tipo: 'booleano',
       padrao: !!salvas.redimensionar,
       ajuda: 'Sem isso, Esticar só alinha. Com isso, camadas de pixel são reamostradas.'
     },
-    { id: 'salvarRegra', rotulo: 'Guardar a regra no nome do grupo', tipo: 'booleano', padrao: salvas.salvarRegra === undefined ? true : !!salvas.salvarRegra }
+    { id: 'salvarRegra', rotulo: 'Guardar a regra no nome do grupo', grupo: 'Opções', tipo: 'booleano', padrao: salvas.salvarRegra === undefined ? true : !!salvas.salvarRegra }
   ];
 
   var titulo = quadro
     ? 'Auto layout — quadro "' + IBD.layout.nomeLimpo(quadro.name) + '"'
     : 'Auto layout — ' + camadas.length + ' camadas selecionadas';
 
-  var resposta = IBD.ui.formulario(titulo, campos, 'Aplicar layout');
+  var resposta = IBD.ui.formulario(titulo, campos, 'Aplicar layout', {
+    subtitulo: camadas.length + ' camada(s) no escopo · regra salva no grupo como @auto',
+    largura: 470
+  });
   if (!resposta) return;
   IBD.prefs.gravar(ID, resposta);
 

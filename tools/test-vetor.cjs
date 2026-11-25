@@ -63,17 +63,21 @@ function mockIllustratorWindow(overrides) {
     w.update = () => {};
     w.show = () => {
       if (overrides) {
-        const grupos = w.children;
-        for (const g of grupos) {
-          if (g.type !== 'group') continue;
-          const lbl = g.children[0] && g.children[0].text;
-          const ctrl = g.children[1] || g.children[0];
-          if (ctrl && overrides[lbl] !== undefined) {
-            if (ctrl.type === 'checkbox') ctrl.value = !!overrides[lbl];
-            else if (ctrl.type === 'dropdownlist') ctrl.selection = overrides[lbl];
-            else ctrl.text = String(overrides[lbl]);
+        const visitar = (pai) => {
+          for (const g of pai.children || []) {
+            if (g.type === 'group') {
+              const lbl = g.children[0] && g.children[0].text;
+              const ctrl = g.children[1] || g.children[0];
+              if (ctrl && overrides[lbl] !== undefined) {
+                if (ctrl.type === 'checkbox') ctrl.value = !!overrides[lbl];
+                else if (ctrl.type === 'dropdownlist') ctrl.selection = overrides[lbl];
+                else ctrl.text = String(overrides[lbl]);
+              }
+            }
+            if (g.children && g.children.length) visitar(g);
           }
-        }
+        };
+        visitar(w);
       }
       return 1;
     };

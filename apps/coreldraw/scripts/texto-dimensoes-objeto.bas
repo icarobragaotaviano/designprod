@@ -44,16 +44,41 @@ Public Sub CriarTextoDimensoesObjeto()
         Exit Sub
     End If
 
+    origUnit = doc.Unit
+    origRef = doc.ReferencePoint
+    doc.Unit = cdrMillimeter
+    doc.ReferencePoint = cdrCenter
+
+    Set selRange = doc.SelectionRange
+    minL = 1E+30
+    maxT = -1E+30
+    maxR = -1E+30
+    minB = 1E+30
+    For Each s In selRange
+        s.GetBoundingBox lx, by, sw, sh, True
+        If lx < minL Then minL = lx
+        If by < minB Then minB = by
+        If (lx + sw) > maxR Then maxR = lx + sw
+        If (by + sh) > maxT Then maxT = by + sh
+    Next s
+
     entradaFmt = InputBox( _
-        "Unidade (mm, cm, m, px, in, pt) e casas decimais (separados por ;):", _
-        "IBD — Unidade e precisao", _
-        "mm;1")
-    If Trim$(entradaFmt) = "" Then Exit Sub
+        "Selecao: " & Format$(maxR - minL, "0.0") & " x " & Format$(maxT - minB, "0.0") & " mm" & vbCrLf & _
+        "Config rapida: unidade ; casas ; posicao (Abaixo/Acima/Centro) ; fonte pt ; tracado (S/N)", _
+        "IBD — Dimensoes do objeto", _
+        "mm;1;Abaixo;10;S")
+    If Trim$(entradaFmt) = "" Then
+        doc.ReferencePoint = origRef
+        doc.Unit = origUnit
+        Exit Sub
+    End If
 
     partes = Split(entradaFmt, ";")
     unidade = LCase$(Trim$(partes(0)))
     If unidade <> "mm" And unidade <> "cm" And unidade <> "m" And _
        unidade <> "px" And unidade <> "in" And unidade <> "pt" Then
+        doc.ReferencePoint = origRef
+        doc.Unit = origUnit
         MsgBox "Unidade invalida. Use mm, cm, m, px, in ou pt.", vbExclamation, "IBD — Dimensoes do objeto"
         Exit Sub
     End If
@@ -65,38 +90,58 @@ Public Sub CriarTextoDimensoesObjeto()
     If decimais < 0 Then decimais = 0
     If decimais > 4 Then decimais = 4
 
-    entradaPos = InputBox( _
-        "Posicao (Abaixo, Acima, Centro) e tamanho da fonte em pt (ex: Abaixo;10):", _
-        "IBD — Posicionamento do texto", _
-        "Abaixo;10")
-    If Trim$(entradaPos) = "" Then Exit Sub
+    If UBound(partes) >= 2 Then
+        posicao = LCase$(Trim$(partes(2)))
+        If posicao <> "abaixo" And posicao <> "acima" And posicao <> "centro" Then posicao = "abaixo"
 
-    partes = Split(entradaPos, ";")
-    posicao = LCase$(Trim$(partes(0)))
-    If posicao <> "abaixo" And posicao <> "acima" And posicao <> "centro" Then
-        posicao = "abaixo"
+        tamanhoPt = 10#
+        If UBound(partes) >= 3 Then
+            Dim fsUnif As String
+            fsUnif = Replace(Trim$(partes(3)), ",", ".")
+            If IsNumeric(fsUnif) And Val(fsUnif) > 0# Then tamanhoPt = CSng(Val(fsUnif))
+        End If
+
+        incluirTracado = True
+        If UBound(partes) >= 4 Then
+            incluirTracado = (UCase$(Trim$(partes(4))) <> "N")
+        End If
+    Else
+        entradaPos = InputBox( _
+            "Posicao (Abaixo, Acima, Centro) e tamanho da fonte em pt (ex: Abaixo;10):", _
+            "IBD — Posicionamento do texto", _
+            "Abaixo;10")
+        If Trim$(entradaPos) = "" Then
+            doc.ReferencePoint = origRef
+            doc.Unit = origUnit
+            Exit Sub
+        End If
+
+        partes = Split(entradaPos, ";")
+        posicao = LCase$(Trim$(partes(0)))
+        If posicao <> "abaixo" And posicao <> "acima" And posicao <> "centro" Then
+            posicao = "abaixo"
+        End If
+
+        tamanhoPt = 10#
+        If UBound(partes) >= 1 Then
+            Dim fsStr As String
+            fsStr = Replace(Trim$(partes(1)), ",", ".")
+            If IsNumeric(fsStr) And Val(fsStr) > 0# Then tamanhoPt = CSng(Val(fsStr))
+        End If
+
+        respTracado = MsgBox( _
+            "Incluir a espessura do contorno na medicao?", _
+            vbYesNoCancel + vbQuestion, _
+            "IBD — Caixa delimitadora")
+        If respTracado = vbCancel Then
+            doc.ReferencePoint = origRef
+            doc.Unit = origUnit
+            Exit Sub
+        End If
+        incluirTracado = (respTracado = vbYes)
     End If
-
-    tamanhoPt = 10#
-    If UBound(partes) >= 1 Then
-        Dim fsStr As String
-        fsStr = Replace(Trim$(partes(1)), ",", ".")
-        If IsNumeric(fsStr) And Val(fsStr) > 0# Then tamanhoPt = CSng(Val(fsStr))
-    End If
-
-    respTracado = MsgBox( _
-        "Incluir a espessura do contorno na medicao?", _
-        vbYesNoCancel + vbQuestion, _
-        "IBD — Caixa delimitadora")
-    If respTracado = vbCancel Then Exit Sub
-    incluirTracado = (respTracado = vbYes)
-
-    origUnit = doc.Unit
-    origRef = doc.ReferencePoint
 
     On Error GoTo ErrHandler
-    doc.Unit = cdrMillimeter
-    doc.ReferencePoint = cdrCenter
     doc.BeginCommandGroup "IBD: Texto com dimensoes"
     grupoIniciado = True
 

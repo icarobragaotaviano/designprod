@@ -4,6 +4,7 @@
  */
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
+import { resolverIconeId } from './icones.mjs';
 
 export const APPS = {
   photoshop: { nome: 'Photoshop', extensaoScript: 'jsx' },
@@ -103,6 +104,7 @@ export async function montarCatalogo(raiz) {
         descricao: meta.descricao,
         app: appId,
         tipo: 'script',
+        icone: resolverIconeId(meta.id, 'script'),
         arquivo: relativo,
         versao: meta.versao,
         tags: meta.tags || []
@@ -132,6 +134,7 @@ export async function montarCatalogo(raiz) {
         descricao: customMeta.descricao || 'Conjunto de actions do Photoshop. Instale pelo painel Actions.',
         app: appId,
         tipo: 'action',
+        icone: resolverIconeId(`${appId}/actions/${nome}`, 'action'),
         arquivo: relativo,
         versao: customMeta.versao || '1.0.0',
         tags: customMeta.tags || ['action']

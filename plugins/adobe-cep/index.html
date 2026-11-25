@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IBD Ferramentas</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="cabecalho">
+      <div class="cabecalho-linha">
+        <div class="titulo-grupo">
+          <span class="badge-marca" id="marca">IBD</span>
+          <div class="titulo-texto">
+            <h1 id="titulo-painel">Ferramentas</h1>
+            <span class="contexto"><span id="nome-host">Illustrator</span> · <span id="versao">v0.1.0</span></span>
+          </div>
+        </div>
+        <div class="modo-grupo">
+          <button type="button" id="modo-grade" class="modo-btn" title="Grade de iconezinhos" aria-pressed="true">
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="12" y="3" width="5" height="5" rx="1"/><rect x="3" y="12" width="5" height="5" rx="1"/><rect x="12" y="12" width="5" height="5" rx="1"/></svg>
+          </button>
+          <button type="button" id="modo-lista" class="modo-btn" title="Lista detalhada" aria-pressed="false">
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 5h10M7 10h10M7 15h10M3 5h1M3 10h1M3 15h1"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="barra-busca">
+      <input id="filtro" type="text" placeholder="Buscar por nome ou tag..." aria-label="Buscar ferramentas" />
+      <select id="sel-app" aria-label="Software ativo">
+        <option value="illustrator">Illustrator</option>
+        <option value="aftereffects">After Effects</option>
+        <option value="indesign">InDesign</option>
+        <option value="photoshop">Photoshop</option>
+      </select>
+    </div>
+
+    <nav class="abas" id="abas" role="tablist" aria-label="Categorias">
+      <button type="button" class="aba" data-aba="todos" role="tab" aria-selected="true">Todos</button>
+      <button type="button" class="aba" data-aba="favoritos" role="tab" aria-selected="false">★ Favoritos <span class="aba-badge" id="fav-contador">0</span></button>
+    </nav>
+
+    <main id="lista" class="lista"></main>
+
+    <footer class="rodape">
+      <span id="status" role="status" aria-live="polite">Pronto. Clique em um icone para rodar.</span>
+    </footer>
+
+    <script src="js/CSInterface.js"></script>
+    <script src="js/icones.js"></script>
+    <script src="catalog.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>

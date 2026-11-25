@@ -15,12 +15,15 @@
   var elListaFavoritos = document.getElementById('lista-favoritos');
   var elResultadosFavoritos = document.getElementById('resultados-favoritos');
   var elContadorFavoritos = document.getElementById('contador-favoritos');
+  var btnEmpacotarFav = document.getElementById('empacotar-favoritos');
   var btnLimparFavoritos = document.getElementById('limpar-favoritos');
   var elLista = document.getElementById('lista');
   var elBusca = document.getElementById('busca');
   var elFiltros = document.getElementById('filtros');
   var elContagem = document.getElementById('contagem');
   var elAcoes = document.getElementById('acoes-repo');
+  var elPaineisSuite = document.getElementById('paineis-suite');
+  var elModalPlugin = document.getElementById('modal-plugin');
 
   var CHAVE_FAVORITOS = 'ibd-designprod-favoritos-v1';
   var plataforma = 'todas';
@@ -221,6 +224,94 @@
       ', descompacte e aponte o Adobe UXP Developer Tool para o manifest.json.'
     ));
     elPainel.appendChild(nota);
+  }
+
+  var iconesDefinicoes = (window.IBDIcones && window.IBDIcones.ICONES) || (dados.icones && dados.icones.definicoes) || {};
+  var iconesPaleta = (window.IBDIcones && window.IBDIcones.PALETA_ICONES) || (dados.icones && dados.icones.paleta) || [];
+
+  function svgIconeFerramenta(iconeId, corOverride, tamanho) {
+    var def = iconesDefinicoes[iconeId] || iconesDefinicoes.acao || { paths: [{ tipo: 'rect', x: 5, y: 5, w: 14, h: 14, rx: 2, stroke: true }], cor: '#f0c419' };
+    var cor = corOverride || def.cor || '#f0c419';
+    var tam = tamanho || 20;
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', String(tam));
+    svg.setAttribute('height', String(tam));
+    svg.setAttribute('aria-hidden', 'true');
+    (def.paths || []).forEach(function (p) {
+      var el = null;
+      if (p.tipo === 'rect') {
+        el = document.createElementNS(ns, 'rect');
+        el.setAttribute('x', String(p.x));
+        el.setAttribute('y', String(p.y));
+        el.setAttribute('width', String(p.w));
+        el.setAttribute('height', String(p.h));
+        if (p.rx) el.setAttribute('rx', String(p.rx));
+        el.setAttribute('fill', p.fill ? cor : 'none');
+        if (!p.fill) {
+          el.setAttribute('stroke', cor);
+          el.setAttribute('stroke-width', '1.8');
+          if (p.dash) el.setAttribute('stroke-dasharray', p.dash);
+        }
+      } else if (p.tipo === 'circle') {
+        el = document.createElementNS(ns, 'circle');
+        el.setAttribute('cx', String(p.cx));
+        el.setAttribute('cy', String(p.cy));
+        el.setAttribute('r', String(p.r));
+        el.setAttribute('fill', p.fill ? cor : 'none');
+        if (!p.fill) { el.setAttribute('stroke', cor); el.setAttribute('stroke-width', '1.8'); }
+      } else if (p.tipo === 'line') {
+        el = document.createElementNS(ns, 'line');
+        el.setAttribute('x1', String(p.x1));
+        el.setAttribute('y1', String(p.y1));
+        el.setAttribute('x2', String(p.x2));
+        el.setAttribute('y2', String(p.y2));
+        el.setAttribute('stroke', cor);
+        el.setAttribute('stroke-width', '1.8');
+        el.setAttribute('stroke-linecap', 'round');
+      }
+      if (el) svg.appendChild(el);
+    });
+    return svg;
+  }
+
+  if (elPaineisSuite && dados.paineis) {
+    dados.paineis.forEach(function (p) {
+      var box = document.createElement('div');
+      box.className = 'suite-item';
+      var topo = document.createElement('div');
+      topo.className = 'suite-item-topo';
+      var badge = document.createElement('span');
+      badge.className = 'ferramenta-svg-badge';
+      badge.appendChild(svgIconeFerramenta(p.icone, null, 18));
+      topo.appendChild(badge);
+      var tit = document.createElement('strong');
+      tit.textContent = p.titulo;
+      topo.appendChild(tit);
+      box.appendChild(topo);
+      var desc = document.createElement('p');
+      desc.textContent = p.descricao;
+      box.appendChild(desc);
+      var acoes = document.createElement('div');
+      acoes.className = 'suite-item-acoes';
+      var btn = document.createElement('a');
+      btn.className = 'botao';
+      btn.href = p.baixar;
+      btn.setAttribute('download', p.nome);
+      btn.textContent = 'Baixar · ' + p.tamanho + ' KB';
+      acoes.appendChild(btn);
+      if (p.alt) {
+        var alt = document.createElement('a');
+        alt.className = 'elo';
+        alt.href = p.alt;
+        alt.setAttribute('download', p.altNome || '');
+        alt.textContent = '.zip';
+        acoes.appendChild(alt);
+      }
+      box.appendChild(acoes);
+      elPaineisSuite.appendChild(box);
+    });
   }
 
   /* Filtros ---------------------------------------------------------- */
@@ -504,6 +595,16 @@
       baixar.setAttribute('download', f.baixarNome);
       acoes.appendChild(baixar);
     }
+    if (f.tipo === 'script' && !f.abrir) {
+      var btnCriarPlugin = document.createElement('button');
+      btnCriarPlugin.type = 'button';
+      btnCriarPlugin.className = 'elo';
+      btnCriarPlugin.textContent = 'Gerar plugin com ícone';
+      btnCriarPlugin.addEventListener('click', function () {
+        abrirModalPlugin([f]);
+      });
+      acoes.appendChild(btnCriarPlugin);
+    }
     var ativo = ehFavorito(f.id);
     var btnFav = document.createElement('button');
     btnFav.type = 'button';
@@ -545,6 +646,10 @@
     if (elContadorFavoritos) elContadorFavoritos.textContent = String(favoritos.length);
     if (!elListaFavoritos) return;
     if (btnLimparFavoritos) btnLimparFavoritos.hidden = favoritos.length === 0;
+    var scriptsFav = favoritos
+      .map(function (id) { return mapaFerramentas[id]; })
+      .filter(function (f) { return !!f && f.tipo === 'script' && !f.abrir; });
+    if (btnEmpacotarFav) btnEmpacotarFav.hidden = scriptsFav.length === 0;
 
     var totalFav = visiveisFav.length;
     if (elResultadosFavoritos) {
@@ -644,6 +749,194 @@
     }
 
     renderFavoritos(visiveisFav);
+  }
+
+  /* Modal Criador de Plugin com Icone -------------------------------- */
+
+  var modalEstado = { ferramentas: [], iconeId: 'acao', corHex: '#f0c419', fundoHex: '#181a1f' };
+
+  function atualizarPreviaModal() {
+    if (!elModalPlugin) return;
+    var badge = document.getElementById('plugin-previa-badge');
+    var rotulo = document.getElementById('plugin-previa-rotulo');
+    var fmtLbl = document.getElementById('plugin-previa-formato');
+    var inpNome = document.getElementById('plugin-nome');
+    var selFmt = document.getElementById('plugin-formato');
+    if (badge) {
+      badge.innerHTML = '';
+      badge.style.background = modalEstado.fundoHex || '#181a1f';
+      badge.style.borderColor = modalEstado.corHex;
+      badge.appendChild(svgIconeFerramenta(modalEstado.iconeId, modalEstado.corHex, 28));
+    }
+    if (rotulo && inpNome) rotulo.textContent = inpNome.value.trim() || 'Meu Plugin';
+    if (fmtLbl && selFmt && selFmt.options && selFmt.selectedIndex >= 0) {
+      fmtLbl.textContent = selFmt.options[selFmt.selectedIndex].textContent;
+    }
+  }
+
+  function preencherOpcoesModal() {
+    if (!elModalPlugin) return;
+    var gradeIcones = document.getElementById('plugin-grade-icones');
+    var paletaEl = document.getElementById('plugin-paleta-cores');
+    if (gradeIcones && !gradeIcones.children.length) {
+      Object.keys(iconesDefinicoes).forEach(function (id) {
+        var def = iconesDefinicoes[id];
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'icone-opcao';
+        b.dataset.icone = id;
+        b.title = def.rotulo || id;
+        b.setAttribute('role', 'radio');
+        b.setAttribute('aria-checked', String(id === modalEstado.iconeId));
+        b.appendChild(svgIconeFerramenta(id, modalEstado.corHex, 20));
+        b.addEventListener('click', function () {
+          modalEstado.iconeId = id;
+          Array.prototype.forEach.call(gradeIcones.children, function (el) {
+            el.setAttribute('aria-checked', String(el.dataset.icone === id));
+          });
+          atualizarPreviaModal();
+        });
+        gradeIcones.appendChild(b);
+      });
+    }
+    if (paletaEl && !paletaEl.children.length) {
+      var coresLista = iconesPaleta.length ? iconesPaleta : [{ nome: 'Ouro IBD', hex: '#f0c419', fundo: '#242014' }];
+      coresLista.forEach(function (c) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'cor-swatch';
+        b.dataset.hex = c.hex;
+        b.setAttribute('role', 'radio');
+        b.setAttribute('aria-checked', String(c.hex === modalEstado.corHex));
+        var dot = document.createElement('span');
+        dot.className = 'cor-bolinha';
+        dot.style.background = c.hex;
+        b.appendChild(dot);
+        b.appendChild(document.createTextNode(c.nome));
+        b.addEventListener('click', function () {
+          modalEstado.corHex = c.hex;
+          modalEstado.fundoHex = c.fundo || '#181a1f';
+          Array.prototype.forEach.call(paletaEl.children, function (el) {
+            el.setAttribute('aria-checked', String(el.dataset.hex === c.hex));
+          });
+          if (gradeIcones) {
+            Array.prototype.forEach.call(gradeIcones.children, function (el) {
+              el.innerHTML = '';
+              el.appendChild(svgIconeFerramenta(el.dataset.icone, c.hex, 20));
+            });
+          }
+          atualizarPreviaModal();
+        });
+        paletaEl.appendChild(b);
+      });
+    }
+  }
+
+  function abrirModalPlugin(listaFerramentas) {
+    if (!elModalPlugin || !listaFerramentas || !listaFerramentas.length) return;
+    modalEstado.ferramentas = listaFerramentas;
+    var primeira = listaFerramentas[0];
+    modalEstado.iconeId = primeira.icone || (window.IBDIcones ? window.IBDIcones.resolverIconeId(primeira.id, 'script') : 'acao');
+    var corDefault = (iconesDefinicoes[modalEstado.iconeId] && iconesDefinicoes[modalEstado.iconeId].cor) || '#f0c419';
+    modalEstado.corHex = corDefault;
+    modalEstado.fundoHex = '#181a1f';
+
+    var sub = document.getElementById('modal-plugin-subtitulo');
+    var inpNome = document.getElementById('plugin-nome');
+    var selFmt = document.getElementById('plugin-formato');
+    var feedback = document.getElementById('plugin-feedback');
+    if (sub) {
+      sub.textContent = listaFerramentas.length === 1
+        ? 'Ferramenta: ' + primeira.titulo + ' (' + nomeDoApp(primeira.app) + ')'
+        : listaFerramentas.length + ' ferramentas selecionadas para o pacote personalizado.';
+    }
+    if (inpNome) {
+      inpNome.value = listaFerramentas.length === 1 ? primeira.titulo : 'Kit Favoritos IBD';
+    }
+    if (selFmt && window.IBDPluginBuilder) {
+      selFmt.value = window.IBDPluginBuilder.inferirFormato(listaFerramentas);
+    }
+    if (feedback) feedback.textContent = '';
+
+    preencherOpcoesModal();
+    var gradeIcones = document.getElementById('plugin-grade-icones');
+    if (gradeIcones) {
+      Array.prototype.forEach.call(gradeIcones.children, function (el) {
+        el.innerHTML = '';
+        el.appendChild(svgIconeFerramenta(el.dataset.icone, modalEstado.corHex, 20));
+        el.setAttribute('aria-checked', String(el.dataset.icone === modalEstado.iconeId));
+      });
+    }
+    var paletaEl = document.getElementById('plugin-paleta-cores');
+    if (paletaEl) {
+      Array.prototype.forEach.call(paletaEl.children, function (el) {
+        el.setAttribute('aria-checked', String(el.dataset.hex === modalEstado.corHex));
+      });
+    }
+    atualizarPreviaModal();
+    elModalPlugin.hidden = false;
+  }
+
+  function fecharModalPlugin() {
+    if (elModalPlugin) elModalPlugin.hidden = true;
+  }
+
+  if (btnEmpacotarFav) {
+    btnEmpacotarFav.addEventListener('click', function () {
+      var listaFav = favoritos
+        .map(function (id) { return mapaFerramentas[id]; })
+        .filter(function (f) { return !!f && f.tipo === 'script' && !f.abrir; });
+      if (listaFav.length) abrirModalPlugin(listaFav);
+    });
+  }
+
+  if (elModalPlugin) {
+    var btnFecharModal = document.getElementById('fechar-modal-plugin');
+    var btnCancelarModal = document.getElementById('plugin-cancelar');
+    var btnConfirmarModal = document.getElementById('plugin-confirmar');
+    var inpNomeModal = document.getElementById('plugin-nome');
+    var selFmtModal = document.getElementById('plugin-formato');
+
+    if (btnFecharModal) btnFecharModal.addEventListener('click', fecharModalPlugin);
+    if (btnCancelarModal) btnCancelarModal.addEventListener('click', fecharModalPlugin);
+    if (inpNomeModal) inpNomeModal.addEventListener('input', atualizarPreviaModal);
+    if (selFmtModal) selFmtModal.addEventListener('change', atualizarPreviaModal);
+    elModalPlugin.addEventListener('click', function (e) {
+      if (e.target === elModalPlugin) fecharModalPlugin();
+    });
+
+    if (btnConfirmarModal) {
+      btnConfirmarModal.addEventListener('click', function () {
+        if (!window.IBDPluginBuilder) return;
+        var feedback = document.getElementById('plugin-feedback');
+        btnConfirmarModal.disabled = true;
+        if (feedback) feedback.textContent = 'Gerando pacote com ícone personalizado...';
+        window.IBDPluginBuilder.construirPacote({
+          ferramentas: modalEstado.ferramentas,
+          nome: inpNomeModal ? inpNomeModal.value : '',
+          iconeId: modalEstado.iconeId,
+          corHex: modalEstado.corHex,
+          fundoHex: modalEstado.fundoHex,
+          formato: selFmtModal ? selFmtModal.value : 'auto',
+          iconesDef: dados.icones
+        }).then(function (res) {
+          var blob = new Blob([res.bytes], { type: res.mime });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = res.nomeArquivo;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+          if (feedback) feedback.textContent = 'Pronto: ' + res.nomeArquivo + ' (' + Math.max(1, Math.round(res.bytes.length / 1024)) + ' KB) baixado!';
+        }).catch(function (err) {
+          if (feedback) feedback.textContent = 'Erro ao gerar plugin: ' + (err && err.message ? err.message : err);
+        }).finally(function () {
+          btnConfirmarModal.disabled = false;
+        });
+      });
+    }
   }
 
   window.addEventListener('storage', function (e) {

@@ -18,20 +18,25 @@
   var EXTENSOES = ['psd', 'psb', 'tif', 'tiff', 'jpg', 'jpeg', 'png', 'webp'];
   var salvas = IBD.prefs.ler(ID);
 
-  var opcoes = IBD.ui.formulario('Redimensionar em lote', [
-    { id: 'entrada', rotulo: 'Pasta de origem', tipo: 'pasta', padrao: salvas.entrada || '' },
-    { id: 'saida', rotulo: 'Pasta de saida', tipo: 'pasta', padrao: salvas.saida || '' },
+  var opcoes = IBD.ui.formulario('Redimensionar imagens em lote', [
+    { id: 'entrada', rotulo: 'Pasta de origem', grupo: 'Pastas', tipo: 'pasta', padrao: salvas.entrada || '' },
+    { id: 'saida', rotulo: 'Pasta de saida', grupo: 'Pastas', tipo: 'pasta', padrao: salvas.saida || '' },
+    { id: 'recursivo', rotulo: 'Incluir subpastas', grupo: 'Pastas', tipo: 'booleano', padrao: !!salvas.recursivo },
     {
       id: 'ladoMaximo',
       rotulo: 'Lado maior (px)',
+      grupo: 'Tamanho e formato',
       tipo: 'numero',
+      presets: [800, 1200, 2000, 3000],
       padrao: salvas.ladoMaximo || 2000,
       ajuda: 'A imagem so e reduzida. Arquivos menores que isso sao copiados no tamanho original.'
     },
-    { id: 'formato', rotulo: 'Formato', tipo: 'escolha', opcoes: ['JPG', 'PNG-24'], padrao: salvas.formato || 'JPG' },
-    { id: 'qualidade', rotulo: 'Qualidade JPG', tipo: 'numero', padrao: salvas.qualidade === undefined ? 85 : salvas.qualidade },
-    { id: 'recursivo', rotulo: 'Incluir subpastas', tipo: 'booleano', padrao: !!salvas.recursivo }
-  ]);
+    { id: 'formato', rotulo: 'Formato', grupo: 'Tamanho e formato', tipo: 'escolha', opcoes: ['JPG', 'PNG-24'], presets: ['JPG', 'PNG-24'], padrao: salvas.formato || 'JPG' },
+    { id: 'qualidade', rotulo: 'Qualidade JPG', grupo: 'Tamanho e formato', tipo: 'numero', presets: [75, 85, 95], padrao: salvas.qualidade === undefined ? 85 : salvas.qualidade }
+  ], 'Processar lote', {
+    subtitulo: 'Reduz proporcionalmente sem alterar os arquivos originais',
+    largura: 470
+  });
 
   if (!opcoes) return;
   if (!opcoes.entrada || !opcoes.saida) {

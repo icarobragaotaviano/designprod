@@ -28,12 +28,21 @@
       id: 'pasta',
       rotulo: 'Pasta de saida',
       tipo: 'pasta',
+      grupo: 'Destino e nomenclatura',
       padrao: salvas.pasta || Folder.desktop.fsName
+    },
+    {
+      id: 'prefixo',
+      rotulo: 'Prefixo do arquivo',
+      tipo: 'texto',
+      grupo: 'Destino e nomenclatura',
+      padrao: salvas.prefixo || ''
     },
     {
       id: 'formato',
       rotulo: 'Formato',
       tipo: 'escolha',
+      grupo: 'Formato e compressao',
       opcoes: ['PNG-24', 'JPG'],
       padrao: salvas.formato || 'PNG-24'
     },
@@ -41,28 +50,28 @@
       id: 'qualidade',
       rotulo: 'Qualidade JPG',
       tipo: 'numero',
+      grupo: 'Formato e compressao',
       padrao: salvas.qualidade === undefined ? 80 : salvas.qualidade,
+      presets: [60, 80, 90, 100],
       ajuda: '0 a 100. Ignorado quando o formato for PNG.'
     },
     {
       id: 'aparar',
       rotulo: 'Aparar area transparente',
       tipo: 'booleano',
+      grupo: 'Opcoes de corte',
       padrao: salvas.aparar === undefined ? true : salvas.aparar
     },
     {
       id: 'somenteVisiveis',
       rotulo: 'Somente camadas visiveis',
       tipo: 'booleano',
+      grupo: 'Opcoes de corte',
       padrao: salvas.somenteVisiveis === undefined ? true : salvas.somenteVisiveis
-    },
-    {
-      id: 'prefixo',
-      rotulo: 'Prefixo do arquivo',
-      tipo: 'texto',
-      padrao: salvas.prefixo || ''
     }
-  ]);
+  ], 'Exportar', {
+    subtitulo: 'Salva cada camada em PNG-24 transparente ou JPG otimizado'
+  });
 
   if (!opcoes) return;
   if (!opcoes.pasta) {

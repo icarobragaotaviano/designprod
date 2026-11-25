@@ -78,9 +78,26 @@ if (!doc) {
     }
 
     const dlg = Dialog.create('IBD — Dimensoes do objeto selecionado');
-    dlg.initialWidth = 390;
+    dlg.initialWidth = 410;
     const col = dlg.addColumn();
+
+    const grpMedida = col.addGroup('Selecao atual');
+    grpMedida.addStaticText('Caixa medida', (wPx * pxToMm).toFixed(1) + ' x ' + (hPx * pxToMm).toFixed(1) + ' mm');
+
     const grp = col.addGroup('Formato');
+    const PRESETS_COTA = [
+      null,
+      { u: 0, d: 1 },
+      { u: 1, d: 1 },
+      { u: 2, d: 2 },
+      { u: 3, d: 0 }
+    ];
+    const cbPreset = grp.addComboBox(
+      'Predefinicao rapida',
+      ['Personalizada', 'Grafica (mm, 1 casa)', 'Painel (cm, 1 casa)', 'Fachada (m, 2 casas)', 'Tela / Web (px, 0 casas)'],
+      0
+    );
+    let ultimoPresetIdx = 0;
 
     const cbUnid = grp.addComboBox('Unidade', UNIDADES, 0);
     const cbDec = grp.addComboBox('Casas decimais', DECIMAIS, 1);
@@ -90,12 +107,26 @@ if (!doc) {
     const cbPos = grp.addComboBox('Posicao do texto', POSICOES, 0);
     const editGap = grp.addUnitValueEditor('Afastamento (mm)', UnitType.Pixel, UnitType.Millimetre, 3 * mmToPx, 0, null);
     editGap.value = 3 * mmToPx;
-    const txtPreview = grp.addStaticText('Previa', '');
+
+    const grpPrevia = col.addGroup('Previa calculada');
+    const txtPreview = grpPrevia.addStaticText('Texto gerado', '');
+    const txtPosResumo = grpPrevia.addStaticText('Posicionamento', '');
 
     const atualizar = () => {
+      if (cbPreset.selectedIndex !== ultimoPresetIdx) {
+        ultimoPresetIdx = cbPreset.selectedIndex;
+        const p = PRESETS_COTA[ultimoPresetIdx];
+        if (p) {
+          cbUnid.selectedIndex = p.u;
+          cbDec.selectedIndex = p.d;
+        }
+      }
       const unid = UNIDADES[cbUnid.selectedIndex] || 'mm';
       const dec = cbDec.selectedIndex >= 0 ? cbDec.selectedIndex : 1;
+      const pos = POSICOES[cbPos.selectedIndex] || 'Abaixo';
+      const pt = editFonte.value > 0 ? editFonte.value.toFixed(0) : '10';
       txtPreview.text = formatar(unid, dec, chkVirgula.value);
+      txtPosResumo.text = pos + ' · fonte ' + pt + ' pt';
     };
     dlg.onControlValueChangedHandler = atualizar;
     atualizar();

@@ -23,19 +23,24 @@
   var doc = app.activeDocument;
   var salvas = IBD.prefs.ler(ID);
 
-  var opcoes = IBD.ui.formulario('Exportar pranchetas', [
-    { id: 'pasta', rotulo: 'Pasta de saida', tipo: 'pasta', padrao: salvas.pasta || Folder.desktop.fsName },
-    { id: 'formato', rotulo: 'Formato', tipo: 'escolha', opcoes: ['PNG-24', 'JPG', 'PDF'], padrao: salvas.formato || 'PNG-24' },
+  var opcoes = IBD.ui.formulario('Exportar pranchetas em lote', [
+    { id: 'pasta', rotulo: 'Pasta de saida', grupo: 'Destino', tipo: 'pasta', padrao: salvas.pasta || Folder.desktop.fsName },
+    { id: 'prefixo', rotulo: 'Prefixo do arquivo', grupo: 'Destino', tipo: 'texto', padrao: salvas.prefixo || '' },
+    { id: 'formato', rotulo: 'Formato', grupo: 'Formato e resolução', tipo: 'escolha', opcoes: ['PNG-24', 'JPG', 'PDF'], presets: ['PNG-24', 'JPG', 'PDF'], padrao: salvas.formato || 'PNG-24' },
     {
       id: 'escala',
       rotulo: 'Escala (%)',
+      grupo: 'Formato e resolução',
       tipo: 'numero',
+      presets: [100, 150, 200, 300],
       padrao: salvas.escala || 100,
       ajuda: '100 = tamanho do documento. 200 = dobro da resolucao. Ignorado em PDF.'
     },
-    { id: 'transparencia', rotulo: 'Fundo transparente (PNG)', tipo: 'booleano', padrao: salvas.transparencia === undefined ? true : salvas.transparencia },
-    { id: 'prefixo', rotulo: 'Prefixo do arquivo', tipo: 'texto', padrao: salvas.prefixo || '' }
-  ]);
+    { id: 'transparencia', rotulo: 'Fundo transparente (PNG)', grupo: 'Formato e resolução', tipo: 'booleano', padrao: salvas.transparencia === undefined ? true : salvas.transparencia }
+  ], 'Exportar', {
+    subtitulo: doc.artboards.length + ' prancheta(s) neste documento',
+    largura: 460
+  });
 
   if (!opcoes) return;
   if (!opcoes.pasta) {

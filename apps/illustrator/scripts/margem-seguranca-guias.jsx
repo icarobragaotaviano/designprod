@@ -24,34 +24,91 @@
   var doc = app.activeDocument;
   var salvas = IBD.prefs.ler(ID);
 
-  var opcoes = IBD.ui.formulario('Margem de seguranca (guias)', [
+  var FATORES_PREV = { mm: 72 / 25.4, cm: 720 / 25.4, pt: 1, px: 1 };
+  var abRefW = 210, abRefH = 297;
+  try {
+    var abIdx0 = doc.artboards.getActiveArtboardIndex();
+    var r0 = doc.artboards[abIdx0].artboardRect;
+    abRefW = Math.abs(r0[2] - r0[0]) / FATORES_PREV.mm;
+    abRefH = Math.abs(r0[1] - r0[3]) / FATORES_PREV.mm;
+  } catch (eAb) {}
+
+  var opcoes = IBD.ui.formulario('Criar margem de segurança interna', [
+    {
+      id: 'previa',
+      tipo: 'preview',
+      grupo: 'Prévia da prancheta',
+      largura: 380,
+      altura: 128,
+      legenda: function (v) {
+        var u = v.unidade || 'mm';
+        var fat = FATORES_PREV[u] || FATORES_PREV.mm;
+        var mMm = (Number(v.margem) * fat) / FATORES_PREV.mm;
+        var livreL = abRefW - 2 * mMm;
+        var livreA = abRefH - 2 * mMm;
+        if (isNaN(mMm) || mMm <= 0) return 'Informe uma margem maior que zero.';
+        if (livreL <= 0 || livreA <= 0) return 'Aviso: a margem ultrapassa a prancheta (' + abRefW.toFixed(1) + ' x ' + abRefH.toFixed(1) + ' mm).';
+        return 'Área segura: ' + livreL.toFixed(1) + ' × ' + livreA.toFixed(1) + ' mm (margem ' + v.margem + ' ' + u + ')';
+      },
+      desenhar: function (g, w, h, v, d) {
+        var u = v.unidade || 'mm';
+        var fat = FATORES_PREV[u] || FATORES_PREV.mm;
+        var mMm = (Number(v.margem) * fat) / FATORES_PREV.mm;
+        var escala = Math.min((w - 48) / Math.max(abRefW, 1), (h - 28) / Math.max(abRefH, 1));
+        var bw = Math.max(20, abRefW * escala);
+        var bh = Math.max(20, abRefH * escala);
+        var bx = (w - bw) / 2;
+        var by = (h - bh) / 2;
+        d.retangulo(g, bx, by, bw, bh, d.cor(36, 40, 48, 1), d.cor(140, 152, 170, 1), 1.5);
+        var ins = (isNaN(mMm) ? 0 : mMm) * escala;
+        if (ins > 0 && 2 * ins < bw && 2 * ins < bh) {
+          var corGuia = d.cor(0, 195, 255, 1);
+          d.tracejado(g, bx + ins, by + ins, bx + bw - ins, by + ins, corGuia, 1.5, 5);
+          d.tracejado(g, bx + bw - ins, by + ins, bx + bw - ins, by + bh - ins, corGuia, 1.5, 5);
+          d.tracejado(g, bx + bw - ins, by + bh - ins, bx + ins, by + bh - ins, corGuia, 1.5, 5);
+          d.tracejado(g, bx + ins, by + bh - ins, bx + ins, by + ins, corGuia, 1.5, 5);
+          d.texto(g, v.margem + ' ' + u, bx + 4, by + 2, d.cor(240, 196, 25, 1), 9, true);
+        } else {
+          d.texto(g, 'Margem excede a prancheta', bx + 8, by + bh / 2 - 6, d.cor(242, 156, 166, 1), 10, true);
+        }
+      }
+    },
     {
       id: 'margem',
       rotulo: 'Margem interna',
+      grupo: 'Medidas e unidade',
       tipo: 'numero',
       padrao: salvas.margem === undefined ? 5 : salvas.margem,
-      ajuda: 'Distancia das bordas da prancheta para dentro (oposto da sangria).'
+      presets: [3, 5, 10, 15, 20],
+      ajuda: 'Distância das bordas da prancheta para dentro (oposto da sangria).'
     },
     {
       id: 'unidade',
       rotulo: 'Unidade',
+      grupo: 'Medidas e unidade',
       tipo: 'escolha',
       opcoes: ['mm', 'cm', 'pt', 'px'],
+      presets: ['mm', 'cm', 'pt', 'px'],
       padrao: salvas.unidade || 'mm'
     },
     {
       id: 'todasPranchetas',
       rotulo: 'Aplicar em todas as pranchetas',
+      grupo: 'Destino',
       tipo: 'booleano',
       padrao: !!salvas.todasPranchetas
     },
     {
       id: 'camada',
       rotulo: 'Camada de guias',
+      grupo: 'Destino',
       tipo: 'texto',
       padrao: salvas.camada || '06_GUIAS'
     }
-  ], 'Criar guias');
+  ], 'Criar guias', {
+    subtitulo: 'Prancheta ativa: ' + abRefW.toFixed(1) + ' × ' + abRefH.toFixed(1) + ' mm · camada de guias bloqueada',
+    largura: 430
+  });
 
   if (!opcoes) return;
 

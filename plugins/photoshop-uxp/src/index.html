@@ -9,23 +9,39 @@
   <body>
     <header class="cabecalho">
       <div class="cabecalho-linha">
-        <h1 id="titulo-painel">Ferramentas</h1>
-        <div class="identidade">
-          <span class="marca" id="marca">IBD</span>
-          <span class="versao" id="versao"></span>
+        <div class="titulo-grupo">
+          <span class="badge-marca" id="marca">IBD</span>
+          <div class="titulo-texto">
+            <h1 id="titulo-painel">Ferramentas</h1>
+            <span class="contexto">Photoshop · <span id="versao">v0.1.0</span></span>
+          </div>
+        </div>
+        <div class="modo-grupo" role="group" aria-label="Modo de exibicao">
+          <button type="button" id="modo-grade" class="modo-btn" title="Grade de iconezinhos" aria-pressed="true">
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="12" y="3" width="5" height="5" rx="1"/><rect x="3" y="12" width="5" height="5" rx="1"/><rect x="12" y="12" width="5" height="5" rx="1"/></svg>
+          </button>
+          <button type="button" id="modo-lista" class="modo-btn" title="Lista detalhada" aria-pressed="false">
+            <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 5h10M7 10h10M7 15h10M3 5h1M3 10h1M3 15h1"/></svg>
+          </button>
         </div>
       </div>
-      <span class="contexto">Photoshop</span>
     </header>
 
-    <label class="busca">
-      <span class="busca-rotulo" id="rotulo-busca">Buscar ferramentas</span>
-      <input id="filtro" type="text" placeholder="Nome ou palavra-chave" aria-labelledby="rotulo-busca" />
-    </label>
+    <div class="barra-busca">
+      <input id="filtro" type="text" placeholder="Buscar por nome ou palavra-chave..." aria-label="Buscar ferramentas" />
+    </div>
+
+    <nav class="abas" id="abas" role="tablist" aria-label="Categorias">
+      <button type="button" class="aba" data-aba="todos" role="tab" aria-selected="true">Todos</button>
+      <button type="button" class="aba" data-aba="favoritos" role="tab" aria-selected="false">★ Favoritos <span class="aba-badge" id="fav-contador">0</span></button>
+      <button type="button" class="aba" data-aba="scripts" role="tab" aria-selected="false">Scripts</button>
+      <button type="button" class="aba" data-aba="actions" role="tab" aria-selected="false">Actions</button>
+    </nav>
 
     <main id="lista" class="lista" aria-labelledby="titulo-painel"></main>
+
     <footer class="rodape">
-      <span id="status" role="status" aria-live="polite" aria-atomic="true">Pronto.</span>
+      <span id="status" role="status" aria-live="polite" aria-atomic="true">Pronto. Clique em qualquer icone para executar.</span>
     </footer>
     <script src="main.js"></script>
   </body>

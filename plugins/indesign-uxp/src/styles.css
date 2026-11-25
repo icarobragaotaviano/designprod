@@ -1,0 +1,71 @@
+/* Mesmos tokens e tema do painel Photoshop UXP — gerado por build-plugin.mjs. */
+:root {
+  --fundo: #181a1f;
+  --superficie: #20232a;
+  --texto: #e4e7ee;
+  --texto-secundario: #b6bcc8;
+  --acento: #f0c419;
+  --acento-texto: #16181d;
+  --borda: #3a404d;
+  --erro: #f29ca6;
+  --sucesso: #52b788;
+}
+
+* { box-sizing: border-box; }
+html { height: 100%; }
+body {
+  --painel-fundo: var(--uxp-host-background-color, var(--fundo));
+  --painel-texto: var(--uxp-host-text-color, var(--texto));
+  --painel-secundario: var(--uxp-host-text-color-secondary, var(--texto-secundario));
+  --painel-borda: var(--uxp-host-border-color, var(--borda));
+  --painel-superficie: var(--superficie);
+  --painel-campo: var(--fundo);
+  --painel-controle-borda: #464d5c;
+  --painel-hover: var(--uxp-host-widget-hover-background-color, #2a2f3a);
+  --painel-hover-texto: var(--uxp-host-widget-hover-text-color, var(--texto));
+  --painel-erro: var(--erro);
+  --painel-sucesso: var(--sucesso);
+  margin: 0; padding: 0; height: 100vh; min-width: 0;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--painel-fundo); color: var(--painel-texto);
+  font-family: "Adobe Clean", "Segoe UI", sans-serif; font-size: 12px;
+}
+
+.cabecalho { flex-shrink: 0; padding: 8px 10px; border-bottom: 1px solid var(--painel-borda); }
+.cabecalho-linha { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.titulo-grupo { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.badge-marca { padding: 2px 6px; border-radius: 4px; background: var(--acento); color: var(--acento-texto); font-size: 10px; font-weight: 800; }
+.titulo-texto h1 { margin: 0; font-size: 12px; font-weight: 700; line-height: 1.2; }
+.contexto { display: block; color: var(--painel-secundario); font-size: 10px; }
+.modo-grupo { display: flex; align-items: center; gap: 4px; }
+.modo-btn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 24px; min-width: 0; margin: 0; padding: 0; border-radius: 5px; border: 1px solid var(--painel-controle-borda); background: transparent; color: var(--painel-secundario); }
+.modo-btn[aria-pressed="true"] { background: var(--acento); color: var(--acento-texto); border-color: var(--acento); }
+.barra-busca { flex-shrink: 0; padding: 7px 10px; border-bottom: 1px solid var(--painel-borda); }
+.barra-busca input { width: 100%; height: 26px; padding: 3px 8px; background: var(--painel-campo); border: 1px solid var(--painel-controle-borda); border-radius: 4px; color: var(--painel-texto); font-size: 11px; }
+.abas { flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-bottom: 1px solid var(--painel-borda); }
+.aba { display: inline-flex; align-items: center; gap: 4px; min-width: 0; min-height: 22px; margin: 0; padding: 2px 8px; border-radius: 12px; border: 1px solid transparent; background: transparent; color: var(--painel-secundario); font-size: 10px; font-weight: 600; }
+.aba[aria-selected="true"] { background: var(--painel-superficie); color: var(--acento); border-color: var(--acento); }
+.aba-badge { padding: 0 4px; border-radius: 8px; background: rgba(240, 196, 25, 0.16); color: var(--acento); font-size: 9px; }
+.lista { flex: 1; min-width: 0; min-height: 0; overflow: auto; }
+.lista.modo-grade { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; padding: 8px; }
+.tile { width: calc(50% - 3px); min-width: 112px; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; border: 1px solid var(--painel-borda); border-radius: 7px; background: var(--painel-superficie); cursor: pointer; }
+.tile:hover { background: var(--painel-hover); border-color: var(--acento); }
+.tile.executando { opacity: 0.6; }
+.tile-topo { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+.icone-badge { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 7px; background: var(--painel-fundo); border: 1px solid var(--painel-borda); flex-shrink: 0; }
+.icone-badge.pequeno { width: 26px; height: 26px; border-radius: 5px; }
+.tile-titulo { color: var(--painel-texto); font-size: 11px; font-weight: 600; line-height: 1.25; margin-bottom: 6px; }
+.tile-pe { display: flex; align-items: center; justify-content: space-between; }
+.etiqueta-mini { font-size: 9px; font-weight: 700; color: var(--painel-secundario); }
+.star-btn { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; min-width: 0; min-height: 0; margin: 0; padding: 0; border: none; border-radius: 4px; background: transparent; color: var(--painel-secundario); font-size: 12px; }
+.star-btn.ativo { color: var(--acento); background: rgba(240, 196, 25, 0.12); }
+.cartao { display: flex; flex-direction: column; padding: 9px 10px; border-bottom: 1px solid var(--painel-borda); }
+.cartao-cab { display: flex; align-items: center; gap: 8px; }
+.cartao-titulo { flex: 1; font-size: 12px; font-weight: 600; }
+.cartao-descricao { margin-top: 5px; color: var(--painel-secundario); font-size: 11px; }
+.cartao-acoes { display: flex; align-items: center; margin-top: 6px; }
+button { min-height: 24px; min-width: 64px; margin: 2px 6px 0 0; padding: 3px 11px; background: var(--painel-superficie); color: var(--painel-texto); border: 1px solid var(--painel-controle-borda); border-radius: 12px; font-size: 11px; font-weight: 600; cursor: pointer; }
+.rodape { flex-shrink: 0; min-height: 26px; padding: 6px 10px; border-top: 1px solid var(--painel-borda); color: var(--painel-secundario); font-size: 10px; }
+.rodape.erro { color: var(--painel-erro); }
+.rodape.sucesso { color: var(--painel-sucesso); }
+.vazio { width: 100%; padding: 24px 12px; color: var(--painel-secundario); font-size: 11px; text-align: center; }

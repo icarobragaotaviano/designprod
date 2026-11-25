@@ -29,17 +29,21 @@
     return;
   }
 
-  var opcoes = IBD.ui.formulario('Exportar paginas em PDF', [
-    { id: 'pasta', rotulo: 'Pasta de saida', tipo: 'pasta', padrao: salvas.pasta || Folder.desktop.fsName },
-    { id: 'preset', rotulo: 'Preset PDF', tipo: 'escolha', opcoes: presets, padrao: salvas.preset || presets[0] },
+  var opcoes = IBD.ui.formulario('Exportar páginas em PDFs individuais', [
+    { id: 'pasta', rotulo: 'Pasta de saida', grupo: 'Destino e nome', tipo: 'pasta', padrao: salvas.pasta || Folder.desktop.fsName },
     {
       id: 'prefixo',
       rotulo: 'Prefixo do arquivo',
+      grupo: 'Destino e nome',
       tipo: 'texto',
       padrao: salvas.prefixo || IBD.slug(IBD.fs.semExtensao(doc.name)),
       ajuda: 'O nome final fica prefixo-01.pdf, prefixo-02.pdf, e assim por diante.'
-    }
-  ]);
+    },
+    { id: 'preset', rotulo: 'Preset PDF', grupo: 'Predefinição Adobe', tipo: 'escolha', opcoes: presets, padrao: salvas.preset || presets[0] }
+  ], 'Exportar PDFs', {
+    subtitulo: doc.pages.length + ' página(s) no documento ativo',
+    largura: 455
+  });
 
   if (!opcoes) return;
   if (!opcoes.pasta) {

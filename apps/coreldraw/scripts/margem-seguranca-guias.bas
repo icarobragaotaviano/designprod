@@ -28,27 +28,47 @@ Public Sub CriarMargemSeguranca()
 
     Set doc = ActiveDocument
     origUnit = doc.Unit
+    doc.Unit = cdrMillimeter
+
+    Dim infoPag As String
+    infoPag = Format$(doc.ActivePage.SizeWidth, "0.0") & " x " & Format$(doc.ActivePage.SizeHeight, "0.0") & " mm"
 
     entrada = InputBox( _
-        "Digite a margem interna em mm (aceita sufixo mm, cm ou pt — ex: 5, 0,5 cm, 14 pt):", _
+        "Pagina ativa: " & infoPag & vbCrLf & _
+        "Predefinicoes: 3 | 5 | 10 | 15 | 20 mm (ou use cm / pt)" & vbCrLf & _
+        "Para aplicar em todas as paginas sem perguntar, adicione ';T' (ex: 5;T):", _
         "IBD — Margem de seguranca (guias)", _
         "5")
-    If Trim(entrada) = "" Then Exit Sub
-
-    valorMm = ConverterParaMm(entrada)
-    If valorMm <= 0# Then
-        MsgBox "Informe um valor numerico maior que zero.", vbExclamation, "IBD — Margem de seguranca"
+    If Trim(entrada) = "" Then
+        doc.Unit = origUnit
         Exit Sub
     End If
 
     aplicarTodas = False
-    If doc.Pages.Count > 1 Then
+    Dim partesMarg As Variant
+    partesMarg = Split(entrada, ";")
+    entrada = partesMarg(0)
+    If UBound(partesMarg) >= 1 And UCase$(Trim$(partesMarg(1))) = "T" Then
+        aplicarTodas = True
+    End If
+
+    valorMm = ConverterParaMm(entrada)
+    If valorMm <= 0# Then
+        doc.Unit = origUnit
+        MsgBox "Informe um valor numerico maior que zero.", vbExclamation, "IBD — Margem de seguranca"
+        Exit Sub
+    End If
+
+    If Not aplicarTodas And doc.Pages.Count > 1 Then
         respEscopo = MsgBox( _
-            "Aplicar guias de margem em todas as " & doc.Pages.Count & " paginas?" & vbCrLf & _
+            "Aplicar guias de margem de " & Format$(valorMm, "0.0") & " mm em todas as " & doc.Pages.Count & " paginas?" & vbCrLf & _
             "(Nao = somente pagina ativa)", _
             vbYesNoCancel + vbQuestion, _
             "IBD — Escopo da margem")
-        If respEscopo = vbCancel Then Exit Sub
+        If respEscopo = vbCancel Then
+            doc.Unit = origUnit
+            Exit Sub
+        End If
         aplicarTodas = (respEscopo = vbYes)
     End If
 

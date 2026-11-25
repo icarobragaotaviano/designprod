@@ -25,6 +25,7 @@ import { padronizarVitrine } from './catalogo-vitrine.mjs';
 import { familiaImposicao } from '../nobel/imposicao/versoes.mjs';
 import { APPS } from './lib/meta.mjs';
 import { resolverIncludes, montarArquivoPublicavel } from './lib/incluir.mjs';
+import { ICONES, PALETA_ICONES, gerarCodigoIconesJs } from './lib/icones.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(RAIZ, 'site', 'src');
@@ -153,44 +154,96 @@ for (const [id, info] of Object.entries(APPS)) nomesApps[id] = info.nome;
  * porque o download do painel e uma promessa da pagina, nao um extra.
  */
 async function empacotarPainel() {
-  const base = `${marca.id}-ferramentas-${marca.versao}`;
-
   try {
-    execFileSync(process.execPath, [path.join(RAIZ, 'tools', 'build-plugin.mjs'), 'photoshop-uxp'], {
+    execFileSync(process.execPath, [path.join(RAIZ, 'tools', 'build-plugin.mjs'), '--all'], {
       cwd: RAIZ,
       stdio: 'pipe'
     });
   } catch (e) {
     const detalhe = (e.stderr || e.stdout || '').toString().trim() || e.message;
-    console.error('Nao foi possivel montar o pacote do painel UXP:\n' + detalhe);
-    process.exit(1);
-  }
-
-  const origem = path.join(RAIZ, 'dist', `${base}.ccx`);
-  let tamanho = 0;
-  try {
-    tamanho = (await stat(origem)).size;
-  } catch {
-    console.error(`O build do plugin terminou sem gerar dist/${base}.ccx.`);
-    process.exit(1);
-  }
-
-  // Um pacote minusculo significa build vazio: melhor parar que publicar.
-  if (tamanho < 1024) {
-    console.error(`dist/${base}.ccx tem so ${tamanho} bytes — o pacote saiu vazio.`);
+    console.error('Nao foi possivel montar os pacotes de plugins:\n' + detalhe);
     process.exit(1);
   }
 
   await mkdir(path.join(SAIDA, 'downloads'), { recursive: true });
-  await cp(origem, path.join(SAIDA, 'downloads', `${base}.ccx`));
-  await cp(path.join(RAIZ, 'dist', `${base}.zip`), path.join(SAIDA, 'downloads', `${base}.zip`));
+  const basePs = `${marca.id}-ferramentas-${marca.versao}`;
+
+  const specs = [
+    {
+      id: 'photoshop-uxp',
+      titulo: 'Photoshop UXP (Painel nativo)',
+      descricao: 'Grade de ícones com execução em 1 clique, busca e favoritos direto no Photoshop.',
+      arquivo: `${basePs}.ccx`,
+      altArquivo: `${basePs}.zip`,
+      icone: 'organizacao'
+    },
+    {
+      id: 'indesign-uxp',
+      titulo: 'InDesign UXP (Painel 18.5+)',
+      descricao: 'Painel nativo UXP para executar os scripts do InDesign com grade visual de ícones.',
+      arquivo: `${marca.id}-indesign-uxp-${marca.versao}.ccx`,
+      altArquivo: `${marca.id}-indesign-uxp-${marca.versao}.zip`,
+      icone: 'pdf'
+    },
+    {
+      id: 'adobe-cep',
+      titulo: 'Illustrator / Adobe CEP Universal',
+      descricao: 'Extensão encaixável HTML5 compatível com Illustrator, After Effects, InDesign e Photoshop (inclui instalador 1 clique).',
+      arquivo: `${marca.id}-adobe-cep-${marca.versao}.zip`,
+      icone: 'guia-interna'
+    },
+    {
+      id: 'aftereffects-dock',
+      titulo: 'After Effects (Painel ScriptUI)',
+      descricao: 'Arquivo encaixável para Janela > Extensões ou ScriptUI Panels com miniaturas desenhadas no código.',
+      arquivo: `${marca.id}-aftereffects-painel-${marca.versao}.zip`,
+      icone: 'organizacao'
+    },
+    {
+      id: 'coreldraw-toolbar',
+      titulo: 'CorelDRAW (Barra com Ícones .ico)',
+      descricao: 'Módulos VBA + pacote de ícones 32×32 (.ico) e macro instaladora que cria a barra de ferramentas pronta no CorelDRAW.',
+      arquivo: `${marca.id}-coreldraw-barra-${marca.versao}.zip`,
+      icone: 'contorno-offset'
+    }
+  ];
+
+  const paineis = [];
+  for (const spec of specs) {
+    const origem = path.join(RAIZ, 'dist', spec.arquivo);
+    const tamanho = (await stat(origem)).size;
+    if (tamanho < 256) {
+      console.error(`dist/${spec.arquivo} saiu vazio (${tamanho} bytes).`);
+      process.exit(1);
+    }
+    await cp(origem, path.join(SAIDA, 'downloads', spec.arquivo));
+    const entry = {
+      id: spec.id,
+      titulo: spec.titulo,
+      descricao: spec.descricao,
+      icone: spec.icone,
+      baixar: `downloads/${spec.arquivo}`,
+      nome: spec.arquivo,
+      versao: marca.versao,
+      tamanho: Math.max(1, Math.round(tamanho / 1024))
+    };
+    if (spec.altArquivo) {
+      await cp(path.join(RAIZ, 'dist', spec.altArquivo), path.join(SAIDA, 'downloads', spec.altArquivo));
+      entry.alt = `downloads/${spec.altArquivo}`;
+      entry.altNome = spec.altArquivo;
+    }
+    paineis.push(entry);
+  }
 
   return {
-    ccx: `downloads/${base}.ccx`,
-    zip: `downloads/${base}.zip`,
-    nome: `${base}.ccx`,
-    versao: marca.versao,
-    tamanho: Math.round(tamanho / 1024)
+    principal: {
+      ccx: `downloads/${basePs}.ccx`,
+      zip: `downloads/${basePs}.zip`,
+      nome: `${basePs}.ccx`,
+      versao: marca.versao,
+      tamanho: paineis[0].tamanho
+    },
+    paineis
   };
 }
 
@@ -209,14 +262,23 @@ for(const [nome,rotulo] of desktop){
 }
 padronizarVitrine(ferramentas);
 reunirVersoes(ferramentas);
-const dados = { marca: catalogo.marca, versao: catalogo.versao, nomesApps, acoes, ferramentas };
+const dados = {
+  marca: catalogo.marca,
+  versao: catalogo.versao,
+  nomesApps,
+  acoes,
+  icones: { paleta: PALETA_ICONES, definicoes: ICONES },
+  ferramentas
+};
 
 /* 4. Escrever a saida --------------------------------------------------- */
 
 await rm(SAIDA, { recursive: true, force: true });
 await mkdir(SAIDA, { recursive: true });
 
-dados.painel = await empacotarPainel();
+const empacotados = await empacotarPainel();
+dados.painel = empacotados.principal;
+dados.paineis = empacotados.paineis;
 for(const [id,titulo] of [['painel','Painel de ferramentas do Photoshop'],['renomear','Renomear camadas selecionadas'],['limpar','Limpar nomes de camadas']]){
   ferramentas.push({id:'desktop/uxp/'+id,titulo,descricao:'Disponível no painel UXP do Photoshop.',app:'photoshop',tipo:'plugin',versao:dados.painel.versao,baixar:dados.painel.ccx,baixarNome:dados.painel.nome,baixarTamanho:dados.painel.tamanho});
 }
@@ -270,6 +332,8 @@ if (pendentes) {
 }
 await writeFile(path.join(SAIDA, 'index.html'), html, 'utf8');
 
+await writeFile(path.join(SAIDA, 'icones.js'), gerarCodigoIconesJs(), 'utf8');
+await cp(path.join(SRC, 'plugin-builder.js'), path.join(SAIDA, 'plugin-builder.js'));
 await cp(path.join(SRC, 'app.js'), path.join(SAIDA, 'app.js'));
 
 // Os arquivos prontos para usar no app, um por ferramenta.

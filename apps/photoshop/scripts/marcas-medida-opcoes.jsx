@@ -90,31 +90,59 @@
   function campos(o) {
     return [
       {
-        id: 'dimensao', rotulo: 'Medir', tipo: 'escolha', opcoes: listar(DIMENSOES),
+        id: 'previa',
+        tipo: 'preview',
+        grupo: 'Prévia da cota',
+        largura: 390,
+        altura: 108,
+        legenda: function (v) {
+          var sep = (v.separador || '').indexOf('Ponto') === 0 ? '.' : ',';
+          var u = v.unidade || 'px';
+          var dec = Number(v.decimais);
+          var n = dec === 0 ? '25' : (dec === 2 ? '25' + sep + '40' : '25' + sep + '4');
+          var rot = n + ' ' + u + (v.mostrarPx && u !== 'px' ? ' / 300 px' : '');
+          return 'Exemplo: "' + rot + '" · linha: ' + (v.posicao || 'Início');
+        },
+        desenhar: function (g, w, h, v, d) {
+          var bx = (w - 130) / 2, by = (h - 46) / 2;
+          d.retangulo(g, bx, by, 130, 46, d.cor(42, 52, 68, 1), d.cor(104, 168, 232, 1), 1);
+          var fim = String(v.posicao || '').indexOf('Fim') === 0;
+          var cen = String(v.posicao || '').indexOf('No centro') === 0;
+          var ly = cen ? by + 23 : (fim ? by + 54 : by - 8);
+          var colCota = d.cor(240, 196, 25, 1);
+          d.linha(g, bx, ly, bx + 130, ly, colCota, 1.5);
+          d.linha(g, bx, ly - 4, bx, ly + 4, colCota, 1.5);
+          d.linha(g, bx + 130, ly - 4, bx + 130, ly + 4, colCota, 1.5);
+          var u = v.unidade || 'px';
+          d.texto(g, '25 ' + u, w / 2 - 16, fim ? ly + 4 : ly - 15, colCota, 10, true);
+        }
+      },
+      {
+        id: 'dimensao', rotulo: 'Medir', grupo: 'Medição e unidade', tipo: 'escolha', opcoes: listar(DIMENSOES),
         padrao: rotuloDe(DIMENSOES, o.dimensao),
         ajuda: 'Automática: seleção mais larga que alta mede a largura; senão, a altura.'
       },
       {
-        id: 'unidade', rotulo: 'Unidade', tipo: 'escolha', opcoes: IBD.medida.UNIDADES, padrao: o.unidade,
+        id: 'unidade', rotulo: 'Unidade', grupo: 'Medição e unidade', tipo: 'escolha', opcoes: IBD.medida.UNIDADES, presets: IBD.medida.UNIDADES, padrao: o.unidade,
         ajuda: 'mm, cm e pt usam a resolução do documento (Imagem › Tamanho da imagem).'
       },
-      { id: 'mostrarPx', rotulo: 'Mostrar também em px — 25,4 mm / 300 px', tipo: 'booleano', padrao: o.mostrarPx },
+      { id: 'mostrarPx', rotulo: 'Mostrar também em px — 25,4 mm / 300 px', grupo: 'Medição e unidade', tipo: 'booleano', padrao: o.mostrarPx },
       {
-        id: 'decimais', rotulo: 'Casas decimais', tipo: 'escolha', opcoes: listar(DECIMAIS),
+        id: 'decimais', rotulo: 'Casas decimais', grupo: 'Formatação e linha', tipo: 'escolha', opcoes: listar(DECIMAIS), presets: listar(DECIMAIS),
         padrao: rotuloDe(DECIMAIS, o.decimais)
       },
       {
-        id: 'separador', rotulo: 'Separador decimal', tipo: 'escolha', opcoes: listar(SEPARADORES),
+        id: 'separador', rotulo: 'Separador decimal', grupo: 'Formatação e linha', tipo: 'escolha', opcoes: listar(SEPARADORES),
         padrao: rotuloDe(SEPARADORES, o.separador)
       },
       {
-        id: 'posicao', rotulo: 'Linha', tipo: 'escolha', opcoes: listar(POSICOES),
+        id: 'posicao', rotulo: 'Linha', grupo: 'Formatação e linha', tipo: 'escolha', opcoes: listar(POSICOES),
         padrao: rotuloDe(POSICOES, o.posicao),
         ajuda: 'O rótulo fica do lado de fora; se não couber na tela, passa para o outro lado.'
       },
-      { id: 'tamanhoTexto', rotulo: 'Tamanho do texto (pt)', tipo: 'numero', padrao: o.tamanhoTexto },
+      { id: 'tamanhoTexto', rotulo: 'Tamanho do texto (pt)', grupo: 'Tipografia', tipo: 'numero', presets: [8, 10, 12, 16], padrao: o.tamanhoTexto },
       {
-        id: 'fonte', rotulo: 'Fonte', tipo: 'texto', padrao: o.fonte,
+        id: 'fonte', rotulo: 'Fonte', grupo: 'Tipografia', tipo: 'texto', padrao: o.fonte,
         ajuda: 'Nome PostScript (ArialMT) ou como aparece no menu (Arial Bold).'
       }
     ];
@@ -173,7 +201,11 @@
     var resposta = IBD.ui.formulario(
       'Marcas de medida — opções',
       campos(padrao),
-      temSelecao ? 'Salvar e marcar' : 'Salvar'
+      temSelecao ? 'Salvar e marcar' : 'Salvar',
+      {
+        subtitulo: 'Padrão usado pelo atalho rápido de cotas',
+        largura: 455
+      }
     );
     if (!resposta) return;
 

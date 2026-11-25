@@ -29,58 +29,124 @@
 
   var salvas = IBD.prefs.ler(ID);
 
-  var opcoes = IBD.ui.formulario('Dimensoes do objeto selecionado', [
+  var FATORES_PREV = { mm: 72 / 25.4, cm: 720 / 25.4, m: 72000 / 25.4, 'in': 72, px: 1, pt: 1 };
+  var prevWPt = 283.46, prevHPt = 141.73;
+  try {
+    var pL = Infinity, pT = -Infinity, pR = -Infinity, pB = Infinity;
+    for (var si = 0; si < doc.selection.length; si++) {
+      var pb = doc.selection[si].visibleBounds;
+      if (pb[0] < pL) pL = pb[0];
+      if (pb[1] > pT) pT = pb[1];
+      if (pb[2] > pR) pR = pb[2];
+      if (pb[3] < pB) pB = pb[3];
+    }
+    if (isFinite(pL) && pR > pL && pT > pB) {
+      prevWPt = pR - pL;
+      prevHPt = pT - pB;
+    }
+  } catch (eSel) {}
+
+  function formatarPrev(v) {
+    var u = v.unidade || 'mm';
+    var f = FATORES_PREV[u] || 1;
+    var dec = Math.max(0, Math.min(4, Math.round(Number(v.decimais))));
+    if (isNaN(dec)) dec = 1;
+    var sw = (prevWPt / f).toFixed(dec);
+    var sh = (prevHPt / f).toFixed(dec);
+    if (v.virgulaDecimal) { sw = sw.replace('.', ','); sh = sh.replace('.', ','); }
+    return sw + ' x ' + sh + ' ' + u;
+  }
+
+  var opcoes = IBD.ui.formulario('Cotar dimensões da seleção', [
+    {
+      id: 'previa',
+      tipo: 'preview',
+      grupo: 'Prévia do texto',
+      largura: 390,
+      altura: 118,
+      legenda: function (v) {
+        return 'Rótulo previsto: "' + formatarPrev(v) + '" · posição: ' + (v.posicao || 'Abaixo');
+      },
+      desenhar: function (g, w, h, v, d) {
+        var boxW = Math.min(180, Math.max(70, w * 0.44));
+        var boxH = Math.min(46, Math.max(26, boxW * (prevHPt / Math.max(prevWPt, 1))));
+        var bx = (w - boxW) / 2;
+        var by = (h - boxH) / 2;
+        d.retangulo(g, bx, by, boxW, boxH, d.cor(42, 52, 68, 1), d.cor(104, 168, 232, 1), 1.5);
+        var txt = formatarPrev(v);
+        var pos = v.posicao || 'Abaixo';
+        var tx = Math.max(12, w / 2 - txt.length * 3.1);
+        var ty = pos === 'Acima' ? by - 16 : (pos === 'Centro' ? by + boxH / 2 - 6 : by + boxH + 6);
+        d.texto(g, txt, tx, ty, d.cor(240, 196, 25, 1), 11, true);
+      }
+    },
     {
       id: 'unidade',
       rotulo: 'Unidade de medida',
+      grupo: 'Formato da medida',
       tipo: 'escolha',
       opcoes: ['mm', 'cm', 'm', 'px', 'in', 'pt'],
+      presets: ['mm', 'cm', 'm', 'px', 'in', 'pt'],
       padrao: salvas.unidade || 'mm'
     },
     {
       id: 'decimais',
       rotulo: 'Casas decimais',
+      grupo: 'Formato da medida',
       tipo: 'numero',
+      presets: [0, 1, 2],
       padrao: salvas.decimais === undefined ? 1 : salvas.decimais
     },
     {
       id: 'virgulaDecimal',
       rotulo: 'Usar virgula decimal (padrao PT-BR)',
+      grupo: 'Formato da medida',
       tipo: 'booleano',
       padrao: salvas.virgulaDecimal === undefined ? true : !!salvas.virgulaDecimal
     },
     {
       id: 'tamanhoFonte',
       rotulo: 'Tamanho da fonte (pt)',
+      grupo: 'Posição e estilo',
       tipo: 'numero',
+      presets: [8, 10, 14, 18],
       padrao: salvas.tamanhoFonte === undefined ? 10 : salvas.tamanhoFonte
     },
     {
       id: 'posicao',
       rotulo: 'Posicao do texto',
+      grupo: 'Posição e estilo',
       tipo: 'escolha',
       opcoes: ['Abaixo', 'Acima', 'Centro'],
+      presets: ['Abaixo', 'Acima', 'Centro'],
       padrao: salvas.posicao || 'Abaixo'
     },
     {
       id: 'afastamentoMm',
       rotulo: 'Afastamento (mm)',
+      grupo: 'Posição e estilo',
       tipo: 'numero',
+      presets: [2, 3, 5, 8],
       padrao: salvas.afastamentoMm === undefined ? 3 : salvas.afastamentoMm
     },
     {
       id: 'incluirTracado',
       rotulo: 'Incluir espessura do tracado (Visible Bounds)',
+      grupo: 'Posição e estilo',
       tipo: 'booleano',
       padrao: salvas.incluirTracado === undefined ? true : !!salvas.incluirTracado
     },
     {
       id: 'camada',
       rotulo: 'Camada de destino',
+      grupo: 'Posição e estilo',
       tipo: 'texto',
       padrao: salvas.camada || '01_TEXTOS'
     }
-  ], 'Criar texto');
+  ], 'Criar texto', {
+    subtitulo: doc.selection.length + ' objeto(s) selecionado(s) · gera texto editável',
+    largura: 445
+  });
 
   if (!opcoes) return;
 

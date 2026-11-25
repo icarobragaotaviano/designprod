@@ -9,6 +9,7 @@
       "descricao": "Cria contorno vetorial deslocado sem preenchimento e com traço técnico; exato em retângulos/elipses e poligonal em curvas livres (SDK Beta 3.3+).",
       "app": "affinity",
       "tipo": "script",
+      "icone": "contorno-offset",
       "arquivo": "apps/affinity/scripts/deslocamento-expandir-contorno.js",
       "versao": "1.0.0",
       "tags": [
@@ -26,6 +27,7 @@
       "descricao": "Adiciona quatro guias internas nativas (esq., dir., topo e base) na unidade escolhida do documento ou prancheta ativa (SDK Beta 3.3+).",
       "app": "affinity",
       "tipo": "script",
+      "icone": "guia-interna",
       "arquivo": "apps/affinity/scripts/margem-seguranca-guias.js",
       "versao": "1.0.0",
       "tags": [
@@ -43,6 +45,7 @@
       "descricao": "Mede a seleção via spreadBaseBox na unidade escolhida (mm, cm, px, in, pt ou m) e insere texto artístico com dimensões L × A (SDK Beta 3.3+).",
       "app": "affinity",
       "tipo": "script",
+      "icone": "cotas",
       "arquivo": "apps/affinity/scripts/texto-dimensoes-objeto.js",
       "versao": "1.0.0",
       "tags": [
@@ -60,6 +63,7 @@
       "descricao": "Cria a estrutura padrão de pastas no painel Project e move composições, sólidos, imagens, vídeos e áudios para seus respectivos diretórios.",
       "app": "aftereffects",
       "tipo": "script",
+      "icone": "organizacao",
       "arquivo": "apps/aftereffects/scripts/organizar-projeto.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -73,6 +77,7 @@
       "descricao": "Aplica contorno vetorial deslocado (externo ou interno), separa o efeito em curvas editáveis, limpa preenchimento e aplica traço CMYK ou RGB.",
       "app": "coreldraw",
       "tipo": "script",
+      "icone": "contorno-offset",
       "arquivo": "apps/coreldraw/scripts/deslocamento-expandir-contorno.bas",
       "versao": "1.0.0",
       "tags": [
@@ -91,6 +96,7 @@
       "descricao": "Cria quatro linhas-guia internas (esq., dir., base e topo) com a margem em mm para dentro da página ativa ou de todas as páginas.",
       "app": "coreldraw",
       "tipo": "script",
+      "icone": "guia-interna",
       "arquivo": "apps/coreldraw/scripts/margem-seguranca-guias.bas",
       "versao": "1.0.0",
       "tags": [
@@ -108,6 +114,7 @@
       "descricao": "Mede a caixa delimitadora da seleção na unidade escolhida (mm, cm, m, px, in ou pt) e cria texto artístico L × A na camada 01_TEXTOS.",
       "app": "coreldraw",
       "tipo": "script",
+      "icone": "cotas",
       "arquivo": "apps/coreldraw/scripts/texto-dimensoes-objeto.bas",
       "versao": "1.0.0",
       "tags": [
@@ -125,6 +132,7 @@
       "descricao": "Aplica Offset Path XML (positivo ou negativo), expande aparência, unifica com Pathfinder opcional, limpa preenchimento e aplica traço CMYK ou RGB.",
       "app": "illustrator",
       "tipo": "script",
+      "icone": "contorno-offset",
       "arquivo": "apps/illustrator/scripts/deslocamento-expandir-contorno.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -143,6 +151,7 @@
       "descricao": "Exporta cada prancheta selecionada ou todas em arquivos PNG, JPG ou PDF individuais usando o nome da prancheta e salvando as preferências.",
       "app": "illustrator",
       "tipo": "script",
+      "icone": "exportar",
       "arquivo": "apps/illustrator/scripts/exportar-pranchetas.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -157,6 +166,7 @@
       "descricao": "Calcula os limites combinados dos objetos selecionados e cria guias externas com a margem informada (mm, cm, px, in ou pt) em camada separada.",
       "app": "illustrator",
       "tipo": "script",
+      "icone": "guia-externa",
       "arquivo": "apps/illustrator/scripts/guias-selecao-margem.jsx",
       "versao": "1.0.1",
       "tags": [
@@ -173,6 +183,7 @@
       "descricao": "Cria retângulos-guia internos na camada 06_GUIAS com a distância escolhida (mm, cm, px, in ou pt) para dentro da prancheta ativa ou de todas.",
       "app": "illustrator",
       "tipo": "script",
+      "icone": "guia-interna",
       "arquivo": "apps/illustrator/scripts/margem-seguranca-guias.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -190,6 +201,7 @@
       "descricao": "Calcula a caixa delimitadora dos objetos selecionados, converte para mm, cm, m, px, in ou pt e cria texto L × A na camada 01_TEXTOS.",
       "app": "illustrator",
       "tipo": "script",
+      "icone": "cotas",
       "arquivo": "apps/illustrator/scripts/texto-dimensoes-objeto.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -207,6 +219,7 @@
       "descricao": "Gera um arquivo PDF separado por página do documento aberto utilizando uma predefinição de exportação Adobe existente.",
       "app": "indesign",
       "tipo": "script",
+      "icone": "pdf",
       "arquivo": "apps/indesign/scripts/exportar-paginas-pdf.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -221,6 +234,7 @@
       "descricao": "Converte a resolução do documento para 150 DPI mantendo dimensões proporcionais e interpolação automática, ideal para grandes formatos e provas.",
       "app": "photoshop",
       "tipo": "action",
+      "icone": "redimensionar",
       "arquivo": "apps/photoshop/actions/150-dpi.atn",
       "versao": "1.0.0",
       "tags": [
@@ -238,6 +252,7 @@
       "descricao": "Atualiza automaticamente todos os Smart Objects vinculados que foram modificados no disco e salva o documento em seguida.",
       "app": "photoshop",
       "tipo": "action",
+      "icone": "acao",
       "arquivo": "apps/photoshop/actions/atualizar-vinculos.atn",
       "versao": "1.0.0",
       "tags": [
@@ -255,6 +270,7 @@
       "descricao": "Achata e exporta rapidamente uma cópia JPEG de alta qualidade para impressão digital, prova física e conferência gráfica.",
       "app": "photoshop",
       "tipo": "action",
+      "icone": "exportar",
       "arquivo": "apps/photoshop/actions/exportar-jpeg-impressao.atn",
       "versao": "1.0.0",
       "tags": [
@@ -272,6 +288,7 @@
       "descricao": "Exporta o documento em formato PNG otimizado preservando o canal alfa de transparência para mídias digitais e sobreposições.",
       "app": "photoshop",
       "tipo": "action",
+      "icone": "exportar",
       "arquivo": "apps/photoshop/actions/exportar-png.atn",
       "versao": "1.0.0",
       "tags": [
@@ -289,6 +306,7 @@
       "descricao": "Pacote único (.atn) reunindo todas as 9 rotinas rápidas de produção no Photoshop: 150 DPI, vínculos, sangria, placeholder, JPEG, PNG e fechamento PDF.",
       "app": "photoshop",
       "tipo": "action",
+      "icone": "acao",
       "arquivo": "apps/photoshop/actions/ibd-producao.atn",
       "versao": "1.0.0",
       "tags": [
@@ -307,6 +325,7 @@
       "descricao": "Cria demarcador visual padronizado com fundo, elipse e rótulo 'IMAGEM' para acelerar a diagramação de encartes e tabloides de ofertas.",
       "app": "photoshop",
       "tipo": "action",
+      "icone": "precos",
       "arquivo": "apps/photoshop/actions/place-holder.atn",
       "versao": "1.0.0",
       "tags": [
@@ -324,6 +343,7 @@
       "descricao": "Abre o fluxo rápido para substituir o arquivo externo vinculado ao Smart Object selecionado e salvar o documento atualizado.",
       "app": "photoshop",
       "tipo": "action",
+      "icone": "acao",
       "arquivo": "apps/photoshop/actions/revincular.atn",
       "versao": "1.0.0",
       "tags": [
@@ -340,6 +360,7 @@
       "descricao": "Gera uma cópia PDF compactada e leve para envio rápido por WhatsApp ou e-mail durante a aprovação com o cliente.",
       "app": "photoshop",
       "tipo": "action",
+      "icone": "pdf",
       "arquivo": "apps/photoshop/actions/salvar-pdf-leitura.atn",
       "versao": "1.0.0",
       "tags": [
@@ -357,6 +378,7 @@
       "descricao": "Gera PDF normatizado no padrão PDF/X-1a:2001 em perfil CMYK para envio direto e seguro a gráficas comerciais e offset.",
       "app": "photoshop",
       "tipo": "action",
+      "icone": "pdf",
       "arquivo": "apps/photoshop/actions/salvar-pdf-x1a.atn",
       "versao": "1.0.0",
       "tags": [
@@ -375,6 +397,7 @@
       "descricao": "Expande a tela de pintura uniformemente nas quatro bordas usando a cor de fundo para criar margem rápida de sangria sem gerar guias.",
       "app": "photoshop",
       "tipo": "action",
+      "icone": "sangria",
       "arquivo": "apps/photoshop/actions/sangria-canvas.atn",
       "versao": "1.0.0",
       "tags": [
@@ -392,6 +415,7 @@
       "descricao": "Alinha camadas pela seleção, tela ou camada de referência e distribui o espaço entre elas com medida exata em px ou mm.",
       "app": "photoshop",
       "tipo": "script",
+      "icone": "alinhar",
       "arquivo": "apps/photoshop/scripts/alinhar-distribuir.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -409,6 +433,7 @@
       "descricao": "Organiza camadas de um grupo em linha ou coluna com espaçamento, preenchimento, alinhamento e quebra, gravando a regra no nome do grupo.",
       "app": "photoshop",
       "tipo": "script",
+      "icone": "auto-layout",
       "arquivo": "apps/photoshop/scripts/auto-layout.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -426,6 +451,7 @@
       "descricao": "Recalcula e reposiciona automaticamente os grupos etiquetados com auto layout (do interno ao externo) após mudanças de conteúdo.",
       "app": "photoshop",
       "tipo": "script",
+      "icone": "auto-layout",
       "arquivo": "apps/photoshop/scripts/auto-layout-reaplicar.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -442,6 +468,7 @@
       "descricao": "Gera novos PSDs a partir dos modelos de 1 ou 2 dígitos com nome, preços DE/POR, unidade UN ou /KG e foto vinculada ou incorporada sem fechar.",
       "app": "photoshop",
       "tipo": "script",
+      "icone": "precos",
       "arquivo": "apps/photoshop/scripts/criar-textos-precos.jsx",
       "versao": "1.1.0",
       "tags": [
@@ -460,6 +487,7 @@
       "descricao": "Atualiza produto, preços DE/POR e unidade UN ou /KG no PSD aberto, alternando entre modelos de 1 e 2 dígitos com ajuste de tela e guias.",
       "app": "photoshop",
       "tipo": "script",
+      "icone": "precos",
       "arquivo": "apps/photoshop/scripts/editar-textos-precos-rapido.jsx",
       "versao": "2.0.0",
       "tags": [
@@ -477,6 +505,7 @@
       "descricao": "Salva cada camada ou grupo visível do nível superior como PNG, JPG ou PSD separado, com opção de aparar áreas transparentes.",
       "app": "photoshop",
       "tipo": "script",
+      "icone": "exportar",
       "arquivo": "apps/photoshop/scripts/exportar-camadas.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -491,6 +520,7 @@
       "descricao": "Cria layouts Story (1080×1920) ou Horizontal (1920×1080) com formas vetoriais, guias, selos e fotos; no PSD aberto atualiza só o que mudou.",
       "app": "photoshop",
       "tipo": "script",
+      "icone": "ofertas",
       "arquivo": "apps/photoshop/scripts/gerar-ofertas-preto-dourado.jsx",
       "versao": "2.0.0",
       "tags": [
@@ -509,6 +539,7 @@
       "descricao": "Marca guias ao redor da seleção, amplia pela margem informada em mm e gera um novo PSD mesclado na escala e perfil de cor originais.",
       "app": "photoshop",
       "tipo": "script",
+      "icone": "remendo",
       "arquivo": "apps/photoshop/scripts/guias-selecao-margem.jsx",
       "versao": "1.1.0",
       "tags": [
@@ -526,6 +557,7 @@
       "descricao": "Desenha linhas de cota vetoriais e rótulo editável (largura, altura ou ambos em px, mm, cm ou pt) sobre a seleção atual sem abrir diálogo.",
       "app": "photoshop",
       "tipo": "script",
+      "icone": "cotas",
       "arquivo": "apps/photoshop/scripts/marcas-medida.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -543,6 +575,7 @@
       "descricao": "Define eixo, unidade, casas decimais, posição da linha, fonte e tamanho das cotas de medida; salva para o atalho e marca a seleção atual.",
       "app": "photoshop",
       "tipo": "script",
+      "icone": "cotas",
       "arquivo": "apps/photoshop/scripts/marcas-medida-opcoes.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -560,6 +593,7 @@
       "descricao": "Abre os arquivos de uma pasta, reduz proporcionalmente até o lado máximo em px e salva em JPG ou PNG na pasta de saída sem tocar nos originais.",
       "app": "photoshop",
       "tipo": "script",
+      "icone": "redimensionar",
       "arquivo": "apps/photoshop/scripts/redimensionar-lote.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -574,6 +608,7 @@
       "descricao": "Amplia a tela de pintura com sangria uniforme sem redimensionar a arte e insere guias marcando a linha de corte e a borda externa.",
       "app": "photoshop",
       "tipo": "script",
+      "icone": "sangria",
       "arquivo": "apps/photoshop/scripts/sangria-guias-canvas.jsx",
       "versao": "1.0.0",
       "tags": [
@@ -590,6 +625,7 @@
       "descricao": "Gera caminho deslocado do PathData selecionado (cantos Mitra, Arredondado ou Chanfrado), limpa preenchimento e aplica traço técnico CMYK/RGB.",
       "app": "tracedraw",
       "tipo": "script",
+      "icone": "contorno-offset",
       "arquivo": "apps/tracedraw/scripts/deslocamento-expandir-contorno.js",
       "versao": "1.0.0",
       "tags": [
@@ -607,6 +643,7 @@
       "descricao": "Cria quadro retangular de margem de segurança (mm) na camada 06_GUIAS bloqueada para a página ativa ou todas (configure no topo do script).",
       "app": "tracedraw",
       "tipo": "script",
+      "icone": "guia-interna",
       "arquivo": "apps/tracedraw/scripts/margem-seguranca-guias.js",
       "versao": "1.0.0",
       "tags": [
@@ -623,6 +660,7 @@
       "descricao": "Calcula a caixa delimitadora da seleção e cria texto artístico com Largura × Altura na unidade escolhida dentro da camada 01_TEXTOS.",
       "app": "tracedraw",
       "tipo": "script",
+      "icone": "cotas",
       "arquivo": "apps/tracedraw/scripts/texto-dimensoes-objeto.js",
       "versao": "1.0.0",
       "tags": [
