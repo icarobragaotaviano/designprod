@@ -1,7 +1,7 @@
 Attribute VB_Name = "IBD_DeslocamentoExpandirContorno"
 ' @ibd-id coreldraw/deslocamento-expandir-contorno
-' @ibd-titulo Deslocamento, expandir e contorno
-' @ibd-descricao Aplica contorno deslocado para fora ou dentro na selecao, separa o contorno do efeito, remove o preenchimento e aplica traco CMYK.
+' @ibd-titulo Gerar contorno deslocado e expandido
+' @ibd-descricao Aplica contorno vetorial deslocado (externo ou interno), separa o efeito em curvas editáveis, limpa preenchimento e aplica traço CMYK ou RGB.
 ' @ibd-app coreldraw
 ' @ibd-versao 1.0.0
 ' @ibd-tags contorno, deslocamento, offset, separar, faca, coreldraw

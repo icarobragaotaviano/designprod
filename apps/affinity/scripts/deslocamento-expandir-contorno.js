@@ -1,7 +1,7 @@
 /**
  * @ibd-id affinity/deslocamento-expandir-contorno
- * @ibd-titulo Deslocamento e contorno vetorial
- * @ibd-descricao Cria caminho deslocado sem preenchimento e com contorno tecnico no Affinity (SDK Beta 3.3+: exato em retangulos/elipses e poligonal em curvas).
+ * @ibd-titulo Gerar contorno deslocado e expandido
+ * @ibd-descricao Cria contorno vetorial deslocado sem preenchimento e com traço técnico; exato em retângulos/elipses e poligonal em curvas livres (SDK Beta 3.3+).
  * @ibd-app affinity
  * @ibd-versao 1.0.0
  * @ibd-tags offset, deslocamento, contorno, curva, affinity

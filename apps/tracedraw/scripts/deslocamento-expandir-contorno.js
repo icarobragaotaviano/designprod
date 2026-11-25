@@ -1,7 +1,7 @@
 /**
  * @ibd-id tracedraw/deslocamento-expandir-contorno
- * @ibd-titulo Deslocamento e contorno vetorial
- * @ibd-descricao Gera caminho deslocado sem preenchimento e com contorno CMYK a partir do PathData da selecao no TraceDraw (M=Mitra, R=Arredondado, C=Chanfrado).
+ * @ibd-titulo Gerar contorno deslocado e expandido
+ * @ibd-descricao Gera caminho deslocado do PathData selecionado (cantos Mitra, Arredondado ou Chanfrado), limpa preenchimento e aplica traço técnico CMYK/RGB.
  * @ibd-app tracedraw
  * @ibd-versao 1.0.0
  * @ibd-tags offset, deslocamento, contorno, curva, tracedraw

@@ -1,7 +1,7 @@
 /**
  * @ibd-id photoshop/alinhar-distribuir
  * @ibd-titulo Alinhar e distribuir camadas
- * @ibd-descricao Alinha as camadas selecionadas pela seleção, pela tela ou por uma camada de referência e distribui o espaço entre elas.
+ * @ibd-descricao Alinha camadas pela seleção, tela ou camada de referência e distribui o espaço entre elas com medida exata em px ou mm.
  * @ibd-app photoshop
  * @ibd-versao 1.0.0
  * @ibd-tags auto-layout, alinhar, distribuir, camadas, espacamento

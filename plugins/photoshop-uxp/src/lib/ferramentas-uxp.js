@@ -19,8 +19,8 @@ function percorrer(camadas, visitar) {
 const ferramentas = [
   {
     id: 'photoshop/uxp/renomear-selecionadas',
-    titulo: 'Renomear camadas selecionadas',
-    descricao: 'Renomeia as camadas selecionadas em sequencia, usando o nome do documento como prefixo.',
+    titulo: 'Renomear camadas selecionadas em sequência',
+    descricao: 'Renomeia as camadas selecionadas em sequência, usando o nome do documento como prefixo.',
     app: 'photoshop',
     tipo: 'uxp',
     tags: ['camadas', 'organizacao'],
@@ -47,8 +47,8 @@ const ferramentas = [
   },
   {
     id: 'photoshop/uxp/limpar-nomes',
-    titulo: 'Limpar nomes de camadas',
-    descricao: 'Remove sufixos de duplicacao ("copy", "copia") e espacos sobrando dos nomes de todas as camadas.',
+    titulo: 'Limpar sufixos e espaços de camadas',
+    descricao: 'Remove sufixos de duplicação ("cópia", "copy") e espaços sobrando dos nomes de todas as camadas.',
     app: 'photoshop',
     tipo: 'uxp',
     tags: ['camadas', 'organizacao'],

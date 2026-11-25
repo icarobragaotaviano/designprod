@@ -1,7 +1,7 @@
 /**
  * @ibd-id affinity/margem-seguranca-guias
- * @ibd-titulo Margem de seguranca (guias)
- * @ibd-descricao Cria quatro guias nativas de margem de seguranca do documento ou da prancheta selecionada no Affinity (SDK Beta 3.3+).
+ * @ibd-titulo Criar margem de segurança interna (guias)
+ * @ibd-descricao Adiciona quatro guias internas nativas (esq., dir., topo e base) na unidade escolhida do documento ou prancheta ativa (SDK Beta 3.3+).
  * @ibd-app affinity
  * @ibd-versao 1.0.0
  * @ibd-tags guias, margem, seguranca, prancheta, affinity

@@ -1,7 +1,7 @@
 Attribute VB_Name = "IBD_MargemSegurancaGuias"
 ' @ibd-id coreldraw/margem-seguranca-guias
-' @ibd-titulo Margem de seguranca (guias)
-' @ibd-descricao Cria quatro guias internas de margem de seguranca a partir das bordas da pagina ativa ou de todas as paginas do documento.
+' @ibd-titulo Criar margem de segurança interna (guias)
+' @ibd-descricao Cria quatro linhas-guia internas (esq., dir., base e topo) com a margem em mm para dentro da página ativa ou de todas as páginas.
 ' @ibd-app coreldraw
 ' @ibd-versao 1.0.0
 ' @ibd-tags guias, margem, seguranca, pagina, coreldraw

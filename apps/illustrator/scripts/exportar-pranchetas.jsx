@@ -1,7 +1,7 @@
 /**
  * @ibd-id illustrator/exportar-pranchetas
- * @ibd-titulo Exportar pranchetas
- * @ibd-descricao Exporta cada prancheta do documento como PNG, JPG ou PDF, nomeando pelo nome da prancheta.
+ * @ibd-titulo Exportar pranchetas em lote
+ * @ibd-descricao Exporta cada prancheta selecionada ou todas em arquivos PNG, JPG ou PDF individuais usando o nome da prancheta e salvando as preferências.
  * @ibd-app illustrator
  * @ibd-versao 1.0.0
  * @ibd-tags export, pranchetas, lote

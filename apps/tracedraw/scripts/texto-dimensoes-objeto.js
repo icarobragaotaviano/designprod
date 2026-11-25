@@ -1,7 +1,7 @@
 /**
  * @ibd-id tracedraw/texto-dimensoes-objeto
- * @ibd-titulo Texto com dimensoes do objeto
- * @ibd-descricao Calcula a caixa delimitadora da selecao e cria texto artistico com Largura x Altura na unidade configurada no TraceDraw.
+ * @ibd-titulo Cotar dimensões da seleção em texto
+ * @ibd-descricao Calcula a caixa delimitadora da seleção e cria texto artístico com Largura × Altura na unidade escolhida dentro da camada 01_TEXTOS.
  * @ibd-app tracedraw
  * @ibd-versao 1.0.0
  * @ibd-tags dimensoes, medida, texto, cota, tracedraw

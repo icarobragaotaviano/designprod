@@ -19,6 +19,7 @@
       </div>
       <nav class="navegacao" aria-label="Área de trabalho">
         <button type="button" id="abrir-biblioteca" aria-pressed="true" aria-controls="biblioteca">Ferramentas</button>
+        <button type="button" id="abrir-favoritos" aria-pressed="false" aria-controls="favoritos">Favoritos <span class="aba-contador" id="contador-favoritos">0</span></button>
         <button type="button" id="abrir-instalacao" aria-pressed="false" aria-controls="instalacao">Instalação</button>
       </nav>
       <nav class="topo-acoes" id="acoes-repo" aria-label="Repositório"></nav>
@@ -60,6 +61,18 @@
           </div>
           <div class="area-catalogo">
             <div class="grade" id="lista" tabindex="-1" aria-label="Ferramentas disponíveis"></div>
+          </div>
+        </section>
+        <section class="favoritos" id="favoritos" aria-labelledby="titulo-favoritos" hidden>
+          <div class="cabecalho-painel">
+            <h2 id="titulo-favoritos">Favoritos</h2>
+            <div class="favoritos-acoes">
+              <span id="resultados-favoritos"></span>
+              <button type="button" id="limpar-favoritos" class="botao secundario" hidden>Limpar favoritos</button>
+            </div>
+          </div>
+          <div class="area-catalogo">
+            <div class="grade" id="lista-favoritos" tabindex="-1" aria-label="Ferramentas favoritadas"></div>
           </div>
         </section>
     <section class="instalar" id="instalacao" aria-labelledby="titulo-instalacao" hidden>

@@ -1,7 +1,7 @@
 /**
  * @ibd-id illustrator/deslocamento-expandir-contorno
- * @ibd-titulo Deslocamento, expandir e contorno
- * @ibd-descricao Aplica deslocamento (Offset Path) positivo ou negativo na selecao, expande a aparencia e converte em contorno tecnico sem preenchimento.
+ * @ibd-titulo Gerar contorno deslocado e expandido
+ * @ibd-descricao Aplica Offset Path XML (positivo ou negativo), expande aparência, unifica com Pathfinder opcional, limpa preenchimento e aplica traço CMYK ou RGB.
  * @ibd-app illustrator
  * @ibd-versao 1.0.0
  * @ibd-tags offset, deslocamento, contorno, faca, sangria, expand

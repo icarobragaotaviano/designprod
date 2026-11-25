@@ -1,7 +1,7 @@
 /**
  * @ibd-id photoshop/marcas-medida
- * @ibd-titulo Marcas de medida
- * @ibd-descricao Transforma a seleção retangular em cota com rótulo editável — largura, altura ou as duas, em px, mm, cm ou pt. Roda sem diálogo, feito para atalho.
+ * @ibd-titulo Criar cota de medida na seleção
+ * @ibd-descricao Desenha linhas de cota vetoriais e rótulo editável (largura, altura ou ambos em px, mm, cm ou pt) sobre a seleção atual sem abrir diálogo.
  * @ibd-app photoshop
  * @ibd-versao 1.0.0
  * @ibd-tags medida, cota, especificacao, handoff, selecao

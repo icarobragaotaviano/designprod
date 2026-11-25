@@ -1,7 +1,7 @@
 /**
  * @ibd-id photoshop/sangria-guias-canvas
- * @ibd-titulo Sangria por guias e tela
- * @ibd-descricao Acrescenta sangria uniforme à tela, com guias do corte e da borda externa, sem redimensionar a arte.
+ * @ibd-titulo Adicionar sangria e guias no canvas
+ * @ibd-descricao Amplia a tela de pintura com sangria uniforme sem redimensionar a arte e insere guias marcando a linha de corte e a borda externa.
  * @ibd-app photoshop
  * @ibd-versao 1.0.0
  * @ibd-tags sangria, guias, canvas, arte-final

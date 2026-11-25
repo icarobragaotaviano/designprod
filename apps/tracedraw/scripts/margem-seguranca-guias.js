@@ -1,7 +1,7 @@
 /**
  * @ibd-id tracedraw/margem-seguranca-guias
- * @ibd-titulo Margem de seguranca (guias)
- * @ibd-descricao Cria quadro retangular de margem de seguranca interno na camada 06_GUIAS bloqueada da pagina ativa ou de todas as paginas no TraceDraw.
+ * @ibd-titulo Criar margem de segurança interna (guias)
+ * @ibd-descricao Cria quadro retangular de margem de segurança (mm) na camada 06_GUIAS bloqueada para a página ativa ou todas (configure no topo do script).
  * @ibd-app tracedraw
  * @ibd-versao 1.0.0
  * @ibd-tags guias, margem, seguranca, tracedraw

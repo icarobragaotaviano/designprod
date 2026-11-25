@@ -1,7 +1,7 @@
 /**
  * @ibd-id photoshop/gerar-ofertas-preto-dourado
- * @ibd-titulo Ofertas preto e dourado
- * @ibd-descricao Cria ofertas em story 1080×1920 ou horizontal 1920×1080 com textos, formas vetoriais, guias e cinco imagens. No layout aberto, edita só os elementos alterados, em um passo de histórico.
+ * @ibd-titulo Gerar ofertas preto e dourado
+ * @ibd-descricao Cria layouts Story (1080×1920) ou Horizontal (1920×1080) com formas vetoriais, guias, selos e fotos; no PSD aberto atualiza só o que mudou.
  * @ibd-app photoshop
  * @ibd-versao 2.0.0
  * @ibd-tags ofertas, layout, textos, imagens, varejo, guias

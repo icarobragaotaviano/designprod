@@ -1,7 +1,7 @@
 /**
  * @ibd-id illustrator/margem-seguranca-guias
- * @ibd-titulo Margem de seguranca (guias)
- * @ibd-descricao Cria guias internas de margem de seguranca a partir das bordas da prancheta ativa ou de todas as pranchetas, na unidade escolhida.
+ * @ibd-titulo Criar margem de segurança interna (guias)
+ * @ibd-descricao Cria retângulos-guia internos na camada 06_GUIAS com a distância escolhida (mm, cm, px, in ou pt) para dentro da prancheta ativa ou de todas.
  * @ibd-app illustrator
  * @ibd-versao 1.0.0
  * @ibd-tags guias, margem, seguranca, prancheta, acabamento

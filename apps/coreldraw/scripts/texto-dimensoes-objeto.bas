@@ -1,7 +1,7 @@
 Attribute VB_Name = "IBD_TextoDimensoesObjeto"
 ' @ibd-id coreldraw/texto-dimensoes-objeto
-' @ibd-titulo Texto com dimensoes do objeto
-' @ibd-descricao Cria texto artistico com as dimensoes combinadas dos objetos selecionados na unidade escolhida e na camada de textos.
+' @ibd-titulo Cotar dimensões da seleção em texto
+' @ibd-descricao Mede a caixa delimitadora da seleção na unidade escolhida (mm, cm, m, px, in ou pt) e cria texto artístico L × A na camada 01_TEXTOS.
 ' @ibd-app coreldraw
 ' @ibd-versao 1.0.0
 ' @ibd-tags dimensoes, medida, texto, cota, coreldraw

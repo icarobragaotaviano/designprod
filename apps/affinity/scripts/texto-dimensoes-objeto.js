@@ -1,7 +1,7 @@
 /**
  * @ibd-id affinity/texto-dimensoes-objeto
- * @ibd-titulo Texto com dimensoes do objeto
- * @ibd-descricao Cria texto artistico com as dimensoes combinadas dos objetos selecionados na unidade escolhida no Affinity (SDK Beta 3.3+).
+ * @ibd-titulo Cotar dimensões da seleção em texto
+ * @ibd-descricao Mede a seleção via spreadBaseBox na unidade escolhida (mm, cm, px, in, pt ou m) e insere texto artístico com dimensões L × A (SDK Beta 3.3+).
  * @ibd-app affinity
  * @ibd-versao 1.0.0
  * @ibd-tags dimensoes, medida, texto, cota, affinity

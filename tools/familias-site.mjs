@@ -12,7 +12,10 @@ const familias = [
     [desktop('conferir-corte-illustrator.jsx'),desktop('conferir-faca-vectorcraft.js')],
     ['web/lote-imagens','photoshop/redimensionar-lote','photoshop/actions/150-dpi'],
     ['web/ofertas','photoshop/gerar-ofertas-preto-dourado','photoshop/criar-textos-precos','photoshop/editar-textos-precos-rapido'],
-    ['photoshop/actions/sangria-canvas','photoshop/sangria-guias-canvas']
+    ['photoshop/actions/sangria-canvas','photoshop/sangria-guias-canvas'],
+    ['illustrator/margem-seguranca-guias','coreldraw/margem-seguranca-guias','affinity/margem-seguranca-guias','tracedraw/margem-seguranca-guias'],
+    ['illustrator/texto-dimensoes-objeto','coreldraw/texto-dimensoes-objeto','affinity/texto-dimensoes-objeto','tracedraw/texto-dimensoes-objeto'],
+    ['illustrator/deslocamento-expandir-contorno','coreldraw/deslocamento-expandir-contorno','affinity/deslocamento-expandir-contorno','tracedraw/deslocamento-expandir-contorno']
 ];
 
 export function reunirVersoes(ferramentas) {

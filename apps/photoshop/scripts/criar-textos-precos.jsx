@@ -1,7 +1,7 @@
 /**
  * @ibd-id photoshop/criar-textos-precos
- * @ibd-titulo Criar textos e preços em série
- * @ibd-descricao Cria PSDs iguais aos modelos de preço, sem arquivo externo: textos, UN ou /KG, imagens incorporadas ou vinculadas e nome do arquivo. Salva e já abre o próximo.
+ * @ibd-titulo Criar cartazes de preço em série
+ * @ibd-descricao Gera novos PSDs a partir dos modelos de 1 ou 2 dígitos com nome, preços DE/POR, unidade UN ou /KG e foto vinculada ou incorporada sem fechar.
  * @ibd-app photoshop
  * @ibd-versao 1.1.0
  * @ibd-tags ofertas, texto, precos, modelos, lote, imagens

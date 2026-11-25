@@ -1,7 +1,7 @@
 /**
  * @ibd-id illustrator/guias-selecao-margem
- * @ibd-titulo Guias da seleção e margem
- * @ibd-descricao Cria guias nos limites do conjunto selecionado e na margem escolhida, em uma camada separada.
+ * @ibd-titulo Criar guias externas pela seleção
+ * @ibd-descricao Calcula os limites combinados dos objetos selecionados e cria guias externas com a margem informada (mm, cm, px, in ou pt) em camada separada.
  * @ibd-app illustrator
  * @ibd-versao 1.0.1
  * @ibd-tags guias, margem, selecao, arte-final

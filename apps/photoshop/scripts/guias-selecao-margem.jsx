@@ -1,7 +1,7 @@
 /**
  * @ibd-id photoshop/guias-selecao-margem
- * @ibd-titulo Remendo de adesivo — seleção e margem
- * @ibd-descricao Cria guias, seleciona a área total com margem e gera um novo documento mesclado na escala e nas cores do original.
+ * @ibd-titulo Criar remendo de adesivo com margem
+ * @ibd-descricao Marca guias ao redor da seleção, amplia pela margem informada em mm e gera um novo PSD mesclado na escala e perfil de cor originais.
  * @ibd-app photoshop
  * @ibd-versao 1.1.0
  * @ibd-tags remendo, adesivo, guias, margem, arte-final

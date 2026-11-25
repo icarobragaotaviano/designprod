@@ -1,7 +1,7 @@
 /**
  * @ibd-id illustrator/texto-dimensoes-objeto
- * @ibd-titulo Texto com dimensoes do objeto
- * @ibd-descricao Gera automaticamente o rotulo de largura e altura dos objetos selecionados na unidade escolhida, posicionado na camada de textos.
+ * @ibd-titulo Cotar dimensões da seleção em texto
+ * @ibd-descricao Calcula a caixa delimitadora dos objetos selecionados, converte para mm, cm, m, px, in ou pt e cria texto L × A na camada 01_TEXTOS.
  * @ibd-app illustrator
  * @ibd-versao 1.0.0
  * @ibd-tags dimensoes, medida, texto, cota, producao

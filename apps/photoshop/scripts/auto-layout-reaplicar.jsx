@@ -1,7 +1,7 @@
 /**
  * @ibd-id photoshop/auto-layout-reaplicar
- * @ibd-titulo Reaplicar auto layout
- * @ibd-descricao Reorganiza os grupos que já têm regra de auto layout no nome, do mais interno para o mais externo, depois de editar o conteúdo.
+ * @ibd-titulo Reaplicar auto layout nos grupos
+ * @ibd-descricao Recalcula e reposiciona automaticamente os grupos etiquetados com auto layout (do interno ao externo) após mudanças de conteúdo.
  * @ibd-app photoshop
  * @ibd-versao 1.0.0
  * @ibd-tags auto-layout, layout, camadas, atualizar

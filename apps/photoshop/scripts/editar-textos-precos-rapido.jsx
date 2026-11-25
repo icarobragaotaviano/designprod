@@ -1,7 +1,7 @@
-﻿/**
+/**
  * @ibd-id photoshop/editar-textos-precos-rapido
- * @ibd-titulo Editar textos e preços
- * @ibd-descricao Edita o PSD aberto com modelos de um ou dois dígitos, nome, preços DE/POR e unidades. Ajusta tela, elementos e guias sem recriar o arquivo.
+ * @ibd-titulo Editar textos e preços no PSD
+ * @ibd-descricao Atualiza produto, preços DE/POR e unidade UN ou /KG no PSD aberto, alternando entre modelos de 1 e 2 dígitos com ajuste de tela e guias.
  * @ibd-app photoshop
  * @ibd-versao 2.0.0
  * @ibd-tags ofertas, texto, precos, modelos, guias

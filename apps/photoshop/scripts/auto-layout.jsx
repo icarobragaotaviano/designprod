@@ -1,7 +1,7 @@
 /**
  * @ibd-id photoshop/auto-layout
- * @ibd-titulo Auto layout do quadro
- * @ibd-descricao Distribui as camadas de um grupo em linha ou coluna com espaçamento, preenchimento e alinhamento, e guarda a regra no nome do grupo.
+ * @ibd-titulo Aplicar auto layout ao grupo
+ * @ibd-descricao Organiza camadas de um grupo em linha ou coluna com espaçamento, preenchimento, alinhamento e quebra, gravando a regra no nome do grupo.
  * @ibd-app photoshop
  * @ibd-versao 1.0.0
  * @ibd-tags auto-layout, layout, camadas, espacamento, alinhamento

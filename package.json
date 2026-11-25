@@ -16,7 +16,7 @@
     "build:plugin": "node tools/build-plugin.mjs photoshop-uxp",
     "pack:actions": "node tools/pack-actions.mjs",
     "build:site": "node tools/build-site.mjs",
-    "test": "npm run validate && npm run test:guias && npm run test:layout && npm run test:pacote && npm run test:standalone && npm run test:actions && npm run test:textos && node tools/test-medida.cjs && node tools/test-ofertas.cjs && npm run test:producao && npm run test:vetor",
+    "test": "npm run validate && npm run test:guias && npm run test:layout && npm run test:pacote && npm run test:standalone && npm run test:actions && npm run test:textos && node tools/test-medida.cjs && node tools/test-ofertas.cjs && npm run test:producao && npm run test:vetor && npm run test:vitrine",
     "test:guias": "node tools/test-guias.cjs",
     "test:layout": "node tools/test-layout.cjs",
     "test:pacote": "node tools/test-pacote.cjs",
@@ -24,7 +24,8 @@
     "test:actions": "node tools/test-actions.cjs",
     "test:textos": "node tools/test-textos-precos.cjs && node tools/test-criar-textos-precos.cjs && node tools/test-gerar-textos-precos.cjs",
     "test:producao": "node tools/test-nobel.mjs && node tools/test-vectorcraft.mjs && node tools/test-gabarito-editores.mjs && node tools/test-expansao-producao.mjs && node tools/test-remendo-editores.mjs && node tools/test-imposicao-editores.mjs",
-    "test:vetor": "node tools/test-vetor.cjs"
+    "test:vetor": "node tools/test-vetor.cjs",
+    "test:vitrine": "node tools/test-vitrine.mjs"
   },
   "license": "MIT"
 }

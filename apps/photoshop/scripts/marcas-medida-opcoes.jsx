@@ -1,7 +1,7 @@
 /**
  * @ibd-id photoshop/marcas-medida-opcoes
- * @ibd-titulo Marcas de medida — opções
- * @ibd-descricao Escolhe o que medir, unidade, casas decimais, posição da linha, fonte e tamanho do rótulo; grava para o atalho e marca a seleção atual.
+ * @ibd-titulo Configurar cotas de medida
+ * @ibd-descricao Define eixo, unidade, casas decimais, posição da linha, fonte e tamanho das cotas de medida; salva para o atalho e marca a seleção atual.
  * @ibd-app photoshop
  * @ibd-versao 1.0.0
  * @ibd-tags medida, cota, especificacao, handoff, opcoes

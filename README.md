@@ -43,24 +43,24 @@ Não há dependências externas — só Node 18+.
 
 | Ferramenta | App | O que faz |
 |---|---|---|
-| Exportar camadas | Photoshop | Cada camada/grupo do topo vira um arquivo, com aparo opcional |
-| Redimensionar em lote | Photoshop | Pasta inteira reduzida para um lado máximo, sem tocar nos originais |
-| Exportar pranchetas | Illustrator | Cada prancheta em PNG, JPG ou PDF |
-| Exportar páginas em PDFs separados | InDesign | Um PDF por página, usando um preset existente |
-| Organizar projeto | After Effects | Estrutura de pastas padrão, itens classificados automaticamente |
-| Renomear camadas / Limpar nomes | Photoshop (UXP) | Ferramentas nativas do painel, sem ExtendScript |
-| Remendo de adesivo — seleção e margem | Photoshop | Cria guias, seleciona a área total com margem e abre um novo documento mesclado na escala original |
-| Sangria por guias e tela | Photoshop | Amplia a tela e marca corte e borda, com opção de criar uma cópia |
-| Guias da seleção e margem | Illustrator | Guias do conjunto selecionado e margem em uma camada separada |
-| Auto layout do quadro | Photoshop | Arruma as camadas de um grupo em linha ou coluna e guarda a regra no nome do grupo |
-| Reaplicar auto layout | Photoshop | Recalcula todos os quadros etiquetados depois que o conteúdo mudou |
-| Alinhar e distribuir camadas | Photoshop | Alinha pela seleção, pela tela ou por uma camada de referência, com espaço fixo em mm |
-| Kit de Produção (Actions) | Photoshop | Suíte de 9 actions (.atn): 150 DPI, atualizar vínculos, sangria, placeholder, revinculação, exportações JPEG/PNG e PDFs |
-| Editar textos e preços | Photoshop | Alterna entre modelos de um ou dois dígitos no PSD aberto, com nome, preços DE/POR, unidades, tela e guias |
-| Criar textos e preços em série | Photoshop | Cria PSDs iguais aos modelos, sem arquivo externo, com textos, UN ou /KG, imagens incorporadas ou vinculadas e nome do arquivo; salva e já abre o próximo |
-| Margem de segurança (guias) | Illustrator, CorelDRAW, Affinity, TraceDraw | Cria guias internas de margem de segurança a partir das bordas da prancheta ou página |
-| Texto com dimensões do objeto | Illustrator, CorelDRAW, Affinity, TraceDraw | Mede a seleção na unidade escolhida (`mm`, `cm`, `m`, `px`, `in`, `pt`) e cria texto na camada `01_TEXTOS` |
-| Deslocamento + expandir + contorno | Illustrator, CorelDRAW, Affinity, TraceDraw | Gera caminho deslocado, separa/expande quando aplicável, remove preenchimento e aplica contorno técnico |
+| Exportar camadas em lote | Photoshop | Cada camada ou grupo visível do topo vira PNG, JPG ou PSD, com aparo opcional |
+| Redimensionar imagens em lote | Photoshop | Pasta inteira reduzida proporcionalmente para um lado máximo, sem tocar nos originais |
+| Exportar pranchetas em lote | Illustrator | Cada prancheta selecionada ou todas em PNG, JPG ou PDF |
+| Exportar páginas em PDFs individuais | InDesign | Um PDF por página do documento aberto usando um preset existente |
+| Organizar pastas do projeto | After Effects | Estrutura de pastas padrão no painel Project, com itens classificados automaticamente |
+| Renomear camadas selecionadas em sequência / Limpar sufixos e espaços de camadas | Photoshop (UXP) | Comandos nativos do painel lateral UXP, sem ExtendScript |
+| Criar remendo de adesivo com margem | Photoshop, Illustrator, CorelDRAW, TraceDraw, VectorCraft, PhotoCraft, Web | Recorta ou duplica a seleção com margem para remendo na escala e cores originais |
+| Adicionar sangria e guias no canvas | Photoshop | Amplia a tela sem redimensionar a arte e insere guias de corte e borda externa |
+| Criar guias externas pela seleção | Illustrator | Guias externas nos limites combinados da seleção com a margem escolhida em camada separada |
+| Aplicar auto layout ao grupo | Photoshop | Arruma as camadas de um grupo em linha ou coluna e guarda a regra no nome do grupo |
+| Reaplicar auto layout nos grupos | Photoshop | Recalcula todos os quadros etiquetados depois que o conteúdo mudou |
+| Alinhar e distribuir camadas | Photoshop | Alinha pela seleção, pela tela ou por uma camada de referência, com espaço fixo em px ou mm |
+| Kit completo de actions (9 rotinas) | Photoshop | Suíte `.atn` com 9 rotinas rápidas: 150 DPI, vínculos, sangria, placeholder, JPEG/PNG e PDFs |
+| Editar textos e preços no PSD | Photoshop | Atualiza produto, preços DE/POR e unidades UN ou /KG no PSD aberto de 1 ou 2 dígitos |
+| Criar cartazes de preço em série | Photoshop | Gera novos PSDs a partir dos modelos embutidos, com texto, unidades e imagens vinculadas ou incorporadas |
+| Criar margem de segurança interna (guias) | Illustrator, CorelDRAW, Affinity, TraceDraw | Cria guias internas de margem de segurança a partir das bordas da prancheta ou página |
+| Cotar dimensões da seleção em texto | Illustrator, CorelDRAW, Affinity, TraceDraw | Mede a seleção na unidade escolhida (`mm`, `cm`, `m`, `px`, `in`, `pt`) e cria texto na camada `01_TEXTOS` |
+| Gerar contorno deslocado e expandido | Illustrator, CorelDRAW, Affinity, TraceDraw | Gera caminho deslocado, separa/expande quando aplicável, remove preenchimento e aplica traço técnico |
 
 A [família Auto layout](docs/auto-layout.md) traz para o Photoshop o que o auto layout do Figma faz: o grupo é o quadro, as camadas de dentro são os itens, e a regra de arrumação fica guardada no nome do grupo para ser reaplicada quando o conteúdo mudar. As contas ficam em `core/extendscript/ibd-layout.jsx`, sem nenhuma chamada de app — o mesmo motor vai servir Illustrator e InDesign.
 
