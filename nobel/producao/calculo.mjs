@@ -145,10 +145,11 @@ export function numerar({inicio,fim,digitos,vias,bloco,colunas}) {
   return {folhas,blocos,brancos:folhas*colunas-total,linhas,primeira:Array.from({length:colunas},(_,c)=>registro(0,c)),ultima:Array.from({length:colunas},(_,c)=>registro(folhas-1,c))};
 }
 
-export function painelamento({largura,altura,bobina,margem,emenda,sangria,ajuste=0}) {
+export function painelamento({largura,altura,bobina,margem,emenda,sangria,ajuste=0,orientacao}) {
   const util=bobina-2*margem;
   if(emenda>=util || util<=2*sangria)throw Error('Sangria, emenda e margem excedem a largura da bobina.');
-  return [false,true].map(horizontal=>{
+  const direcoes=orientacao==='vertical' ? [false] : [false,true];
+  return direcoes.map(horizontal=>{
     const a=(horizontal?altura:largura)+2*sangria, b=(horizontal?largura:altura)+2*sangria;
     const qtd=Math.max(1,Math.ceil((a-emenda)/(util-emenda)));
     if(qtd>400)throw Error('Reduza o número de faixas.');

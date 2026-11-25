@@ -614,6 +614,11 @@
         const cuts = cA + maxRA + cB + rB + (extraN > 0 ? extraCB + extraRB + 1 : 0) + 3;
 
         if (n > best.n || (n === best.n && cuts <= best.cuts)) {
+          // Preserve o rendimento calculado sem materializar grades acima do limite editável.
+          if (n > 700) {
+            consider(n, [], '', cuts, totalW * totalH);
+            continue;
+          }
           const xStart = r.x + (r.w - totalW) / 2;
           const yStartA = r.y + (r.h - totalHA) / 2 + s.bleed;
           const yStartB = r.y + (r.h - totalHB) / 2 + s.bleed;
@@ -694,6 +699,11 @@
         const cuts = maxCA + rA + cB + rB + (extraN > 0 ? extraCB + extraRB + 1 : 0) + 3;
 
         if (n > best.n || (n === best.n && cuts <= best.cuts)) {
+          // Preserve o rendimento calculado sem materializar grades acima do limite editável.
+          if (n > 700) {
+            consider(n, [], '', cuts, totalW * totalH);
+            continue;
+          }
           const yStart = r.y + (r.h - totalH) / 2;
           const xStartA = r.x + (r.w - totalWA) / 2 + s.bleed;
           const xStartB = r.x + (r.w - totalWB) / 2 + s.bleed;
@@ -1955,6 +1965,9 @@
       activeStrategyKey = useMixed ? 'mixed' : g.angle === 90 ? 'rotate' : 'normal';
 
       if (useMixed) {
+        if (mixed.n > 700) {
+          return { errors: ['Mais de 700 posições na grade mista. Aumente a peça ou reduza a folha.'], warnings, items: [], plan: [] };
+        }
         layoutNote = mixed.desc;
         if (!isFree) warnings.push('Corte misto (Dutch cut) ativo: peças em 0° e 90° possuem sentidos de fibra perpendiculares.');
         for (const p of mixed.placements) {

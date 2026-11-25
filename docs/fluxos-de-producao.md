@@ -45,3 +45,14 @@ Em **Desktop**, busque **Imposição de arte e corte** e escolha o editor. Baixe
 O formato inicial é **T4 (328 × 478 mm)**. Para T8, informe **238 × 328 mm**. Use o intervalo entre peças e a margem da folha em milímetros. Informe a quantidade manual ou `0` para preencher a grade na orientação atual. Se a capacidade superar 500, informe uma quantidade manual de até 500. A faca sai com traço vermelho de 0,25 pt e sem preenchimento. Use deslocamento positivo para fora e negativo para dentro. Com deslocamento zero, o traçado curvo mantém sua geometria. Para uma faca retangular, o deslocamento é aplicado aos quatro lados da caixa.
 
 **ARTE** e **FACA** têm o mesmo tamanho e as mesmas coordenadas locais. Quando você ativa as cruzes, há quatro em cada folha e a margem mínima é de 8 mm. São referências visuais de registro. Use as marcas do equipamento quando o seu plotter exigir leitura óptica. Exporte as duas saídas em escala 1:1. Aplique o nome da cor especial de corte exigido pelo RIP quando o fluxo usar uma tinta técnica.
+
+## Ferramentas de imposição no navegador
+
+| Ferramenta | Entradas e resultado |
+| --- | --- |
+| [Escolher folha](/apps/folhas/) | Informe o tamanho da peça, a tiragem e as reservas. Compare os formatos pelo aproveitamento, pelo número de peças ou pelo consumo. Selecione um resultado para conferir a grade em SVG. |
+| [Montagem e virada](/apps/montagem/) | Defina a folha, a peça, a fibra e a forma de impressão. Confira a frente e o verso, ou a forma única de tira-retira e cambalhota, e baixe o esquema. |
+| [Cadernos e lombada](/apps/cadernos/) | Defina a dobra e a encadernação. Confira a frente e o verso de cada caderno, as páginas em branco, a espessura estimada e a compensação. |
+| [Lona e ilhós](/apps/lona/) | Informe as medidas finais, a largura da bobina e o acabamento. Confira o formato bruto, as emendas, os panos e as posições dos ilhós em SVG e CSV. |
+
+Cada ferramenta usa um endereço, um formulário e um pacote offline próprios. As medidas são em milímetros, salvo as unidades indicadas. Em **Montagem e virada** e **Escolher folha**, os intervalos são medidos entre as bordas externas das sangrias. Os esquemas SVG são provas de montagem em tamanho físico. Confira as reservas com a máquina e o fluxo de acabamento antes de produzir.

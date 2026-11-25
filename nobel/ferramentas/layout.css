@@ -1,0 +1,218 @@
+/* Componentes dos apps de navegador. As cores e fontes vêm de docs/ibd-theme.css. */
+html:has(body[data-app-layout]) { background: var(--surface); }
+body[data-app-layout] { --largura-app: 1360px; min-height: 100dvh; font-size: 1rem; }
+body[data-app-layout] .ibd-nav {
+  max-width: var(--largura-app);
+  justify-content: flex-start;
+  gap: clamp(.75rem, 2vw, 1.5rem);
+  padding-inline: clamp(1rem, 3.2vw, 2.5rem);
+}
+body[data-app-layout] .ibd-nav button { margin-inline-start: auto; min-height: 2.5rem; }
+body[data-app-layout] a { color: var(--secondary); }
+body[data-app-layout] .ibd-sign { color: var(--ink); white-space: nowrap; }
+body[data-app-layout] main {
+  max-width: var(--largura-app);
+  padding: clamp(1.5rem, 3vw, 3rem) clamp(1rem, 3.2vw, 2.5rem) 3rem;
+  margin-inline: auto;
+}
+body[data-app-layout] .cabecalho-app { margin-bottom: clamp(1.25rem, 2.5vw, 2rem); }
+body[data-app-layout] main > p, body[data-app-layout] .cabecalho-app p {
+  color: var(--ink-soft);
+  max-width: 65ch;
+  margin-bottom: 1.35rem;
+}
+body[data-app-layout] h1 { line-height: 1.08; margin: 0 0 .65rem; }
+body[data-app-layout] h2 { font-size: 1.125rem; line-height: 1.3; margin: 0 0 .85rem; }
+body[data-app-layout] .painel {
+  display: grid;
+  grid-template-columns: minmax(18rem, .78fr) minmax(0, 1.22fr);
+  gap: clamp(.875rem, 2vw, 1.5rem);
+  align-items: start;
+}
+body[data-app-layout] :is(.painel > form, .painel > article) {
+  min-width: 0;
+  padding: clamp(.875rem, 2vw, 1.5rem);
+  box-shadow: inset 0 1px 0 #ffffff09, 0 12px 32px #0003;
+}
+body[data-app-layout] fieldset {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: .85rem;
+  margin: 0 0 1.1rem;
+  padding: 0;
+  border: 0;
+}
+body[data-app-layout] fieldset legend { padding: 0; margin-bottom: .7rem; font-weight: 700; color: var(--ink); }
+body[data-app-layout] .campo-largo { grid-column: 1 / -1; }
+body[data-app-layout] label {
+  display: grid;
+  align-content: start;
+  gap: .4rem;
+  min-width: 0;
+  font-size: .875rem;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+body[data-app-layout] label:has(:is(textarea,input[type=file])) { grid-column: 1 / -1; }
+body[data-app-layout] :is(input:not([type=checkbox]),select,textarea) {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: .55rem .65rem;
+  border: 1px solid var(--rule);
+  font-size: 1rem;
+}
+body[data-app-layout] :is(input,select,textarea):focus { border-color: var(--secondary); }
+body[data-app-layout] textarea { height: auto; min-height: 6.5rem; resize: vertical; }
+body[data-app-layout] input[type=checkbox] { width: 1.125rem; height: 1.125rem; accent-color: var(--accent); }
+body[data-app-layout] .check-row {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  min-height: 2.75rem;
+  padding: .45rem .65rem;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+body[data-app-layout] :is(button,.acao) {
+  max-width: 100%;
+  min-height: 2.75rem;
+  padding: .5rem .85rem;
+  font: 600 .9rem/1.3 var(--font-sans);
+  margin: 0;
+}
+body[data-app-layout] .acao {
+  display: inline-flex;
+  align-items: center;
+  margin: .3rem .3rem .15rem 0;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  color: var(--secondary);
+}
+body[data-app-layout] :is(button,.acao):hover { border-color: var(--secondary); }
+body[data-app-layout] button[type=submit] { width: 100%; margin-top: .5rem; }
+body[data-app-layout] button[type=submit]:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+body[data-app-layout] .tabela-scroll { max-width: 100%; overflow: auto; }
+body[data-app-layout] table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+body[data-app-layout] :is(th,td) { padding: .65rem .6rem; border-bottom: 1px solid var(--line); text-align: left; }
+body[data-app-layout] th { font: 700 .82rem/1.35 var(--font-sans); color: var(--ink-soft); }
+body[data-app-layout] td { font-size: .875rem; }
+body[data-app-layout] caption { text-align: left; font-size: .9375rem; font-weight: 700; padding: .55rem 0; }
+body[data-app-layout] #resultado { overflow-wrap: anywhere; }
+body[data-app-layout] #aviso { margin: 0; }
+body[data-app-layout] #aviso:not(:empty) { margin-bottom: .75rem; }
+body[data-app-layout="dedicado"] #aviso:not([data-estado]) {
+  position: absolute;
+  overflow: hidden;
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  white-space: nowrap;
+}
+body[data-app-layout] .sr-only {
+  position: absolute;
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.parametros-avancados {
+  border: 1px solid var(--rule);
+  border-radius: 9px;
+  background: var(--raised);
+  margin: .6rem 0;
+}
+.parametros-avancados summary, .avisos-tecnicos summary {
+  padding: .65rem .75rem;
+  font-size: .9rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+body[data-app-layout] .parametros-avancados fieldset { padding: .7rem; margin: 0; }
+.nota-campo { grid-column: 1 / -1; margin: 0; font-size: .875rem; color: var(--ink-soft); }
+.medida-label { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .25rem; }
+.medida-label .unidade { font: .7rem var(--mono); }
+.controles-resultado { display: flex; flex-wrap: wrap; gap: .65rem; margin-bottom: .9rem; }
+.controles-resultado:empty { display: none; }
+.controles-resultado label { flex: 1 1 10rem; }
+.metricas {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: .55rem;
+  margin: 0 0 .9rem;
+}
+.metricas > div {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: linear-gradient(var(--raised),var(--stage-bg));
+  padding: .65rem .7rem;
+  min-width: 0;
+}
+.metricas dt { color: var(--ink-soft); font-size: .82rem; }
+.metricas dd { margin: .28rem 0 0; font: 700 clamp(.94rem,2vw,1.32rem)/1.35 var(--mono); }
+.diagrama { margin: 0; }
+.palco {
+  display: grid;
+  place-items: center;
+  background: var(--stage-bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: clamp(.7rem,2vw,1.4rem);
+  min-height: 12rem;
+}
+body[data-app-layout] .palco img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(68svh,36rem);
+  margin: 0;
+  box-shadow: 0 12px 28px #0006;
+}
+.diagrama figcaption { display: grid; justify-items: start; gap: .55rem; padding: .75rem 0; color: var(--ink-soft); font-size: .875rem; }
+.legenda { display: flex; flex-wrap: wrap; gap: .4rem .9rem; list-style: none; padding: 0; margin: 0; }
+.legenda li { display: flex; gap: .35rem; align-items: center; }
+.legenda li::before { content: ""; width: .75rem; height: .75rem; background: var(--amostra); border: 1px solid #7d90a2; border-radius: 2px; }
+.fatos { margin: .25rem 0 1rem; }
+.fatos > div {
+  display: grid;
+  grid-template-columns: minmax(8rem,.4fr) minmax(0,1fr);
+  gap: .35rem .75rem;
+  border-bottom: 1px solid var(--line);
+  padding: .5rem 0;
+  font-size: .875rem;
+}
+.fatos dt { color: var(--ink-soft); }
+.fatos dd { margin: 0; }
+.avisos-tecnicos { margin-top: .8rem; background: #e5a93c12; border: 1px solid #e5a93c55; border-radius: 9px; }
+.avisos-tecnicos summary { color: var(--warn); }
+.avisos-tecnicos ul { margin: 0 0 .65rem; padding: 0 .65rem 0 1.9rem; font-size: .875rem; }
+.avisos-tecnicos li + li { margin-top: .35rem; }
+@media (max-width: 850px) {
+  body[data-app-layout] .painel { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 480px) {
+  body[data-app-layout] main { padding-inline: .75rem; }
+  .metricas { grid-template-columns: repeat(auto-fit,minmax(min(8rem,100%),1fr)); }
+  .fatos > div { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 340px) {
+  body[data-app-layout] fieldset { grid-template-columns: minmax(0,1fr); }
+  body[data-app-layout] .ibd-sign { font-size: 1.06rem; }
+  body[data-app-layout] .ibd-mark { width: 1.8rem; height: 1.8rem; }
+}
+@media print {
+  body[data-app-layout] .painel { display: block; }
+  body[data-app-layout] :is(form,.acao,#controles-resultado) { display: none !important; }
+  body[data-app-layout] :is(.painel > article,.palco,.metricas > div) {
+    background: white; color: black; border-color: #aaa; box-shadow: none;
+  }
+  body[data-app-layout] :is(dt,figcaption,th,main > p,.cabecalho-app p) { color: #222; }
+  body[data-app-layout] .palco img { box-shadow: none; }
+}
