@@ -1,3 +1,4 @@
+import {scriptsRemendo} from './remendo/versoes.mjs';
 import {producao,desktopProducao} from './producao/catalogo.mjs';
 
 export const apps = [
@@ -18,4 +19,4 @@ export const apps = [
   ...producao.map(item=>[...item,'producao'])
 ];
 
-export const desktop = [['preparar-pasta.ps1','Windows · Preparar pasta da OS'],['abrir-os-corel.bas','CorelDRAW · Abrir pasta da arte'],['abrir-gabarito-illustrator.jsx','Illustrator · Abrir gabarito'],['trace-calendario.js','TraceDraw · Gabarito de calendário'],['conferir-faca-vectorcraft.js','VectorCraft · Conferir contornos de faca'],['inspecionar-photocraft.ps1','PhotoCraft · Inspecionar PSDs'],...desktopProducao];
+export const desktop = [['preparar-pasta.ps1','Windows · Preparar pasta da OS'],['abrir-os-corel.bas','CorelDRAW · Abrir pasta da arte'],['abrir-gabarito-illustrator.jsx','Illustrator · Abrir gabarito'],['trace-calendario.js','TraceDraw · Gabarito de calendário'],['conferir-faca-vectorcraft.js','VectorCraft · Conferir contornos de faca'],['inspecionar-photocraft.ps1','PhotoCraft · Inspecionar PSDs'],...desktopProducao,...scriptsRemendo];

@@ -154,7 +154,8 @@
 
   function combina(f, termo) {
     if (!termo) return true;
-    var alvo = [f.titulo, f.descricao, f.id, (f.tags || []).join(' ')].join(' ').toLowerCase();
+    var versoes = (f.versoes || []).map(function (v) { return nomeDoApp(v.app) + ' ' + v.titulo; }).join(' ');
+    var alvo = [versoes, f.titulo, f.descricao, f.id, (f.tags || []).join(' ')].join(' ').toLowerCase();
     // Todas as palavras precisam aparecer: "auto photoshop" filtra de verdade.
     return termo.split(/\s+/).every(function (palavra) {
       return alvo.indexOf(palavra) > -1;
@@ -355,6 +356,21 @@
     if (f.docUrl) acoes.appendChild(elo(f.docUrl, 'Abrir documentação', true));
     if (f.codigo) acoes.appendChild(elo(f.codigo, f.codigoRotulo || 'Ver código', false));
     elDetalhes.appendChild(acoes);
+    if (f.versoes && f.versoes.length) {
+      var h = document.createElement('h4');
+      h.textContent = 'Versões por software e ferramentas relacionadas';
+      var lista = document.createElement('ul');
+      lista.className = 'versoes-editores';
+      f.versoes.forEach(function (versao) {
+        var item = document.createElement('li');
+        var a = elo(versao.abrir || versao.baixar, nomeDoApp(versao.app) + ' · ' + versao.titulo, false);
+        if (versao.baixar) a.setAttribute('download',versao.baixarNome);
+        item.appendChild(a);
+        lista.appendChild(item);
+      });
+      elDetalhes.appendChild(h);
+      elDetalhes.appendChild(lista);
+    }
   }
 
   /* Render ------------------------------------------------------------ */

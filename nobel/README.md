@@ -35,3 +35,19 @@ Os diretórios em `origens/` são cópias dos projetos da mesma conta GitHub. Fi
 ## Gabarito nativo de Wire-o
 
 No app Gabarito de acabamento, informe as dimensões, a sangria, a reserva de furação e a borda. Os botões BAS e JSX baixam comandos com as medidas daquela revisão. No CorelDRAW Windows, importe o BAS no editor de VBA e execute a macro CriarGabarito identificada pelo sufixo. No Illustrator, escolha o JSX em Arquivo → Scripts → Outro script. O resultado é um documento novo no formato acabado, com sangria configurada e uma camada técnica bloqueada e não imprimível. Salve o mestre como CDR ou AI. A prova SVG cotada continua disponível separadamente.
+
+## Remendo de adesivo
+
+Use uma cópia da arte no tamanho final e meça a região avariada a partir do canto superior esquerdo. Os scripts vetoriais recebem `X; Y; largura; altura; margem`, em milímetros. A margem aproveita arte vizinha e é limitada à página. O cálculo informa a posição e o tamanho do remendo.
+
+| Aplicativo | Execução | Saída |
+|---|---|---|
+| Photoshop | Selecione o dano com o Letreiro e execute o JSX pelo menu Arquivo → Scripts. | Novo documento raster mesclado com a escala do mestre. |
+| CorelDRAW Windows | Importe o BAS no VBA, selecione a arte desejada e execute CriarRemendoAdesivo. | Novo documento editável com PowerClip. |
+| Illustrator | Salve o mestre em AI, ative a prancheta e execute o JSX. | Cópia AI com a prancheta do remendo, pronta para exportar a 100%. |
+| TraceDraw | Instale o JS pelo menu de plugins e selecione a arte da página. | Nova página com cópia da seleção e máscara editável. Exporte apenas Remendo. |
+| VectorCraft | Execute o JS no menu de scripts e indique a prancheta original. | Nova prancheta na área do remendo, com a arte existente. Exporte apenas a nova prancheta. |
+| PhotoCraft | Rode o MJS no terminal com Node e com o executável photocraft-cli disponível. Passe original, saída e medidas, por exemplo `node remendo-adesivo-photocraft.mjs arte.tif remendo.tif "10;10;50;30;3"`. | Recorte em TIFF, PSD ou PCRAFT e mapa JSON. Pode informar o caminho do CLI como último argumento. |
+| Navegador | Carregue o bitmap, informe a largura instalada da arte e as medidas. | PNG, SVG dimensionado e mapa JSON para a aplicação. |
+
+Exemplo: dano de 50 × 30 mm, a X=10 mm e Y=10 mm, com margem de 3 mm. O remendo mede 56 × 36 mm e começa em X=7 mm e Y=7 mm. Em uma imagem raster, o tamanho efetivo segue os limites dos pixels. Para importar o PNG em escala, use o tamanho do mapa JSON. O SVG já declara o tamanho em milímetros.

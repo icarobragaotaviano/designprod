@@ -2,6 +2,7 @@ import {mkdir,readFile,readdir,writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
+import {scriptsRemendo,photoshopRemendo} from '../nobel/remendo/versoes.mjs';
 import {apps,desktop as integracoes} from '../nobel/catalogo.mjs';
 
 const raiz=fileURLToPath(new URL('../',import.meta.url));
@@ -14,7 +15,14 @@ await mkdir(saida,{recursive:true});
 await writeFile(path.join(saida,'estilo.css'),estilo);
 
 await mkdir(path.join(saida,'desktop'),{recursive:true});
-for(const [nome] of integracoes)await writeFile(path.join(saida,'desktop',nome),await arquivo('desktop/'+nome));
+const geometriaRemendo = (await arquivo('remendo/janela.js')).toString('utf8');
+for (const [nome] of integracoes) {
+  const codigo = await arquivo('desktop/'+nome);
+  const completo = nome.startsWith('remendo-adesivo-') && !nome.endsWith('.bas')
+    ? codigo.toString('utf8').replace('/* @ibd-remendo-janela */',geometriaRemendo)
+    : codigo;
+  await writeFile(path.join(saida,'desktop',nome),completo);
+}
 for(const [id,titulo,,descricao,origem,modo] of apps){
   const base='/apps/'+id+'/';
   const dir=path.join(saida,id);
@@ -41,7 +49,15 @@ for(const [id,titulo,,descricao,origem,modo] of apps){
   }else{
     for(const nome of ['bancada.mjs','calculos.mjs','gabarito-editores.mjs','estilo.css'])arquivos.set(nome,await arquivo(nome));
     for(const nome of ['model.js','storage.js'])arquivos.set(nome,await arquivo('origens/os/'+nome));
-    arquivos.set('index.html',head(titulo,base)+`<body data-app="${id}"><main><h1>${titulo}</h1><p>${descricao}</p><div class="painel"><form><fieldset aria-label="Parâmetros"></fieldset><button type="submit">${id==='enderecos'?'Localizar OS':'Gerar resultado'}</button></form><article><h2>Resultado</h2><div id="resultado"></div><p role="status" id="aviso"></p></article></div></main><script type="module" src="bancada.mjs"></script></body></html>`);
+    const downloadsRemendo = id === 'remendo' ? [
+      ['Photoshop','/downloads/ferramentas/'+photoshopRemendo+'.jsx'],
+      ...scriptsRemendo.map(([arquivo,rotulo])=>[rotulo.split(' · ')[0],'/apps/desktop/'+arquivo])
+    ] : [];
+    const linksRemendo = downloadsRemendo.length
+      ? '<section aria-label="Scripts de desktop"><h2>Scripts de desktop</h2>'+downloadsRemendo
+        .map(([nome,href])=>'<a class="acao" href="'+href+'" download>'+nome+'</a>').join('')+'</section>'
+      : '';
+    arquivos.set('index.html',head(titulo,base)+`<body data-app="${id}"><main><h1>${titulo}</h1><p>${descricao}</p>${linksRemendo}<div class="painel"><form><fieldset aria-label="Parâmetros"></fieldset><button type="submit">${id==='enderecos'?'Localizar OS':'Gerar resultado'}</button></form><article><h2>Resultado</h2><div id="resultado"></div><p role="status" id="aviso"></p></article></div></main><script type="module" src="bancada.mjs"></script></body></html>`);
   }
   arquivos.set('ibd-theme.css',await readFile(path.join(raiz,'docs/ibd-theme.css')));
   let html=arquivos.get('index.html').toString();

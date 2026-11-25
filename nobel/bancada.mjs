@@ -135,7 +135,10 @@ async function renderizar(){
           linha('Aplicação (X / Y)',numero(r.esquerda/r.escala)+' / '+numero(r.topo/r.escala)+' mm');
           linha('Tamanho final para aplicar',numero(r.w/r.escala)+' × '+numero(r.h/r.escala)+' mm');
           saida.append(canvas);link('Baixar remendo PNG',url(blob),'remendo.png');
-          const mapa={imagem:dados.imagem.name,unidade:'mm',origem:'superior esquerda',x:r.esquerda/r.escala,y:r.topo/r.escala,largura:r.w/r.escala,altura:r.h/r.escala};
+          const mapa={imagem:dados.imagem.name,unidade:'mm',origem:'superior esquerda',x:r.esquerda/r.escala,y:r.topo/r.escala,largura:r.w/r.escala,altura:r.h/r.escala,ppi:r.escala*25.4};
+          const arte=canvas.toDataURL('image/png');
+          const svgEscala='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="'+mapa.largura+'mm" height="'+mapa.altura+'mm" viewBox="0 0 '+r.w+' '+r.h+'"><image width="'+r.w+'" height="'+r.h+'" xlink:href="'+arte+'"/></svg>';
+          link('Baixar SVG no tamanho físico',url(new Blob([svgEscala],{type:'image/svg+xml'})),'remendo-escala-real.svg');
           link('Baixar mapa de aplicação',url(new Blob([JSON.stringify(mapa,null,2)],{type:'application/json'})),'remendo-mapa.json');
         }
       }finally{img.close();}

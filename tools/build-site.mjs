@@ -20,6 +20,7 @@ import { readFile, writeFile, cp, rm, mkdir, access, stat } from 'node:fs/promis
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { reunirVersoes } from './familias-site.mjs';
 import { APPS } from './lib/meta.mjs';
 import { resolverIncludes, cabecalho } from './lib/incluir.mjs';
 
@@ -197,6 +198,7 @@ for(const [nome,rotulo] of desktop){
   nomesApps[app]=editor;
   ferramentas.push({id:'desktop/'+nome,titulo,descricao:rotulo,app,tipo:'utilitário',versao:marca.versao,baixar:'/apps/desktop/'+nome,baixarNome:nome,baixarTamanho:Math.max(1,Math.ceil((await stat(path.join(RAIZ,'nobel/desktop',nome))).size/1024))});
 }
+reunirVersoes(ferramentas);
 const dados = { marca: catalogo.marca, versao: catalogo.versao, nomesApps, acoes, ferramentas };
 
 /* 4. Escrever a saida --------------------------------------------------- */
