@@ -11,34 +11,13 @@ Option Explicit
 Public Function ObterListaPapeis() As Variant
     ' Primeiro os padroes Nobel, seguidos pelos formatos presentes no app (ISO, graficos, Oficio, B, folhas).
     ObterListaPapeis = Array( _
-        "Padrao Nobel T9|220|380", _
-        "Padrao Nobel T8|238|328", _
-        "Padrao Nobel T4|328|478", _
-        "A4|210|297", _
-        "A5|148|210", _
-        "A6|105|148", _
-        "A7|74|105", _
-        "A3|297|420", _
-        "SRA3|320|450", _
-        "Super A3 / A3+|330|480", _
-        "A4+ grafico 220x320|220|320", _
-        "A4+ grafico 225x320|225|320", _
-        "A4+ grafico 230x330|230|330", _
-        "Super A4 sublimacao|230|350", _
-        "A2|420|594", _
-        "A1|594|841", _
-        "A0|841|1189", _
-        "Carta (Letter)|216|279", _
-        "Oficio / Folio 216x320|216|320", _
-        "Oficio 2 / Folio 216x330|216|330", _
-        "Oficio (Legal)|216|356", _
-        "Meio Oficio|165|216", _
-        "B4 (ISO)|250|353", _
-        "B5 (ISO)|176|250", _
-        "B6 (ISO)|125|176", _
-        "Meia folha (1/2)|480|660", _
-        "Folha 64x88 cm|640|880", _
-        "Folha inteira (BB)|660|960", _
+        "Padrao Nobel T9|220|380", "Padrao Nobel T8|238|328", "Padrao Nobel T4|328|478", "A4|210|297", _
+        "A5|148|210", "A6|105|148", "A7|74|105", "A3|297|420", _
+        "SRA3|320|450", "Super A3 / A3+|330|480", "A4+ grafico 220x320|220|320", "A4+ grafico 225x320|225|320", _
+        "A4+ grafico 230x330|230|330", "Super A4 sublimacao|230|350", "A2|420|594", "A1|594|841", _
+        "A0|841|1189", "Carta (Letter)|216|279", "Oficio / Folio 216x320|216|320", "Oficio 2 / Folio 216x330|216|330", _
+        "Oficio (Legal)|216|356", "Meio Oficio|165|216", "B4 (ISO)|250|353", "B5 (ISO)|176|250", _
+        "B6 (ISO)|125|176", "Meia folha (1/2)|480|660", "Folha 64x88 cm|640|880", "Folha inteira (BB)|660|960", _
         "Formato 76x112 cm|760|1120")
 End Function
 

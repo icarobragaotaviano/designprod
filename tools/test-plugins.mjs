@@ -187,11 +187,42 @@ assincronos.push(test('npm run build:plugins empacota todos os 5 softwares com a
   assert.ok(cdMap.has('Instalar-CorelDRAW.bat'));
   assert.ok(cdMap.has('IBD_PainelCorel.bas'));
   const hta = cdMap.get('IBD_Painel_Corel.hta').toString('utf8');
+  assert.match(hta, /http-equiv="X-UA-Compatible" content="IE=10"/);
   assert.match(hta, /Const CDR_MM = 3/);
   assert.match(hta, /Const CDR_PT = 14/);
   assert.match(hta, /btn-gerenciar/);
   assert.match(hta, /Padrao Nobel T9/);
   assert.match(hta, /Cartao de visita BR/);
+  for (const [arquivo, conteudo] of cdMap) {
+    if (!arquivo.endsWith('.bas')) continue;
+    let continuacoes = 0;
+    for (const linha of conteudo.toString('utf8').split(/\r?\n/)) {
+      continuacoes = /\s_\s*$/.test(linha) ? continuacoes + 1 : 0;
+      assert.ok(continuacoes <= 24, `${arquivo} excede o limite de continuações do VBA`);
+    }
+  }
+  const jsPainel = [...hta.matchAll(/<script>([\s\S]*?)<\/script>/g)].at(-1)[1];
+  const nos = new Map();
+  const criarNo = () => ({ value: '', style: {}, appendChild() {}, getElementsByTagName() { return []; } });
+  const document = {
+    getElementById(id) {
+      if (!nos.has(id)) nos.set(id, criarNo());
+      return nos.get(id);
+    },
+    createElement: criarNo
+  };
+  let encaixeInicial;
+  const window = {};
+  vm.runInNewContext(jsPainel, { document, window, setTimeout(fn) { encaixeInicial = fn; } });
+  encaixeInicial();
+  assert.match(nos.get('status').innerText, /ponte VBScript.*indisponivel/);
+  nos.get('btn-reconectar').onclick();
+  const lados = [];
+  window.CorelEncaixarJanela = lado => { lados.push(lado); };
+  encaixeInicial();
+  nos.get('btn-dock-l').onclick();
+  nos.get('btn-dock-r').onclick();
+  assert.deepEqual(lados, ['R', 'L', 'R']);
   conferirIco(cdMap.get('icones/painel-ibd.ico'), 32);
   conferirIco(cdMap.get('icones/margem-seguranca-guias.ico'), 32);
   conferirIco(cdMap.get('icones/texto-dimensoes-objeto.ico'), 32);

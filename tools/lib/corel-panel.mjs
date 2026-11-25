@@ -390,7 +390,8 @@ export function gerarPainelCorelHta(marca, catalogo) {
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- O modo IE11 não expõe o VBScript usado pela ponte COM do painel. -->
+  <meta http-equiv="X-UA-Compatible" content="IE=10" />
   <title>${tituloJanela}</title>
   <HTA:APPLICATION
     ID="IBDPainelCorel"
@@ -421,7 +422,7 @@ export function gerarPainelCorelHta(marca, catalogo) {
       font-family: "Segoe UI", Tahoma, sans-serif;
       font-size: 12px;
     }
-    .cabecalho { flex-shrink: 0; padding: 8px 10px; border-bottom: 1px solid ${cores.borda || '#3a404d'}; }
+    .cabecalho { -ms-flex-negative: 0; flex-shrink: 0; padding: 8px 10px; border-bottom: 1px solid ${cores.borda || '#3a404d'}; }
     .cabecalho-linha { display: -ms-flexbox; display: flex; -ms-flex-align: center; align-items: center; -ms-flex-pack: justify; justify-content: space-between; }
     .titulo-grupo { display: -ms-flexbox; display: flex; -ms-flex-align: center; align-items: center; }
     .badge-marca { padding: 2px 6px; border-radius: 4px; background: ${cores.acento || '#f0c419'}; color: ${cores.acentoTexto || '#16181d'}; font-size: 10px; font-weight: 800; margin-right: 8px; }
@@ -449,6 +450,7 @@ export function gerarPainelCorelHta(marca, catalogo) {
     .modo-btn.ativo .ocultas-badge { background: #16181d; color: ${cores.acento || '#f0c419'}; }
 
     .barra-dock {
+      -ms-flex-negative: 0;
       flex-shrink: 0;
       display: -ms-flexbox;
       display: flex;
@@ -474,7 +476,7 @@ export function gerarPainelCorelHta(marca, catalogo) {
     }
     .dock-btns button:hover { border-color: ${cores.acento || '#f0c419'}; color: ${cores.texto || '#e4e7ee'}; }
 
-    .barra-busca { flex-shrink: 0; padding: 7px 10px; border-bottom: 1px solid ${cores.borda || '#3a404d'}; }
+    .barra-busca { -ms-flex-negative: 0; flex-shrink: 0; padding: 7px 10px; border-bottom: 1px solid ${cores.borda || '#3a404d'}; }
     .barra-busca input {
       width: 100%;
       height: 26px;
@@ -486,7 +488,7 @@ export function gerarPainelCorelHta(marca, catalogo) {
       font-size: 11px;
     }
 
-    .abas { flex-shrink: 0; display: -ms-flexbox; display: flex; padding: 6px 10px; border-bottom: 1px solid ${cores.borda || '#3a404d'}; }
+    .abas { -ms-flex-negative: 0; flex-shrink: 0; display: -ms-flexbox; display: flex; padding: 6px 10px; border-bottom: 1px solid ${cores.borda || '#3a404d'}; }
     .aba {
       padding: 3px 9px;
       margin-right: 4px;
@@ -585,7 +587,7 @@ export function gerarPainelCorelHta(marca, catalogo) {
     .chip:hover { border-color: ${cores.acento || '#f0c419'}; color: ${cores.acento || '#f0c419'}; }
     .form-rodape { margin-top: 12px; display: -ms-flexbox; display: flex; -ms-flex-pack: justify; justify-content: space-between; }
 
-    .rodape { flex-shrink: 0; padding: 6px 10px; border-top: 1px solid ${cores.borda || '#3a404d'}; color: ${cores.textoSecundario || '#b6bcc8'}; font-size: 10px; background: ${cores.superficie || '#20232a'}; }
+    .rodape { -ms-flex-negative: 0; flex-shrink: 0; padding: 6px 10px; border-top: 1px solid ${cores.borda || '#3a404d'}; color: ${cores.textoSecundario || '#b6bcc8'}; font-size: 10px; background: ${cores.superficie || '#20232a'}; }
     .rodape.erro { color: ${cores.erro || '#f29ca6'}; }
     .rodape.sucesso { color: ${cores.sucesso || '#52b788'}; }
     .vazio { padding: 24px 12px; color: ${cores.textoSecundario || '#b6bcc8'}; text-align: center; font-size: 11px; }
@@ -696,18 +698,25 @@ export function gerarPainelCorelHta(marca, catalogo) {
       ts.Close
     End Sub
 
-    Sub CorelEncaixarJanela(lado)
+    Function CorelEncaixarJanela(lado)
       On Error Resume Next
-      Dim sh, ps1, cmd
-      Set sh = CreateObject("WScript.Shell")
+      Dim sh, fso, ps1, cmd
+      Set fso = CreateObject("Scripting.FileSystemObject")
       ps1 = PastaDoPainel() & "\\Attach-Painel-Corel.ps1"
+      If Not fso.FileExists(ps1) Then
+        CorelEncaixarJanela = "Auxiliar de encaixe ausente. Reinstale o pacote do painel."
+        Exit Function
+      End If
+      Set sh = CreateObject("WScript.Shell")
       cmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File """ & ps1 & """ -Side " & lado & " -Width 318"
       sh.Run cmd, 0, False
-    End Sub
+      If Err.Number <> 0 Then CorelEncaixarJanela = "Falha ao iniciar o encaixe: " & Err.Description
+    End Function
 
     Function ObterCorel(abrirSeFechado)
       Dim app
       On Error Resume Next
+      Set app = Nothing
       Set app = GetObject(, "CorelDRAW.Application")
       If Err.Number <> 0 Or (app Is Nothing) Then
         Err.Clear
@@ -1216,8 +1225,21 @@ ${iconesJs}
       elStatus.innerText = msg;
       elRodape.className = 'rodape' + (tipo ? ' ' + tipo : '');
     }
+    var ponteIndisponivel = 'A ponte VBScript do painel esta indisponivel no Windows.';
     function atualizarConexao() {
-      try { elConn.innerText = window.CorelStatusConexao(); } catch (e) { elConn.innerText = 'CorelDRAW indisponivel'; }
+      try { elConn.innerText = window.CorelStatusConexao(); } catch (e) { elConn.innerText = ponteIndisponivel; }
+    }
+    function encaixarPainel(lado) {
+      var erro;
+      try { erro = window.CorelEncaixarJanela(lado === 'L' ? 'L' : 'R'); }
+      catch (e) { erro = ponteIndisponivel; }
+      if (erro) status(erro, 'erro');
+    }
+    function executarNoCorel(acao) {
+      var resposta;
+      try { resposta = acao(); }
+      catch (e) { resposta = 'ERRO:' + ponteIndisponivel; }
+      tratarRetorno(resposta);
     }
     function tituloCurto(t) {
       return String(t || '').replace(/\\s*\\([^)]*\\)/g, '').replace(/^\\s+|\\s+$/g, '');
@@ -1339,10 +1361,11 @@ ${iconesJs}
           var ori = document.getElementById('f-ori').value;
           var m = Math.max(0, num(document.getElementById('f-margem').value, 0));
           var s = Math.max(0, num(document.getElementById('f-sangria').value, 0));
-          var res = ehPapel
-            ? window.CorelCriarPapel(item.curto, item.w, item.h, ori, modo, m, s)
-            : window.CorelCriarPeca(item.curto, item.w, item.h, ori, modo, m, s);
-          tratarRetorno(res);
+          executarNoCorel(function () {
+            return ehPapel
+              ? window.CorelCriarPapel(item.curto, item.w, item.h, ori, modo, m, s)
+              : window.CorelCriarPeca(item.curto, item.w, item.h, ori, modo, m, s);
+          });
         };
         return;
       }
@@ -1372,8 +1395,9 @@ ${iconesJs}
           var v = num(document.getElementById('f-val').value, 0);
           var u = document.getElementById('f-un').value;
           var fat = u === 'cm' ? 10 : (u === 'in' ? 25.4 : (u === 'pt' ? 25.4 / 72 : (u === 'px' ? 25.4 / 96 : 1)));
-          var res = window.CorelMargemSeguranca(v * fat, document.getElementById('f-todas').checked);
-          tratarRetorno(res);
+          executarNoCorel(function () {
+            return window.CorelMargemSeguranca(v * fat, document.getElementById('f-todas').checked);
+          });
         };
         return;
       }
@@ -1394,15 +1418,16 @@ ${iconesJs}
 
         document.getElementById('f-cancel').onclick = function () { ferramentaAberta = null; render(); };
         document.getElementById('f-ok').onclick = function () {
-          var res = window.CorelTextoDimensoes(
-            document.getElementById('f-un').value,
-            parseInt(document.getElementById('f-dec').value, 10),
-            document.getElementById('f-pos').value,
-            num(document.getElementById('f-pt').value, 10),
-            document.getElementById('f-traco').checked,
-            document.getElementById('f-camada').value
-          );
-          tratarRetorno(res);
+          executarNoCorel(function () {
+            return window.CorelTextoDimensoes(
+              document.getElementById('f-un').value,
+              parseInt(document.getElementById('f-dec').value, 10),
+              document.getElementById('f-pos').value,
+              num(document.getElementById('f-pt').value, 10),
+              document.getElementById('f-traco').checked,
+              document.getElementById('f-camada').value
+            );
+          });
         };
         return;
       }
@@ -1435,15 +1460,16 @@ ${iconesJs}
         document.getElementById('f-cancel').onclick = function () { ferramentaAberta = null; render(); };
         document.getElementById('f-ok').onclick = function () {
           var corParts = document.getElementById('f-cor').value.split(',');
-          var res = window.CorelDeslocarContorno(
-            num(document.getElementById('f-off').value, 2),
-            document.getElementById('f-canto').value,
-            num(document.getElementById('f-pt').value, 1),
-            parseInt(corParts[0], 10), parseInt(corParts[1], 10), parseInt(corParts[2], 10), parseInt(corParts[3], 10),
-            document.getElementById('f-manter').checked,
-            document.getElementById('f-unificar').checked
-          );
-          tratarRetorno(res);
+          executarNoCorel(function () {
+            return window.CorelDeslocarContorno(
+              num(document.getElementById('f-off').value, 2),
+              document.getElementById('f-canto').value,
+              num(document.getElementById('f-pt').value, 1),
+              parseInt(corParts[0], 10), parseInt(corParts[1], 10), parseInt(corParts[2], 10), parseInt(corParts[3], 10),
+              document.getElementById('f-manter').checked,
+              document.getElementById('f-unificar').checked
+            );
+          });
         };
         return;
       }
@@ -1652,13 +1678,13 @@ ${iconesJs}
         render();
       }
     };
-    document.getElementById('btn-dock-l').onclick = function () { prefs.dock = 'L'; salvarPrefs(); window.CorelEncaixarJanela('L'); };
-    document.getElementById('btn-dock-r').onclick = function () { prefs.dock = 'R'; salvarPrefs(); window.CorelEncaixarJanela('R'); };
-    document.getElementById('btn-reconectar').onclick = function () { atualizarConexao(); window.CorelEncaixarJanela(prefs.dock || 'R'); };
+    document.getElementById('btn-dock-l').onclick = function () { prefs.dock = 'L'; salvarPrefs(); encaixarPainel(prefs.dock); };
+    document.getElementById('btn-dock-r').onclick = function () { prefs.dock = 'R'; salvarPrefs(); encaixarPainel(prefs.dock); };
+    document.getElementById('btn-reconectar').onclick = function () { atualizarConexao(); encaixarPainel(prefs.dock); };
 
     render();
     atualizarConexao();
-    setTimeout(function () { window.CorelEncaixarJanela(prefs.dock || 'R'); }, 350);
+    setTimeout(function () { encaixarPainel(prefs.dock); }, 350);
   }());
   </script>
 </body>

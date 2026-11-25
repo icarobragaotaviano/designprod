@@ -10,69 +10,22 @@ Option Explicit
 
 Public Function ObterListaPecas() As Variant
     ObterListaPecas = Array( _
-        "Cartao de visita BR|90|50", _
-        "Panfleto 140x100|140|100", _
-        "Panfleto vertical 100x140|100|140", _
-        "Panfleto 140x200|140|200", _
-        "Panfleto / Postal 100x150|100|150", _
-        "Panfleto 150x210|150|210", _
-        "A4|210|297", _
-        "A5|148|210", _
-        "A6|105|148", _
-        "A3|297|420", _
-        "Cartao de visita ISO|85|55", _
-        "Cartao duplo|180|50", _
-        "Filipeta / Comanda|100|210", _
-        "DL|99|210", _
-        "Folder A4 aberto|297|210", _
-        "Folder 1 dobra aberto|200|210", _
-        "Folder 3 paineis aberto|630|210", _
-        "Pasta executiva fechada|220|310", _
-        "Pasta aberta|450|310", _
-        "Cartaz pequeno|300|420", _
-        "Cartaz A3+|310|450", _
-        "A7|74|105", _
-        "A8|52|74", _
-        "A2|420|594", _
-        "A1|594|841", _
-        "A0|841|1189", _
-        "Quadrado 100x100|100|100", _
-        "Quadrado 148x148|148|148", _
-        "Quadrado 200x200|200|200", _
-        "Quadrado 210x210|210|210", _
-        "Livro BR|160|230", _
-        "Livro tecnico|170|240", _
-        "Livro romance|140|210", _
-        "Livro pocket|120|180", _
-        "Revista|205|275", _
-        "Apostila|200|275", _
-        "Agenda / Caderno|145|205", _
-        "Tabloide|280|380", _
-        "Standard|320|520", _
-        "Etiqueta pequena 50x30|50|30", _
-        "Etiqueta quadrada 50x50|50|50", _
-        "Etiqueta media 80x50|80|50", _
-        "Etiqueta envio 100x150|100|150", _
-        "Tag roupa 50x90|50|90", _
-        "Tag pequena 40x85|40|85", _
-        "Marcador 50x180|50|180", _
-        "Marcador 50x210|50|210", _
-        "Ingresso|150|50", _
-        "Rifa|200|70", _
-        "Talao|140|200", _
-        "Pulseira|250|20", _
-        "Door hanger|90|210", _
-        "Ventarola|180|220", _
-        "Wobbler|120|120", _
-        "Jogo americano|420|300", _
-        "Solapa|100|80", _
-        "Cinta|300|60", _
-        "Calendario mesa|210|150", _
-        "Folhinha|240|340", _
-        "Ima de geladeira|50|45", _
-        "Envelope DL|229|114", _
-        "Envelope C5|162|229", _
-        "Envelope Saco A4|240|340")
+        "Cartao de visita BR|90|50", "Panfleto 140x100|140|100", "Panfleto vertical 100x140|100|140", "Panfleto 140x200|140|200", _
+        "Panfleto / Postal 100x150|100|150", "Panfleto 150x210|150|210", "A4|210|297", "A5|148|210", _
+        "A6|105|148", "A3|297|420", "Cartao de visita ISO|85|55", "Cartao duplo|180|50", _
+        "Filipeta / Comanda|100|210", "DL|99|210", "Folder A4 aberto|297|210", "Folder 1 dobra aberto|200|210", _
+        "Folder 3 paineis aberto|630|210", "Pasta executiva fechada|220|310", "Pasta aberta|450|310", "Cartaz pequeno|300|420", _
+        "Cartaz A3+|310|450", "A7|74|105", "A8|52|74", "A2|420|594", _
+        "A1|594|841", "A0|841|1189", "Quadrado 100x100|100|100", "Quadrado 148x148|148|148", _
+        "Quadrado 200x200|200|200", "Quadrado 210x210|210|210", "Livro BR|160|230", "Livro tecnico|170|240", _
+        "Livro romance|140|210", "Livro pocket|120|180", "Revista|205|275", "Apostila|200|275", _
+        "Agenda / Caderno|145|205", "Tabloide|280|380", "Standard|320|520", "Etiqueta pequena 50x30|50|30", _
+        "Etiqueta quadrada 50x50|50|50", "Etiqueta media 80x50|80|50", "Etiqueta envio 100x150|100|150", "Tag roupa 50x90|50|90", _
+        "Tag pequena 40x85|40|85", "Marcador 50x180|50|180", "Marcador 50x210|50|210", "Ingresso|150|50", _
+        "Rifa|200|70", "Talao|140|200", "Pulseira|250|20", "Door hanger|90|210", _
+        "Ventarola|180|220", "Wobbler|120|120", "Jogo americano|420|300", "Solapa|100|80", _
+        "Cinta|300|60", "Calendario mesa|210|150", "Folhinha|240|340", "Ima de geladeira|50|45", _
+        "Envelope DL|229|114", "Envelope C5|162|229", "Envelope Saco A4|240|340")
 End Function
 
 Public Sub CriarPecaPadrao()
