@@ -120,8 +120,8 @@ export function cabecalho(ferramenta, marca, embutidos, ext = '.jsx') {
     'a origem e o repositorio, e a proxima geracao sobrescreve este arquivo.'
   );
 
-  if (ext === '.bas') {
-    return corpo.map((l) => (l ? `' ${l}` : "'")).join('\n') + '\n';
+  if (ext === '.bas' || ext === '.frm') {
+    return corpo.map((l) => (l ? `' ${l.replace(/—/g, '-')}` : "'")).join('\r\n') + '\r\n';
   }
 
   const linhas = ['/*', ...corpo.map((l) => (l ? ` * ${l}` : ' *')), ' */', ''];
@@ -131,9 +131,11 @@ export function cabecalho(ferramenta, marca, embutidos, ext = '.jsx') {
 export function montarArquivoPublicavel(ferramenta, marca, conteudo, embutidos) {
   const ext = (ferramenta.arquivo.match(/\.[a-z0-9]+$/i) || ['.jsx'])[0].toLowerCase();
   const topo = cabecalho(ferramenta, marca, embutidos, ext);
-  if (ext === '.bas') {
-    const m = conteudo.match(/^(\s*Attribute\s+VB_Name\s*=[^\r\n]*\r?\n)/i);
-    if (m) return m[1] + topo + conteudo.slice(m[1].length);
+  if (ext === '.bas' || ext === '.frm') {
+    const crlf = String(conteudo).replace(/\r?\n/g, '\r\n');
+    const m = crlf.match(/^(\s*Attribute\s+VB_Name\s*=[^\r\n]*\r\n)/i);
+    if (m) return m[1] + topo + crlf.slice(m[1].length);
+    return topo + crlf;
   }
   return topo + conteudo;
 }

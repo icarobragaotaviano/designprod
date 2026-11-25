@@ -22,19 +22,38 @@
   }
 
   var doc = app.activeDocument;
-  if (!doc.selection || !doc.selection.length) {
-    IBD.alerta('Selecione pelo menos um objeto para medir.');
+  if (!doc.selection || typeof doc.selection.length !== 'number' || !doc.selection.length || doc.selection.typename === 'TextRange') {
+    IBD.alerta('Selecione pelo menos um objeto inteiro com a ferramenta Selecao (V) para medir.');
     return;
   }
 
   var salvas = IBD.prefs.ler(ID);
 
   var FATORES_PREV = { mm: 72 / 25.4, cm: 720 / 25.4, m: 72000 / 25.4, 'in': 72, px: 1, pt: 1 };
+
+  function limitesObjeto(item, incluirTracado) {
+    if (!item || item.hidden) return null;
+    if (item.typename === 'PathItem' && item.guides) return null;
+    if (item.typename === 'GroupItem' && item.clipped) {
+      for (var j = 0; j < item.pageItems.length; j++) {
+        var ch = item.pageItems[j];
+        if (ch.typename === 'PathItem' && ch.clipping) return ch.geometricBounds;
+        if (ch.typename === 'CompoundPathItem') {
+          for (var k = 0; k < ch.pathItems.length; k++) {
+            if (ch.pathItems[k].clipping) return ch.geometricBounds;
+          }
+        }
+      }
+    }
+    return incluirTracado ? item.visibleBounds : item.geometricBounds;
+  }
+
   var prevWPt = 283.46, prevHPt = 141.73;
   try {
     var pL = Infinity, pT = -Infinity, pR = -Infinity, pB = Infinity;
     for (var si = 0; si < doc.selection.length; si++) {
-      var pb = doc.selection[si].visibleBounds;
+      var pb = limitesObjeto(doc.selection[si], true);
+      if (!pb) continue;
       if (pb[0] < pL) pL = pb[0];
       if (pb[1] > pT) pT = pb[1];
       if (pb[2] > pR) pR = pb[2];
@@ -172,7 +191,7 @@
     mm: 72 / 25.4,
     cm: 720 / 25.4,
     m: 72000 / 25.4,
-    in: 72,
+    'in': 72,
     px: 1,
     pt: 1
   };
@@ -193,9 +212,7 @@
     var i;
 
     for (i = 0; i < doc.selection.length; i++) {
-      var bounds = opcoes.incluirTracado
-        ? doc.selection[i].visibleBounds
-        : doc.selection[i].geometricBounds;
+      var bounds = limitesObjeto(doc.selection[i], opcoes.incluirTracado);
       if (!bounds) continue;
       if (bounds[0] < minL) minL = bounds[0];
       if (bounds[1] > maxT) maxT = bounds[1];
@@ -214,6 +231,7 @@
     var rotulo = larguraFormatada + ' x ' + alturaFormatada + ' ' + opcoes.unidade;
 
     camadaTexto.locked = false;
+    camadaTexto.visible = true;
     var centroX = (minL + maxR) / 2;
     var afastamentoPt = afastamentoMm * MM_TO_PT;
     var posY = minB - afastamentoPt - tamanhoPt;
@@ -238,10 +256,9 @@
 
     // Ajuste fino usando a caixa real do frame criado para alinhamento consistente
     try {
+      try { app.redraw(); } catch (eRedraw) {}
       var fb = frame.visibleBounds || frame.geometricBounds;
-      if (fb) {
-        var fW = fb[2] - fb[0];
-        var fH = fb[1] - fb[3];
+      if (fb && (fb[2] > fb[0] || fb[1] > fb[3])) {
         var fCx = (fb[0] + fb[2]) / 2;
         var fCy = (fb[1] + fb[3]) / 2;
         var dx = centroX - fCx;

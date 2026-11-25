@@ -8,6 +8,8 @@ function ibdExecutarArquivo(caminho) {
     $.evalFile(f);
     return 'OK';
   } catch (e) {
-    return 'ERRO:' + (e && e.message ? e.message : String(e));
+    var msg = (e && e.message) ? String(e.message) : String(e);
+    if (e && e.line) msg += ' (linha ' + e.line + ')';
+    return 'ERRO:' + msg;
   }
 }

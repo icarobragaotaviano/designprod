@@ -43,7 +43,8 @@
       rotulo: 'Formato',
       tipo: 'escolha',
       grupo: 'Formato e compressao',
-      opcoes: ['PNG-24', 'JPG'],
+      opcoes: ['PNG-24', 'JPG', 'PSD'],
+      presets: ['PNG-24', 'JPG', 'PSD'],
       padrao: salvas.formato || 'PNG-24'
     },
     {
@@ -53,7 +54,7 @@
       grupo: 'Formato e compressao',
       padrao: salvas.qualidade === undefined ? 80 : salvas.qualidade,
       presets: [60, 80, 90, 100],
-      ajuda: '0 a 100. Ignorado quando o formato for PNG.'
+      ajuda: '0 a 100. Ignorado quando o formato for PNG ou PSD.'
     },
     {
       id: 'aparar',
@@ -70,7 +71,7 @@
       padrao: salvas.somenteVisiveis === undefined ? true : salvas.somenteVisiveis
     }
   ], 'Exportar', {
-    subtitulo: 'Salva cada camada em PNG-24 transparente ou JPG otimizado'
+    subtitulo: 'Salva cada camada em PNG-24 transparente, JPG otimizado ou PSD'
   });
 
   if (!opcoes) return;
@@ -134,10 +135,16 @@
       app.activeDocument = copia;
 
       for (var j = copia.layers.length - 1; j >= 0; j--) {
-        if (j !== indice) copia.layers[j].remove();
+        if (j !== indice) {
+          var lyr = copia.layers[j];
+          try { if (lyr.isBackgroundLayer) lyr.isBackgroundLayer = false; } catch (eBg) {}
+          try { lyr.allLocked = false; } catch (eLk) {}
+          lyr.remove();
+        }
       }
 
       var camada = copia.layers[0];
+      try { if (camada.allLocked) camada.allLocked = false; } catch (eLk2) {}
       camada.visible = true;
 
       if (cfg.aparar) {
@@ -148,25 +155,63 @@
         }
       }
 
-      var ehPNG = cfg.formato === 'PNG-24';
       var base = IBD.slug((cfg.prefixo ? cfg.prefixo + '-' : '') + camada.name) ||
         'camada-' + IBD.pad(indice + 1, 3);
+
+      if (cfg.formato === 'PSD') {
+        var psdArq = IBD.fs.caminhoLivre(pasta, base, 'psd');
+        var psdOpt = new PhotoshopSaveOptions();
+        psdOpt.layers = true;
+        psdOpt.embedColorProfile = true;
+        copia.saveAs(psdArq, psdOpt, true, Extension.LOWERCASE);
+        return;
+      }
+
+      // SaveForWeb falha em 16/32 bits ou CMYK no PS 2024+: normaliza na copia temporaria.
+      try {
+        if (copia.bitsPerChannel !== BitsPerChannelType.EIGHT) {
+          copia.bitsPerChannel = BitsPerChannelType.EIGHT;
+        }
+      } catch (eBits) {}
+      try {
+        if (copia.mode !== DocumentMode.RGB) {
+          copia.changeMode(ChangeMode.RGB);
+        }
+      } catch (eMode) {}
+
+      var ehPNG = cfg.formato === 'PNG-24';
       var arquivo = IBD.fs.caminhoLivre(pasta, base, ehPNG ? 'png' : 'jpg');
 
-      var saida = new ExportOptionsSaveForWeb();
-      if (ehPNG) {
-        saida.format = SaveDocumentType.PNG;
-        saida.PNG8 = false;
-        saida.transparency = true;
-        saida.interlaced = false;
-      } else {
-        saida.format = SaveDocumentType.JPEG;
-        saida.quality = Math.max(0, Math.min(100, cfg.qualidade));
-        saida.optimized = true;
+      try {
+        var saida = new ExportOptionsSaveForWeb();
+        if (ehPNG) {
+          saida.format = SaveDocumentType.PNG;
+          saida.PNG8 = false;
+          saida.transparency = true;
+          saida.interlaced = false;
+        } else {
+          saida.format = SaveDocumentType.JPEG;
+          saida.quality = Math.max(0, Math.min(100, cfg.qualidade));
+          saida.optimized = true;
+        }
+        copia.exportDocument(arquivo, ExportType.SAVEFORWEB, saida);
+      } catch (eSfw) {
+        // Fallback para arquivos > 8192 px ou versoes onde SaveForWeb recusa exportar.
+        if (ehPNG) {
+          var pngOpt = new PNGSaveOptions();
+          pngOpt.compression = 6;
+          pngOpt.interlaced = false;
+          copia.saveAs(arquivo, pngOpt, true, Extension.LOWERCASE);
+        } else {
+          var jpgOpt = new JPEGSaveOptions();
+          jpgOpt.quality = Math.max(1, Math.min(12, Math.round((cfg.qualidade || 80) * 12 / 100)));
+          jpgOpt.embedColorProfile = true;
+          copia.saveAs(arquivo, jpgOpt, true, Extension.LOWERCASE);
+        }
       }
-      copia.exportDocument(arquivo, ExportType.SAVEFORWEB, saida);
     } finally {
-      copia.close(SaveOptions.DONOTSAVECHANGES);
+      try { copia.close(SaveOptions.DONOTSAVECHANGES); } catch (eClose) {}
+      try { app.activeDocument = original; } catch (eAct) {}
     }
   }
 })();

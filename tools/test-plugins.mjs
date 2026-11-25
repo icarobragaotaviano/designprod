@@ -132,6 +132,11 @@ assincronos.push(test('npm run build:plugins empacota todos os 5 softwares com a
   const psMap = lerZip(fs.readFileSync(path.join(RAIZ, 'dist', `${marca.id}-ferramentas-${v}.ccx`)));
   assert.ok(psMap.has('manifest.json'));
   assert.ok(psMap.has('src/lib/icones.js'));
+  assert.ok(psMap.has('src/bundle/standalone/photoshop/scripts/criar-papel-padrao.jsx'));
+  assert.ok(psMap.has('src/bundle/standalone/photoshop/scripts/criar-peca-padrao.jsx'));
+  assert.match(psMap.get('src/lib/es-bridge.js').toString('utf8'), /interactive:\s*true/);
+  assert.match(psMap.get('src/main.js').toString('utf8'), /ibd-ps-uxp-ocultas-v1/);
+  assert.match(psMap.get('src/index.html').toString('utf8'), /id="btn-gerenciar"/);
   conferirPng(psMap.get('src/icons/icone-48.png'), 48);
   conferirPng(psMap.get('src/icons/icone-48@2x.png'), 96);
 
@@ -140,6 +145,7 @@ assincronos.push(test('npm run build:plugins empacota todos os 5 softwares com a
   assert.equal(idMan.host[0].app, 'ID');
   assert.ok(idMap.has('src/lib/id-bridge.js'));
   assert.ok(idMap.has('src/bundle/standalone/indesign/scripts/exportar-paginas-pdf.jsx'));
+  assert.match(idMap.get('src/main.js').toString('utf8'), /ibd-id-uxp-ocultas-v1/);
   conferirPng(idMap.get('src/icons/icone-48.png'), 48);
 
   const cepMap = lerZip(fs.readFileSync(path.join(RAIZ, 'dist', `${marca.id}-adobe-cep-${v}.zip`)));
@@ -151,22 +157,47 @@ assincronos.push(test('npm run build:plugins empacota todos os 5 softwares com a
   assert.ok(cepMap.has('host/runner.jsx'));
   assert.ok(cepMap.has('Instalar-macOS.command'));
   assert.ok(cepMap.has('Instalar-Windows.bat'));
+  assert.match(cepMap.get('Instalar-Windows.bat').toString('utf8'), /15 16/);
+  assert.match(cepMap.get('main.js').toString('utf8'), /ibd-cep-ocultas-v1/);
+  assert.match(cepMap.get('main.js').toString('utf8'), /EvalScript error\./);
   assert.ok(cepMap.has('bundle/standalone/illustrator/scripts/margem-seguranca-guias.jsx'));
+  assert.ok(cepMap.has('bundle/standalone/illustrator/scripts/criar-papel-padrao.jsx'));
+  assert.ok(cepMap.has('bundle/standalone/illustrator/scripts/criar-peca-padrao.jsx'));
+  assert.ok(cepMap.has('bundle/standalone/photoshop/scripts/criar-papel-padrao.jsx'));
+  assert.ok(cepMap.has('bundle/standalone/photoshop/scripts/criar-peca-padrao.jsx'));
 
   const aeMap = lerZip(fs.readFileSync(path.join(RAIZ, 'dist', `${marca.id}-aftereffects-painel-${v}.zip`)));
   const aeJsx = aeMap.get('IBD Ferramentas Painel.jsx').toString('utf8');
   const aeSemCom = aeJsx.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
   assert.ok(!/\b(let|const|class)\b/.test(aeSemCom), 'Painel After Effects precisa ser ES3');
   assert.ok(!/=>/.test(aeSemCom));
+  assert.match(aeJsx, /aftereffects\/painel-ocultas/);
 
   const cdMap = lerZip(fs.readFileSync(path.join(RAIZ, 'dist', `${marca.id}-coreldraw-barra-${v}.zip`)));
   const cdBas = cdMap.get('IBD_InstalarBarraFerramentas.bas').toString('utf8');
   assert.match(cdBas, /Attribute VB_Name = "IBD_BarraFerramentas"/);
   assert.match(cdBas, /\.AddCustomButton\b/);
   assert.match(cdBas, /\.SetIcon2\b/);
+  assert.match(cdBas, /2cc24a3e-fe24-4708-9a74-9c75406eebcd/);
+  assert.ok(!/\bCommandBarControl\b|\bcdrBarTop\b|\bcdrCmdCategoryMacros\b/.test(cdBas), 'IBD_InstalarBarraFerramentas.bas nao pode conter identificadores VBA invalidos');
+  assert.ok(cdBas.includes('\r\n'), 'IBD_InstalarBarraFerramentas.bas precisa usar CRLF');
+  assert.ok(cdMap.has('IBD_Painel_Corel.hta'));
+  assert.ok(cdMap.has('Attach-Painel-Corel.ps1'));
+  assert.ok(cdMap.has('Abrir-Painel-CorelDRAW.bat'));
+  assert.ok(cdMap.has('Instalar-CorelDRAW.bat'));
+  assert.ok(cdMap.has('IBD_PainelCorel.bas'));
+  const hta = cdMap.get('IBD_Painel_Corel.hta').toString('utf8');
+  assert.match(hta, /Const CDR_MM = 3/);
+  assert.match(hta, /Const CDR_PT = 14/);
+  assert.match(hta, /btn-gerenciar/);
+  assert.match(hta, /Padrao Nobel T9/);
+  assert.match(hta, /Cartao de visita BR/);
+  conferirIco(cdMap.get('icones/painel-ibd.ico'), 32);
   conferirIco(cdMap.get('icones/margem-seguranca-guias.ico'), 32);
   conferirIco(cdMap.get('icones/texto-dimensoes-objeto.ico'), 32);
   conferirIco(cdMap.get('icones/deslocamento-expandir-contorno.ico'), 32);
+  conferirIco(cdMap.get('icones/criar-papel-padrao.ico'), 32);
+  conferirIco(cdMap.get('icones/criar-peca-padrao.ico'), 32);
 }));
 
 assincronos.push(test('criar-plugin.mjs gera pacotes customizados com icone e cor para CEP, UXP e CorelDRAW', async () => {

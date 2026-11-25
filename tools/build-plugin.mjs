@@ -18,6 +18,14 @@ import { fileURLToPath } from 'node:url';
 import { criarZip } from './lib/zip.mjs';
 import { gerarPngIcone, gerarIcoIcone, gerarCodigoIconesJs, resolverIconeId } from './lib/icones.mjs';
 import { resolverIncludes, montarArquivoPublicavel } from './lib/incluir.mjs';
+import {
+  gerarPainelCorelHta,
+  gerarAttachPs1,
+  gerarPainelAbrirBas,
+  gerarInstaladorBarraBas,
+  gerarAbrirPainelBat,
+  gerarInstalarCorelBat
+} from './lib/corel-panel.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const marca = JSON.parse(await readFile(path.join(RAIZ, 'brand.config.json'), 'utf8'));
@@ -116,6 +124,7 @@ async function empacotarUxp(pluginDir, prefixoSaida, iconeId, incluirFullBundle)
   if (incluirFullBundle) {
     await cp(path.join(RAIZ, 'core'), path.join(bundle, 'core'), { recursive: true });
     await cp(path.join(RAIZ, 'apps'), path.join(bundle, 'apps'), { recursive: true });
+    await gerarStandaloneAdobe(path.join(bundle, 'standalone'), ['photoshop']);
   } else {
     await gerarStandaloneAdobe(path.join(bundle, 'standalone'), ['indesign']);
   }
@@ -252,6 +261,45 @@ ${entradas.join(',\n')}
   grpBusca.add('statictext', undefined, 'Filtrar:');
   var inpBusca = grpBusca.add('edittext', undefined, '');
   inpBusca.alignment = ['fill', 'center'];
+  var btnGerenciar = grpBusca.add('button', undefined, 'Funcoes...');
+  btnGerenciar.preferredSize.width = 74;
+
+  var ID_PREFS_OCULTAS = 'aftereffects/painel-ocultas';
+  var ocultasMapa = IBD.prefs.ler(ID_PREFS_OCULTAS) || {};
+
+  function abrirGerenciarOcultas() {
+    var dlg = new Window('dialog', '${marca.nome} — Mostrar ou ocultar funcoes');
+    dlg.orientation = 'column';
+    dlg.alignChildren = ['fill', 'top'];
+    dlg.margins = 12;
+    dlg.spacing = 6;
+    dlg.add('statictext', undefined, 'Marque as funcoes que devem aparecer no painel:');
+    var chks = [];
+    for (var i = 0; i < FERRAMENTAS.length; i++) {
+      var chk = dlg.add('checkbox', undefined, FERRAMENTAS[i].titulo);
+      chk.value = !ocultasMapa[FERRAMENTAS[i].id];
+      chks.push({ id: FERRAMENTAS[i].id, ctrl: chk });
+    }
+    var rowB = dlg.add('group');
+    rowB.alignment = 'right';
+    var bTodas = rowB.add('button', undefined, 'Mostrar todas');
+    bTodas.onClick = function () {
+      for (var j = 0; j < chks.length; j++) chks[j].ctrl.value = true;
+    };
+    rowB.add('button', undefined, 'Cancelar', { name: 'cancel' });
+    rowB.add('button', undefined, 'Salvar', { name: 'ok' });
+    try { dlg.center(); } catch (eC) {}
+    if (dlg.show() === 1) {
+      var novo = {};
+      for (var k = 0; k < chks.length; k++) {
+        if (!chks[k].ctrl.value) novo[chks[k].id] = true;
+      }
+      ocultasMapa = novo;
+      IBD.prefs.gravar(ID_PREFS_OCULTAS, ocultasMapa);
+      preencher(inpBusca.text);
+    }
+  }
+  btnGerenciar.onClick = abrirGerenciarOcultas;
 
   var listaGrupo = win.add('panel', undefined, 'Ferramentas instaladas');
   listaGrupo.orientation = 'column';
@@ -284,6 +332,7 @@ ${entradas.join(',\n')}
     var q = String(filtro || '').toLowerCase().replace(/^\\s+|\\s+$/g, '');
     for (var i = 0; i < FERRAMENTAS.length; i++) {
       var item = FERRAMENTAS[i];
+      if (ocultasMapa[item.id]) continue;
       if (q && item.titulo.toLowerCase().indexOf(q) === -1 && item.descricao.toLowerCase().indexOf(q) === -1) {
         continue;
       }
@@ -371,8 +420,19 @@ async function buildCorelDrawToolbar() {
   await mkdir(path.join(DIR, 'scripts'), { recursive: true });
   await mkdir(path.join(DIR, 'icones'), { recursive: true });
 
+  await writeFile(
+    path.join(DIR, 'icones', 'painel-ibd.ico'),
+    gerarIcoIcone('organizacao', 32, marca.cores.acento, marca.cores.fundo)
+  );
+
   const toolsCorel = (catalogo.ferramentas || []).filter((f) => f.app === 'coreldraw' && f.tipo === 'script');
-  const macros = [];
+  const macros = [
+    {
+      titulo: `Painel ${marca.nome}`,
+      macro: 'GlobalMacros.IBD_PainelCorel.AbrirPainelIBD',
+      ico: 'painel-ibd.ico'
+    }
+  ];
 
   for (const f of toolsCorel) {
     const raw = await readFile(path.join(RAIZ, f.arquivo), 'utf8');
@@ -397,79 +457,34 @@ async function buildCorelDrawToolbar() {
     });
   }
 
-  const linhasAdd = macros.map((m) => `
-    On Error Resume Next
-    Set btn = bar.Controls.AddCustomButton(cdrCmdCategoryMacros, "${m.macro}")
-    If Not btn Is Nothing Then
-        btn.Caption = "${m.titulo}"
-        btn.TooltipText = "${marca.nome}: ${m.titulo}"
-        Err.Clear
-        btn.SetIcon2 pastaIcones & "${m.ico}"
-        If Err.Number <> 0 Then
-            Err.Clear
-            btn.SetCustomIcon pastaIcones & "${m.ico}"
-        End If
-    End If
-    On Error GoTo ErrHandler`).join('\n');
+  await writeFile(path.join(DIR, 'IBD_Painel_Corel.hta'), gerarPainelCorelHta(marca, catalogo), 'utf8');
+  await writeFile(path.join(DIR, 'Attach-Painel-Corel.ps1'), gerarAttachPs1(marca), 'utf8');
+  await writeFile(path.join(DIR, 'Abrir-Painel-CorelDRAW.bat'), gerarAbrirPainelBat(), 'utf8');
+  await writeFile(path.join(DIR, 'Instalar-CorelDRAW.bat'), gerarInstalarCorelBat(marca), 'utf8');
+  await writeFile(path.join(DIR, 'IBD_PainelCorel.bas'), gerarPainelAbrirBas(marca), 'utf8');
+  await writeFile(path.join(DIR, 'IBD_InstalarBarraFerramentas.bas'), gerarInstaladorBarraBas(marca, macros), 'utf8');
 
-  const basInstalador = `Attribute VB_Name = "IBD_BarraFerramentas"
-' ${marca.nome} — Instalador da Barra de Ferramentas com Icones (.ico)
-' Importe os .bas de scripts/ e este modulo em GlobalMacros (Alt + F11),
-' depois execute InstalarBarraIBD().
-
-Option Explicit
-
-Public Sub InstalarBarraIBD()
-    Const BAR_NOME As String = "${marca.nome} Ferramentas"
-    Dim bar As CommandBar
-    Dim btn As CommandBarControl
-    Dim pastaIcones As String
-    Dim i As Long
-
-    pastaIcones = InputBox( _
-        "Informe o caminho completo da pasta 'icones' extraida do ZIP (terminando com \\):", _
-        "${marca.nome} — Instalar Barra de Ferramentas", _
-        "C:\\${marca.nome}_Ferramentas\\icones\\")
-    If Trim$(pastaIcones) = "" Then Exit Sub
-    If Right$(pastaIcones, 1) <> "\\" And Right$(pastaIcones, 1) <> "/" Then
-        pastaIcones = pastaIcones & "\\"
-    End If
-
-    On Error GoTo ErrHandler
-    For i = FrameWork.CommandBars.Count To 1 Step -1
-        If FrameWork.CommandBars(i).Name = BAR_NOME Then
-            FrameWork.CommandBars(i).Delete
-        End If
-    Next i
-
-    Set bar = FrameWork.CommandBars.Add(BAR_NOME, cdrBarTop, False)
-${linhasAdd}
-
-    bar.Visible = True
-    MsgBox "Barra '" & BAR_NOME & "' criada com " & bar.Controls.Count & " icone(s)!", vbInformation, "${marca.nome} Ferramentas"
-    Exit Sub
-
-ErrHandler:
-    MsgBox "Erro ao montar barra no CorelDRAW: " & Err.Description, vbCritical, "${marca.nome} Ferramentas"
-End Sub
-`;
-
-  await writeFile(path.join(DIR, 'IBD_InstalarBarraFerramentas.bas'), basInstalador, 'utf8');
   await writeFile(
     path.join(DIR, 'Instalar-LeiaMe.txt'),
     [
-      `${marca.nome} Ferramentas — Barra de Ferramentas com Icones para CorelDRAW (v${marca.versao})`,
+      `${marca.nome} Ferramentas - Painel Universal + Barra de Icones para CorelDRAW (v${marca.versao})`,
+      'Compativel com QUALQUER versao do CorelDRAW (X3 a 2025+, 32 e 64 bits).',
       '',
-      'Como instalar e criar os botoes com icone:',
-      '1. Extraia este ZIP em uma pasta fixa (ex: C:\\IBD_Ferramentas\\).',
-      '2. No CorelDRAW, abra o editor VBA (Alt + F11).',
-      '3. Clique com o botao direito em GlobalMacros > Importar Arquivo... e importe:',
+      'MODO RAPIDO (recomendado - zero VBA necessario):',
+      '1. Extraia este ZIP e execute "Instalar-CorelDRAW.bat".',
+      '2. O painel IBD abre automaticamente encaixado na borda do CorelDRAW (igual ao painel do Illustrator)',
+      '   e cria um atalho "IBD Painel - CorelDRAW" na Area de Trabalho.',
+      '3. Nele voce tem busca, favoritos, mostrar/ocultar funcoes, papeis Nobel/ISO, pecas comuns, margem, cotas e contorno.',
+      '',
+      'MODO BARRA FIXA DENTRO DO CORELDRAW (opcional):',
+      '1. No CorelDRAW, abra o editor VBA (Alt + F11).',
+      '2. Clique direito em GlobalMacros > Importar Arquivo... e importe:',
       '   - Todos os arquivos .bas da pasta scripts\\',
-      '   - O arquivo IBD_InstalarBarraFerramentas.bas',
-      '4. Execute a macro GlobalMacros.IBD_BarraFerramentas.InstalarBarraIBD (F5).',
-      '5. Quando solicitado, informe o caminho da pasta "icones\\" (ex: C:\\IBD_Ferramentas\\icones\\).',
-      '6. A barra "IBD Ferramentas" aparecera no topo do CorelDRAW com todos os iconezinhos!'
-    ].join('\n') + '\n',
+      '   - IBD_PainelCorel.bas',
+      '   - IBD_InstalarBarraFerramentas.bas',
+      '3. Execute a macro GlobalMacros.IBD_BarraFerramentas.InstalarBarraIBD (F5).',
+      '4. A barra "IBD Ferramentas" aparecera no topo do CorelDRAW com o botao "Painel IBD" + todos os iconezinhos!'
+    ].join('\r\n') + '\r\n',
     'utf8'
   );
 

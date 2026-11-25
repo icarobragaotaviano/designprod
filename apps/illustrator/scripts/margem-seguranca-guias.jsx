@@ -24,7 +24,7 @@
   var doc = app.activeDocument;
   var salvas = IBD.prefs.ler(ID);
 
-  var FATORES_PREV = { mm: 72 / 25.4, cm: 720 / 25.4, pt: 1, px: 1 };
+  var FATORES_PREV = { mm: 72 / 25.4, cm: 720 / 25.4, 'in': 72, pt: 1, px: 1 };
   var abRefW = 210, abRefH = 297;
   try {
     var abIdx0 = doc.artboards.getActiveArtboardIndex();
@@ -87,8 +87,8 @@
       rotulo: 'Unidade',
       grupo: 'Medidas e unidade',
       tipo: 'escolha',
-      opcoes: ['mm', 'cm', 'pt', 'px'],
-      presets: ['mm', 'cm', 'pt', 'px'],
+      opcoes: ['mm', 'cm', 'in', 'pt', 'px'],
+      presets: ['mm', 'cm', 'in', 'pt', 'px'],
       padrao: salvas.unidade || 'mm'
     },
     {
@@ -115,6 +115,7 @@
   var FATORES_PT = {
     mm: 72 / 25.4,
     cm: 720 / 25.4,
+    'in': 72,
     pt: 1,
     px: 1
   };
@@ -141,6 +142,7 @@
   try {
     app.coordinateSystem = CoordinateSystem.DOCUMENTCOORDINATESYSTEM;
     camadaGuias.locked = false;
+    camadaGuias.visible = true;
 
     if (opcoes.todasPranchetas) {
       for (var i = 0; i < doc.artboards.length; i++) {

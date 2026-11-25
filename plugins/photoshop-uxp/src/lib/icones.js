@@ -538,6 +538,80 @@
       }
     ]
   },
+  "papel": {
+    "rotulo": "Papel padrão",
+    "cor": "#68a8e8",
+    "paths": [
+      {
+        "tipo": "rect",
+        "x": 5,
+        "y": 3,
+        "w": 14,
+        "h": 18,
+        "rx": 1.5,
+        "stroke": true
+      },
+      {
+        "tipo": "line",
+        "x1": 8.5,
+        "y1": 8,
+        "x2": 15.5,
+        "y2": 8
+      },
+      {
+        "tipo": "line",
+        "x1": 8.5,
+        "y1": 12,
+        "x2": 15.5,
+        "y2": 12
+      },
+      {
+        "tipo": "line",
+        "x1": 8.5,
+        "y1": 16,
+        "x2": 12.5,
+        "y2": 16
+      }
+    ]
+  },
+  "peca": {
+    "rotulo": "Peça gráfica padrão",
+    "cor": "#f0c419",
+    "paths": [
+      {
+        "tipo": "rect",
+        "x": 3.5,
+        "y": 6,
+        "w": 17,
+        "h": 12,
+        "rx": 1.5,
+        "stroke": true
+      },
+      {
+        "tipo": "rect",
+        "x": 6.5,
+        "y": 9,
+        "w": 5,
+        "h": 6,
+        "rx": 0.8,
+        "fill": true
+      },
+      {
+        "tipo": "line",
+        "x1": 13.5,
+        "y1": 10,
+        "x2": 17.5,
+        "y2": 10
+      },
+      {
+        "tipo": "line",
+        "x1": 13.5,
+        "y1": 14,
+        "x2": 16.5,
+        "y2": 14
+      }
+    ]
+  },
   "acao": {
     "rotulo": "Rotina rápida",
     "cor": "#f0c419",
@@ -588,25 +662,27 @@
   }
 };
   function resolverIconeId(id, tipo) {
-  const s = String(id || '').toLowerCase();
-  if (s.includes('margem-seguranca')) return 'guia-interna';
-  if (s.includes('guias-selecao-margem') && s.includes('illustrator')) return 'guia-externa';
-  if (s.includes('remendo') || s.includes('guias-selecao-margem')) return 'remendo';
-  if (s.includes('dimensoes') || s.includes('medida') || s.includes('cotas')) return 'cotas';
-  if (s.includes('deslocamento') || s.includes('camada-tecnica') || s.includes('exportar-corte')) return 'contorno-offset';
-  if (s.includes('sangria')) return 'sangria';
-  if (s.includes('auto-layout')) return 'auto-layout';
-  if (s.includes('alinhar-distribuir')) return 'alinhar';
-  if (s.includes('pdf')) return 'pdf';
-  if (s.includes('exportar')) return 'exportar';
-  if (s.includes('redimensionar') || s.includes('150-dpi') || s.includes('lote-imagens')) return 'redimensionar';
-  if (s.includes('ofertas')) return 'ofertas';
-  if (s.includes('precos') || s.includes('place-holder')) return 'precos';
-  if (s.includes('organizar') || s.includes('pasta') || s.includes('renomear') || s.includes('limpar') || s.includes('uxp/painel')) return 'organizacao';
-  if (s.includes('auditar') || s.includes('conferir') || s.includes('preflight') || s.includes('triagem') || s.includes('preto-tac')) return 'auditoria';
-  if (tipo === 'action' || s.includes('imposicao')) return 'acao';
-  return 'acao';
-}
+    var s = String(id || '').toLowerCase();
+    if (s.indexOf('papel-padrao') > -1) return 'papel';
+    if (s.indexOf('peca-padrao') > -1) return 'peca';
+    if (s.indexOf('margem-seguranca') > -1) return 'guia-interna';
+    if (s.indexOf('guias-selecao-margem') > -1 && s.indexOf('illustrator') > -1) return 'guia-externa';
+    if (s.indexOf('remendo') > -1 || s.indexOf('guias-selecao-margem') > -1) return 'remendo';
+    if (s.indexOf('dimensoes') > -1 || s.indexOf('medida') > -1 || s.indexOf('cotas') > -1) return 'cotas';
+    if (s.indexOf('deslocamento') > -1 || s.indexOf('camada-tecnica') > -1 || s.indexOf('exportar-corte') > -1) return 'contorno-offset';
+    if (s.indexOf('sangria') > -1) return 'sangria';
+    if (s.indexOf('auto-layout') > -1) return 'auto-layout';
+    if (s.indexOf('alinhar-distribuir') > -1) return 'alinhar';
+    if (s.indexOf('pdf') > -1) return 'pdf';
+    if (s.indexOf('exportar') > -1) return 'exportar';
+    if (s.indexOf('redimensionar') > -1 || s.indexOf('150-dpi') > -1 || s.indexOf('lote-imagens') > -1) return 'redimensionar';
+    if (s.indexOf('ofertas') > -1) return 'ofertas';
+    if (s.indexOf('precos') > -1 || s.indexOf('place-holder') > -1) return 'precos';
+    if (s.indexOf('organizar') > -1 || s.indexOf('pasta') > -1 || s.indexOf('renomear') > -1 || s.indexOf('limpar') > -1 || s.indexOf('uxp/painel') > -1) return 'organizacao';
+    if (s.indexOf('auditar') > -1 || s.indexOf('conferir') > -1 || s.indexOf('preflight') > -1 || s.indexOf('triagem') > -1 || s.indexOf('preto-tac') > -1) return 'auditoria';
+    if (tipo === 'action' || s.indexOf('imposicao') > -1) return 'acao';
+    return 'acao';
+  }
   function iconeSvg(iconeId, corOverride, tamanho) {
     var def = ICONES[iconeId] || ICONES.acao;
     var cor = corOverride || def.cor || '#f0c419';

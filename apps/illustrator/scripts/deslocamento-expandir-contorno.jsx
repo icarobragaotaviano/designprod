@@ -22,8 +22,8 @@
   }
 
   var doc = app.activeDocument;
-  if (!doc.selection || !doc.selection.length) {
-    IBD.alerta('Selecione pelo menos um caminho, forma ou grupo.');
+  if (!doc.selection || typeof doc.selection.length !== 'number' || !doc.selection.length || doc.selection.typename === 'TextRange') {
+    IBD.alerta('Selecione pelo menos um caminho, forma, texto ou grupo com a ferramenta Selecao (V).');
     return;
   }
 
@@ -198,12 +198,15 @@
       var alvo = opcoes.manterOriginal
         ? originais[i].duplicate(originais[i], ElementPlacement.PLACEAFTER)
         : originais[i];
-      alvos.push(alvo);
+      if (alvo && alvo.typename === 'TextFrame' && typeof alvo.createOutline === 'function') {
+        try { alvo = alvo.createOutline(); } catch (eTxt) {}
+      }
+      if (alvo) alvos.push(alvo);
     }
 
     doc.selection = null;
     for (i = 0; i < alvos.length; i++) {
-      limparPreenchimento(alvos[i]);
+      // Mantem preenchimento durante Offset Path e Pathfinder (formas sem fill/stroke falham no Pathfinder Add).
       alvos[i].selected = true;
       alvos[i].applyEffect(xmlEffect);
     }
@@ -212,6 +215,8 @@
     app.executeMenuCommand('expandStyle');
 
     if (opcoes.unificar && doc.selection && doc.selection.length > 1) {
+      // Live Pathfinder Add no Illustrator exige um GroupItem quando ha multiplos itens soltos.
+      app.executeMenuCommand('group');
       app.executeMenuCommand('Live Pathfinder Add');
       try { app.redraw(); } catch (eRedraw2) {}
       app.executeMenuCommand('expandStyle');

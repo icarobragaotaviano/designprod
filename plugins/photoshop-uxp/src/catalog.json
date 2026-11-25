@@ -72,6 +72,49 @@
       ]
     },
     {
+      "id": "coreldraw/criar-papel-padrao",
+      "titulo": "Criar documento ou página em papel padrão",
+      "descricao": "Cria novo documento, nova página ou ajusta a página ativa nos papéis padrão Nobel (T9, T8, T4) e formatos gráficos/ISO (A4, A5, A3, SRA3 e outros).",
+      "app": "coreldraw",
+      "tipo": "script",
+      "icone": "papel",
+      "arquivo": "apps/coreldraw/scripts/criar-papel-padrao.bas",
+      "versao": "1.0.0",
+      "tags": [
+        "papel",
+        "nobel",
+        "pagina",
+        "documento",
+        "formato",
+        "a4",
+        "a5",
+        "t4",
+        "t8",
+        "t9",
+        "coreldraw"
+      ]
+    },
+    {
+      "id": "coreldraw/criar-peca-padrao",
+      "titulo": "Criar peça gráfica padrão",
+      "descricao": "Cria documento, página ou molde vetorial nas peças mais comuns (cartão 90×50, panfletos 140×100, 140×200, 100×150, A4, A5, tags, etiquetas e outras).",
+      "app": "coreldraw",
+      "tipo": "script",
+      "icone": "peca",
+      "arquivo": "apps/coreldraw/scripts/criar-peca-padrao.bas",
+      "versao": "1.0.0",
+      "tags": [
+        "peca",
+        "cartao",
+        "panfleto",
+        "folder",
+        "etiqueta",
+        "pagina",
+        "documento",
+        "coreldraw"
+      ]
+    },
+    {
       "id": "coreldraw/deslocamento-expandir-contorno",
       "titulo": "Gerar contorno deslocado e expandido",
       "descricao": "Aplica contorno vetorial deslocado (externo ou interno), separa o efeito em curvas editáveis, limpa preenchimento e aplica traço CMYK ou RGB.",
@@ -79,7 +122,7 @@
       "tipo": "script",
       "icone": "contorno-offset",
       "arquivo": "apps/coreldraw/scripts/deslocamento-expandir-contorno.bas",
-      "versao": "1.0.0",
+      "versao": "1.1.0",
       "tags": [
         "contorno",
         "deslocamento",
@@ -98,7 +141,7 @@
       "tipo": "script",
       "icone": "guia-interna",
       "arquivo": "apps/coreldraw/scripts/margem-seguranca-guias.bas",
-      "versao": "1.0.0",
+      "versao": "1.1.0",
       "tags": [
         "guias",
         "margem",
@@ -116,7 +159,7 @@
       "tipo": "script",
       "icone": "cotas",
       "arquivo": "apps/coreldraw/scripts/texto-dimensoes-objeto.bas",
-      "versao": "1.0.0",
+      "versao": "1.1.0",
       "tags": [
         "dimensoes",
         "medida",
@@ -125,6 +168,47 @@
         "coreldraw"
       ],
       "doc": "docs/ferramentas-vetor.md"
+    },
+    {
+      "id": "illustrator/criar-papel-padrao",
+      "titulo": "Criar documento ou prancheta em papel padrão",
+      "descricao": "Cria novo documento, nova prancheta ou redimensiona a prancheta ativa nos papéis padrão Nobel (T9, T8, T4) e formatos gráficos/ISO (A4, A5, A3, SRA3 e outros).",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "papel",
+      "arquivo": "apps/illustrator/scripts/criar-papel-padrao.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "papel",
+        "nobel",
+        "prancheta",
+        "documento",
+        "formato",
+        "a4",
+        "a5",
+        "t4",
+        "t8",
+        "t9"
+      ]
+    },
+    {
+      "id": "illustrator/criar-peca-padrao",
+      "titulo": "Criar peça gráfica padrão",
+      "descricao": "Cria documento, prancheta ou molde vetorial nas medidas das peças mais comuns (cartão 90×50, panfletos 140×100, 140×200, 100×150, A4, A5, tags, etiquetas e outras).",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "peca",
+      "arquivo": "apps/illustrator/scripts/criar-peca-padrao.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "peca",
+        "cartao",
+        "panfleto",
+        "folder",
+        "etiqueta",
+        "prancheta",
+        "documento"
+      ]
     },
     {
       "id": "illustrator/deslocamento-expandir-contorno",
@@ -461,6 +545,47 @@
         "atualizar"
       ],
       "doc": "docs/auto-layout.md"
+    },
+    {
+      "id": "photoshop/criar-papel-padrao",
+      "titulo": "Criar documento em papel padrão",
+      "descricao": "Cria novo documento ou ajusta a tela do PSD nos papéis padrão Nobel (T9, T8, T4) e formatos gráficos/ISO (A4, A5, A3, SRA3 e outros) com sangria, guias e DPI.",
+      "app": "photoshop",
+      "tipo": "script",
+      "icone": "papel",
+      "arquivo": "apps/photoshop/scripts/criar-papel-padrao.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "papel",
+        "nobel",
+        "documento",
+        "formato",
+        "a4",
+        "a5",
+        "t4",
+        "t8",
+        "t9",
+        "guias"
+      ]
+    },
+    {
+      "id": "photoshop/criar-peca-padrao",
+      "titulo": "Criar peça gráfica padrão",
+      "descricao": "Cria novo documento ou ajusta a tela nas medidas das peças mais comuns (cartão 90×50, panfletos 140×100, 140×200, 100×150, A4, A5, tags, etiquetas e outras) com sangria e guias.",
+      "app": "photoshop",
+      "tipo": "script",
+      "icone": "peca",
+      "arquivo": "apps/photoshop/scripts/criar-peca-padrao.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "peca",
+        "cartao",
+        "panfleto",
+        "folder",
+        "etiqueta",
+        "documento",
+        "sangria"
+      ]
     },
     {
       "id": "photoshop/criar-textos-precos",

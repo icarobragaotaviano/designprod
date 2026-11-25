@@ -1,20 +1,20 @@
 /**
- * Ponte UXP -> ExtendScript.
+ * Ponte UXP -> ExtendScript para Photoshop (24.0 - 27.x+).
  *
- * O Photoshop ainda executa arquivos .jsx a partir de um plugin UXP por
- * meio do evento "AdobeScriptAutomation Scripts" no batchPlay. A tecnica
- * NAO faz parte da API publica documentada da Adobe: funciona nas versoes
- * em que foi testada, mas pode mudar sem aviso.
- *
- * Por isso a ponte sempre informa a falha em vez de silenciar: quando ela
- * nao funciona, o painel cai no modo manual (Arquivo > Scripts > Procurar).
- *
- * STATUS: precisa ser validado na versao de Photoshop que voce usa antes
- * de considerar confiavel. Veja docs/guia-uxp.md.
+ * Usa os arquivos standalone gerados em bundle/standalone/ (com #include ja resolvido)
+ * com fallback para o caminho original em bundle/, e habilita interactive: true no
+ * executeAsModal para que dialogos ScriptUI abram normalmente no Photoshop 2024+.
  */
 const { core, action } = require('photoshop');
 const storage = require('uxp').storage;
 const fs = storage.localFileSystem;
+
+function caminhoStandalone(caminhoRelativo) {
+  if (caminhoRelativo.indexOf('bundle/apps/') === 0) {
+    return 'bundle/standalone/' + caminhoRelativo.slice('bundle/apps/'.length);
+  }
+  return caminhoRelativo;
+}
 
 /**
  * Executa um arquivo .jsx que esta dentro da pasta do plugin.
@@ -23,19 +23,27 @@ const fs = storage.localFileSystem;
  * @returns {Promise<{ok: boolean, erro?: string}>}
  */
 async function executarExtendScript(caminhoRelativo, rotulo) {
-  let entrada;
-  try {
-    const pastaPlugin = await fs.getPluginFolder();
-    entrada = await pastaPlugin.getEntry(caminhoRelativo);
-  } catch (e) {
+  let entrada = null;
+  const pastaPlugin = await fs.getPluginFolder();
+  const candidatos = [caminhoStandalone(caminhoRelativo), caminhoRelativo];
+
+  for (const cand of candidatos) {
+    try {
+      entrada = await pastaPlugin.getEntry(cand);
+      if (entrada) break;
+    } catch (e) { /* tenta o proximo */ }
+  }
+
+  if (!entrada) {
     return { ok: false, erro: `Script nao encontrado no pacote: ${caminhoRelativo}. Rode "npm run build:plugin".` };
   }
 
   try {
     const token = await fs.createSessionToken(entrada);
+    let resultadoPlay = null;
     await core.executeAsModal(
       async () => {
-        await action.batchPlay(
+        resultadoPlay = await action.batchPlay(
           [
             {
               _obj: 'AdobeScriptAutomation Scripts',
@@ -47,8 +55,15 @@ async function executarExtendScript(caminhoRelativo, rotulo) {
           { synchronousExecution: false }
         );
       },
-      { commandName: rotulo || 'IBD' }
+      { commandName: rotulo || 'IBD', interactive: true }
     );
+
+    if (Array.isArray(resultadoPlay) && resultadoPlay.length > 0) {
+      const primeiro = resultadoPlay[0];
+      if (primeiro && (primeiro._obj === 'error' || primeiro.message)) {
+        return { ok: false, erro: String(primeiro.message || 'Erro retornado pelo Photoshop ao rodar o script.') };
+      }
+    }
     return { ok: true };
   } catch (e) {
     return { ok: false, erro: e && e.message ? e.message : String(e) };
@@ -59,8 +74,14 @@ async function executarExtendScript(caminhoRelativo, rotulo) {
 async function caminhoNoDisco(caminhoRelativo) {
   try {
     const pastaPlugin = await fs.getPluginFolder();
-    const entrada = await pastaPlugin.getEntry(caminhoRelativo);
-    return entrada.nativePath;
+    const candidatos = [caminhoStandalone(caminhoRelativo), caminhoRelativo];
+    for (const cand of candidatos) {
+      try {
+        const entrada = await pastaPlugin.getEntry(cand);
+        if (entrada) return entrada.nativePath;
+      } catch (e) {}
+    }
+    return null;
   } catch (e) {
     return null;
   }

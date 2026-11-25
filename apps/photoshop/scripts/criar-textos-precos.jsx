@@ -90,8 +90,16 @@
         return refs;
     }
     function ensureFont() {
-        try { app.fonts.getByName(FONT); }
-        catch (error) { throw new Error("Ative a fonte SF Pro Condensed Semibold para manter a aparência dos modelos."); }
+        try { app.fonts.getByName(FONT); return; }
+        catch (error) {
+            if (typeof confirm === "function" && confirm(
+                "A fonte original SF Pro Condensed Semibold não está ativa neste computador.\n\n" +
+                "Deseja continuar mesmo assim usando a fonte substituta do Photoshop?"
+            )) {
+                return;
+            }
+            throw new Error("Ative a fonte SF Pro Condensed Semibold para manter a aparência dos modelos.");
+        }
     }
 
     /* Dados ------------------------------------------------------------- */

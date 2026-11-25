@@ -85,10 +85,17 @@ var IBD = (function (host) {
   api.host = function () {
     var nome = '';
     try {
-      nome = String(BridgeTalk.appName).toLowerCase();
+      if (typeof BridgeTalk !== 'undefined' && BridgeTalk && BridgeTalk.appName) {
+        nome = String(BridgeTalk.appName).toLowerCase();
+      }
     } catch (e) {
+      nome = '';
+    }
+    if (!nome || nome === 'undefined' || nome === 'null') {
       try {
-        nome = String(app.name).toLowerCase();
+        if (typeof app !== 'undefined' && app && app.name) {
+          nome = String(app.name).toLowerCase();
+        }
       } catch (e2) {
         nome = '';
       }
@@ -141,7 +148,7 @@ var IBD = (function (host) {
     var sep = pad ? ',' + quebra + dentro : ',';
     var i;
 
-    if (valor instanceof Array) {
+    if (valor instanceof Array || Object.prototype.toString.call(valor) === '[object Array]') {
       if (!valor.length) return '[]';
       var itens = [];
       for (i = 0; i < valor.length; i++) itens.push(serializar(valor[i], pad, dentro));

@@ -139,17 +139,38 @@
         stringIDToTypeID('targetEnum')
       );
       var descDoc = executeActionGet(refDoc);
-      var chave = stringIDToTypeID('targetLayers');
+      var chaveIds = stringIDToTypeID('targetLayersIDs');
+      var chaveIdx = stringIDToTypeID('targetLayers');
+      var i;
 
-      if (descDoc.hasKey(chave)) {
-        var lista = descDoc.getList(chave);
+      // Photoshop CC 2015+: targetLayersIDs entrega os IDs diretos sem depender
+      // de deslocamento de Plano de Fundo, pranchetas ou grupos fechados.
+      if (descDoc.hasKey(chaveIds)) {
+        var listaIds = descDoc.getList(chaveIds);
+        var mapaIds = {};
+        var totalIds = 0;
+        for (i = 0; i < listaIds.count; i++) {
+          var lid = listaIds.getReference(i).getIdentifier();
+          mapaIds[lid] = true;
+          totalIds++;
+        }
+        if (totalIds > 0) {
+          ps.percorrer(doc.layers, function (c) {
+            if (mapaIds[c.id]) saida.push(c);
+          });
+        }
+      }
+
+      // Fallback para versoes antigas do Photoshop (CS6/CC 2014) e ambiente de teste.
+      if (!saida.length && descDoc.hasKey(chaveIdx)) {
+        var lista = descDoc.getList(chaveIdx);
         // Sem Plano de Fundo, os indices do Action Manager comecam em 1.
         var deslocamento = 1;
         try {
           if (doc.layers[doc.layers.length - 1].isBackgroundLayer) deslocamento = 0;
         } catch (e) { /* mantem 1 */ }
 
-        for (var i = 0; i < lista.count; i++) {
+        for (i = 0; i < lista.count; i++) {
           var indice = lista.getReference(i).getIndex() + deslocamento;
           var refId = new ActionReference();
           refId.putProperty(stringIDToTypeID('property'), stringIDToTypeID('layerID'));

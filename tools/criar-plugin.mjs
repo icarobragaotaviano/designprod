@@ -178,8 +178,11 @@ async function rodar(t) {
     const arq = await pasta.getEntry(t.arquivo);
     const token = await fs.createSessionToken(arq);
     await core.executeAsModal(async () => {
-      await action.batchPlay([{ _obj: 'AdobeScriptAutomation Scripts', javaScript: { _path: token, _kind: 'local' }, javaScriptMessage: 'BatchPlay', _options: { dialogOptions: 'display' } }], { synchronousExecution: false });
-    }, { commandName: t.titulo });
+      const res = await action.batchPlay([{ _obj: 'AdobeScriptAutomation Scripts', javaScript: { _path: token, _kind: 'local' }, javaScriptMessage: 'BatchPlay', _options: { dialogOptions: 'display' } }], { synchronousExecution: false });
+      if (Array.isArray(res) && res[0] && (res[0]._obj === 'error' || res[0].message)) {
+        throw new Error(res[0].message || 'Erro no Photoshop');
+      }
+    }, { commandName: t.titulo, interactive: true });
     st.textContent = 'Concluido: ' + t.titulo;
   } catch (e) { st.textContent = 'Erro: ' + (e.message || e); }
 }`;
@@ -230,29 +233,34 @@ async function rodar(t) {
       macros.push({ titulo: f.titulo, macro: `GlobalMacros.${vbName}.${subName}` });
     }
 
-    const barMod = `Attribute VB_Name = "IBD_${slug.replace(/[^a-z0-9]/gi, '').slice(0, 18)}"
+    const barMod = (`Attribute VB_Name = "IBD_${slug.replace(/[^a-z0-9]/gi, '').slice(0, 18)}"
 Option Explicit
 Public Sub InstalarBarraPersonalizada()
-    Const BAR_NOME As String = "${nomeFinal}"
-    Dim bar As CommandBar, btn As CommandBarControl, pastaIcones As String, i As Long
+    Const BAR_NOME As String = "${nomeFinal.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[—–]/g, '-')}"
+    Const CUI_BAR_TOP As Long = 1
+    Const CAT_MACROS As String = "2cc24a3e-fe24-4708-9a74-9c75406eebcd"
+    Dim bar As CommandBar, btn As Object, pastaIcones As String, i As Long
     pastaIcones = InputBox("Pasta onde extraiu '${icoName}' (com \\ no final):", BAR_NOME, "C:\\IBD_Custom\\icones\\")
     If Trim$(pastaIcones) = "" Then Exit Sub
     If Right$(pastaIcones, 1) <> "\\" And Right$(pastaIcones, 1) <> "/" Then pastaIcones = pastaIcones & "\\"
     For i = FrameWork.CommandBars.Count To 1 Step -1
         If FrameWork.CommandBars(i).Name = BAR_NOME Then FrameWork.CommandBars(i).Delete
     Next i
-    Set bar = FrameWork.CommandBars.Add(BAR_NOME, cdrBarTop, False)
-${macros.map((m) => `    Set btn = bar.Controls.AddCustomButton(cdrCmdCategoryMacros, "${m.macro}")
+    Set bar = FrameWork.CommandBars.Add(BAR_NOME, CUI_BAR_TOP, False)
+${macros.map((m) => {
+  const cap = m.titulo.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[—–]/g, '-');
+  return `    Set btn = bar.Controls.AddCustomButton(CAT_MACROS, "${m.macro}")
     If Not btn Is Nothing Then
-        btn.Caption = "${m.titulo}"
+        btn.Caption = "${cap}"
         On Error Resume Next
         btn.SetIcon2 pastaIcones & "${icoName}"
         If Err.Number <> 0 Then btn.SetCustomIcon pastaIcones & "${icoName}"
         On Error GoTo 0
-    End If`).join('\n')}
+    End If`;
+}).join('\n')}
     bar.Visible = True
 End Sub
-`;
+`).replace(/\r?\n/g, '\r\n');
     entradas.push({ nome: 'IBD_InstalarCustom.bas', dados: Buffer.from(barMod, 'utf8') });
     const buf = criarZip(entradas);
     const dest = saida || path.join(dirDist, `custom-coreldraw-${slug}.zip`);
@@ -324,7 +332,7 @@ TOOLS.forEach(function(t){
     var base = (cs.getSystemPath(SystemPath.EXTENSION) || '').replace(/\\\\/g,'/').replace(/\\/+$/,'');
     var p = base ? (base + '/' + t.arquivo) : t.arquivo;
     st.textContent = 'Executando ' + t.titulo + '...';
-    cs.evalScript('ibdExecutarArquivo(' + JSON.stringify(p) + ')', function(r){ st.textContent = r && r.indexOf('ERRO:')===0 ? r : 'Concluido: ' + t.titulo; });
+    cs.evalScript('ibdExecutarArquivo(' + JSON.stringify(p) + ')', function(r){ var s = r ? String(r) : ''; st.textContent = (!s || s === 'EvalScript error.' || s.indexOf('ERRO:')===0) ? (s || 'Erro de execucao') : 'Concluido: ' + t.titulo; });
   };
   lista.appendChild(b);
 });

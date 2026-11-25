@@ -106,7 +106,7 @@
         desenhar: function (g, w, h, v, d) {
           var bx = (w - 130) / 2, by = (h - 46) / 2;
           d.retangulo(g, bx, by, 130, 46, d.cor(42, 52, 68, 1), d.cor(104, 168, 232, 1), 1);
-          var fim = String(v.posicao || '').indexOf('Fim') === 0;
+          var fim = String(v.posicao || '').indexOf('Na borda oposta') === 0 || String(v.posicao || '').indexOf('Fim') === 0;
           var cen = String(v.posicao || '').indexOf('No centro') === 0;
           var ly = cen ? by + 23 : (fim ? by + 54 : by - 8);
           var colCota = d.cor(240, 196, 25, 1);

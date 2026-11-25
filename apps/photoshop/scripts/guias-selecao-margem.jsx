@@ -235,7 +235,11 @@ var PS = (function () {
         // Um original sem perfil deve continuar sem perfil: n\u00e3o atribuir o espa\u00e7o de trabalho.
         if (!/NONE/i.test(type)) { name = doc.colorProfileName; }
         for (i = 0; i < doc.channels.length; i++) {
-            channels.push({name:doc.channels[i].name, kind:String(doc.channels[i].kind)});
+            var chKind = String(doc.channels[i].kind);
+            var chName = String(doc.channels[i].name);
+            // Ignora canais temporarios de mascara de camada/vetor que somem na duplicata mesclada.
+            if (/MASKEDAREA|SELECTEDAREA/i.test(chKind) && /(?:Mask|M\u00e1scara|Vector Mask)/i.test(chName)) { continue; }
+            channels.push({name:chName, kind:chKind});
         }
         return {resolution:doc.resolution, mode:String(doc.mode), bits:String(doc.bitsPerChannel),
             aspect:doc.pixelAspectRatio, profileType:type, profileName:name, channels:channels};

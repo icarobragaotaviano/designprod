@@ -67,3 +67,20 @@ body {
 .rodape.erro { color: var(--erro); }
 .rodape.sucesso { color: var(--sucesso); }
 .vazio { width: 100%; padding: 24px 12px; color: var(--texto-secundario); text-align: center; font-size: 11px; }
+.vazio-btn { margin-top: 10px; padding: 4px 12px; border-radius: 12px; border: 1px solid var(--acento); background: transparent; color: var(--acento); font-size: 11px; font-weight: 600; cursor: pointer; }
+
+.modo-btn-gerenciar { position: relative; width: auto; min-width: 26px; padding: 0 5px; gap: 3px; }
+.ocultas-badge { padding: 0 4px; border-radius: 7px; background: rgba(242, 156, 166, 0.22); color: var(--erro); font-size: 9px; font-weight: 700; }
+.modo-btn[aria-pressed="true"] .ocultas-badge { background: rgba(22, 24, 29, 0.25); color: var(--acento-texto); }
+.gerenciar-barra { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--borda); background: var(--superficie); }
+.gerenciar-info { font-size: 10px; color: var(--texto-secundario); }
+.gerenciar-acoes { display: flex; gap: 5px; }
+.gerenciar-acoes button { padding: 3px 9px; border-radius: 10px; border: 1px solid var(--borda); background: var(--fundo); color: var(--texto); font-size: 10px; font-weight: 600; cursor: pointer; }
+.gerenciar-acoes button.primario { background: var(--acento); color: var(--acento-texto); border-color: var(--acento); }
+.gerenciar-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-bottom: 1px solid var(--borda); cursor: pointer; }
+.gerenciar-item:hover { background: #262a33; }
+.gerenciar-item.oculta { opacity: 0.55; }
+.gerenciar-item input[type="checkbox"] { accent-color: var(--acento); margin: 0; cursor: pointer; }
+.gerenciar-nome { flex: 1; font-size: 11px; font-weight: 600; }
+.gerenciar-estado { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 8px; background: rgba(82, 183, 136, 0.16); color: var(--sucesso); }
+.gerenciar-item.oculta .gerenciar-estado { background: rgba(242, 156, 166, 0.16); color: var(--erro); }

@@ -149,13 +149,23 @@ function executarIllustrator(caminhoRelativo, doc, overrides) {
 for (const rel of [
   'apps/illustrator/scripts/margem-seguranca-guias.jsx',
   'apps/illustrator/scripts/texto-dimensoes-objeto.jsx',
-  'apps/illustrator/scripts/deslocamento-expandir-contorno.jsx'
+  'apps/illustrator/scripts/deslocamento-expandir-contorno.jsx',
+  'apps/illustrator/scripts/criar-papel-padrao.jsx',
+  'apps/illustrator/scripts/criar-peca-padrao.jsx',
+  'apps/photoshop/scripts/criar-papel-padrao.jsx',
+  'apps/photoshop/scripts/criar-peca-padrao.jsx',
+  'core/extendscript/ibd-formatos.jsx'
 ]) {
-  test(`${rel}: estritamente ES3 (sem let/const/arrow/template)`, () => {
-    const raw = fs.readFileSync(path.join(base, rel), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+  test(`${rel}: estritamente ES3 (sem let/const/arrow/template nem chave reservada sem aspas)`, () => {
+    const raw = fs.readFileSync(path.join(base, rel), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/.*$/gm, '')
+      .replace(/"(?:\\.|[^"\\\r\n])*"/g, '""')
+      .replace(/'(?:\\.|[^'\\\r\n])*'/g, "''");
     assert.ok(!/\b(let|const|class)\b/.test(raw), 'palavra reservada ES6+ detectada');
     assert.ok(!/=>/.test(raw), 'arrow function detectada');
     assert.ok(!/`/.test(raw), 'template string detectada');
+    assert.ok(!/[{,]\s*(in|default|delete|class|var|function|new|try|catch|finally)\s*:/.test(raw), 'chave de objeto com palavra reservada ES3 sem aspas');
   });
 }
 
@@ -290,11 +300,98 @@ test('Illustrator deslocamento-expandir-contorno: aplica XML Offset Path, expand
   assert.equal(effectsApplied.length, 2);
   assert.match(effectsApplied[0], /Adobe Offset Path/);
   assert.match(effectsApplied[0], /I jntp 0 /);
-  assert.deepEqual(res.menuCmds, ['expandStyle', 'Live Pathfinder Add', 'expandStyle']);
+  assert.deepEqual(res.menuCmds, ['expandStyle', 'group', 'Live Pathfinder Add', 'expandStyle']);
   assert.equal(doc.selection[0].filled, false);
   assert.equal(doc.selection[0].stroked, true);
   assert.equal(doc.selection[0].strokeWidth, 1.5);
   assert.equal(doc.selection[0].strokeColor.magenta, 100);
+});
+
+test('Illustrator criar-papel-padrao: lista Padrao Nobel primeiro e cria nova prancheta T4 (328x478 mm)', () => {
+  const adicionadas = [];
+  const guiasCriadas = [];
+  const camadaGuias = {
+    name: '06_GUIAS',
+    locked: true,
+    visible: false,
+    pathItems: {
+      rectangle(t, l, w, h) {
+        const g = { top: t, left: l, width: w, height: h, filled: true, stroked: true, guides: false };
+        guiasCriadas.push(g);
+        return g;
+      }
+    }
+  };
+  const abList = [{ name: 'Prancheta 1', artboardRect: [0, 500, 300, 0] }];
+  const doc = {
+    documentColorSpace: 'CMYK',
+    activeLayer: { name: 'Arte', locked: false, visible: true },
+    selection: [],
+    artboards: Object.assign(abList, {
+      getActiveArtboardIndex: () => 0,
+      setActiveArtboardIndex: () => {},
+      add(rect) {
+        const ab = { name: '', artboardRect: rect };
+        abList.push(ab);
+        adicionadas.push(ab);
+        return ab;
+      }
+    }),
+    layers: [camadaGuias]
+  };
+  executarIllustrator('apps/illustrator/scripts/criar-papel-padrao.jsx', doc, {
+    'Papel padrão': 'Padrao Nobel T4 — 328 x 478 mm',
+    'Onde criar': 'Nova prancheta no documento aberto',
+    'Margem de segurança (mm)': 5,
+    'Sangria (mm)': 0
+  });
+  assert.equal(adicionadas.length, 1);
+  const r = adicionadas[0].artboardRect;
+  const mm = 72 / 25.4;
+  assert.ok(Math.abs((r[2] - r[0]) - 328 * mm) < 1e-2);
+  assert.ok(Math.abs((r[1] - r[3]) - 478 * mm) < 1e-2);
+  assert.equal(guiasCriadas.length, 1);
+  assert.equal(guiasCriadas[0].guides, true);
+  assert.equal(camadaGuias.visible, true);
+});
+
+test('Illustrator criar-peca-padrao: desenha molde de cartao de visita 90x50 mm na prancheta ativa', () => {
+  const moldes = [];
+  const camadaArte = {
+    name: 'Arte',
+    locked: false,
+    visible: true,
+    pathItems: {
+      rectangle(t, l, w, h) {
+        const it = { name: '', top: t, left: l, width: w, height: h, filled: true, stroked: false, strokeWidth: 0 };
+        moldes.push(it);
+        return it;
+      }
+    }
+  };
+  const doc = {
+    documentColorSpace: 'CMYK',
+    activeLayer: camadaArte,
+    selection: [],
+    artboards: {
+      length: 1,
+      0: { artboardRect: [0, 1000, 1000, 0] },
+      getActiveArtboardIndex: () => 0
+    },
+    layers: [camadaArte]
+  };
+  executarIllustrator('apps/illustrator/scripts/criar-peca-padrao.jsx', doc, {
+    'Peça gráfica': 'Cartao de visita BR — 90 x 50 mm',
+    'Onde criar': 'Desenhar molde na prancheta ativa',
+    'Margem de segurança (mm)': 0,
+    'Sangria (mm)': 0
+  });
+  assert.equal(moldes.length, 1);
+  const mm = 72 / 25.4;
+  assert.ok(Math.abs(moldes[0].width - 90 * mm) < 1e-2);
+  assert.ok(Math.abs(moldes[0].height - 50 * mm) < 1e-2);
+  assert.equal(moldes[0].filled, false);
+  assert.equal(moldes[0].stroked, true);
 });
 
 /* ================================================================== */
@@ -614,11 +711,13 @@ test('TraceDraw scripts: executam fluxo completo de guias, texto e contorno SVG'
 /* 4. CorelDRAW (.bas VBA)                                            */
 /* ================================================================== */
 
-test('CorelDRAW .bas: Attribute VB_Name unicos, CreateGuide de 4 coordenadas e CreateContour/Separate', () => {
+test('CorelDRAW .bas: Attribute VB_Name unicos, CRLF, API valida e novos papeis Nobel/pecas', () => {
   const mods = [
     'apps/coreldraw/scripts/margem-seguranca-guias.bas',
     'apps/coreldraw/scripts/texto-dimensoes-objeto.bas',
-    'apps/coreldraw/scripts/deslocamento-expandir-contorno.bas'
+    'apps/coreldraw/scripts/deslocamento-expandir-contorno.bas',
+    'apps/coreldraw/scripts/criar-papel-padrao.bas',
+    'apps/coreldraw/scripts/criar-peca-padrao.bas'
   ];
   const nomes = new Set();
   for (const rel of mods) {
@@ -627,6 +726,7 @@ test('CorelDRAW .bas: Attribute VB_Name unicos, CreateGuide de 4 coordenadas e C
     assert.ok(m, `${rel}: falta Attribute VB_Name`);
     assert.ok(!nomes.has(m[1]), `${rel}: VB_Name duplicado ${m[1]}`);
     nomes.add(m[1]);
+    assert.ok(src.includes('\r\n'), `${rel}: precisa usar quebras de linha CRLF`);
     assert.match(src, /BeginCommandGroup/);
     assert.match(src, /EndCommandGroup/);
     assert.match(src, /Option Explicit/);
@@ -637,6 +737,18 @@ test('CorelDRAW .bas: Attribute VB_Name unicos, CreateGuide de 4 coordenadas e C
   assert.match(contorno, /\.CreateContour\b/);
   assert.match(contorno, /\.Separate\b/);
   assert.match(contorno, /\.Fill\.ApplyNoFill\b/);
+  const papel = fs.readFileSync(path.join(base, mods[3]), 'utf8');
+  assert.ok(papel.indexOf('Padrao Nobel T9|220|380') < papel.indexOf('A4|210|297'), 'Padrao Nobel deve vir antes de A4');
+  assert.match(papel, /Padrao Nobel T4\|328\|478/);
+  const peca = fs.readFileSync(path.join(base, mods[4]), 'utf8');
+  assert.match(peca, /Cartao de visita BR\|90\|50/);
+  assert.match(peca, /Panfleto 140x100\|140\|100/);
+  assert.match(peca, /Panfleto 140x200\|140\|200/);
+  assert.match(peca, /Panfleto \/ Postal 100x150\|100\|150/);
+
+  const fecharPdf = fs.readFileSync(path.join(base, 'nobel/desktop/fechar-pdf-corel.bas'), 'utf8');
+  assert.ok(!/\.ColorBars\b/.test(fecharPdf), 'fechar-pdf-corel.bas nao pode usar PDFSettings.ColorBars inexistente');
+  assert.match(fecharPdf, /DensitometerScales/);
 });
 
 /* Resultado -------------------------------------------------------- */

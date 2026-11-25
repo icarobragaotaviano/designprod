@@ -55,6 +55,16 @@ for (const arquivo of scripts) {
         erros.push(`${path.relative(RAIZ, arquivo)}: #include quebrado -> ${alvo}`);
       }
     }
+    // ExtendScript e ES3: chaves de objeto com palavra reservada sem aspas (ex: { in: 72 }) quebram no Illustrator/Photoshop.
+    const semComent = conteudo
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/\/\/[^\r\n]*/g, '')
+      .replace(/"(?:\\.|[^"\\\r\n])*"/g, '""')
+      .replace(/'(?:\\.|[^'\\\r\n])*'/g, "''");
+    const reservadaKey = semComent.match(/[{,]\s*(in|default|delete|class|var|function|new|try|catch|finally|with|while|for|if|else|switch|case|break|continue|return|throw|typeof|void|instanceof)\s*:/);
+    if (reservadaKey) {
+      erros.push(`${path.relative(RAIZ, arquivo)}: chave de objeto ES3 com palavra reservada sem aspas ("${reservadaKey[1]}:"). Coloque entre aspas.`);
+    }
   }
   if (ext === '.bas') {
     if (!/^\s*Attribute\s+VB_Name\s*=/m.test(conteudo)) {

@@ -675,8 +675,13 @@
                 starter.move(doc, ElementPlacement.PLACEATBEGINNING); doc.activeLayer = starter;
                 var old = direct(doc, ROOT); old.allLocked = false; old.remove();
             } else {
-                doc = app.documents.add(px(data.width), px(data.height), 72, "DESIGNPROD — Ofertas " + fmt.id, NewDocumentMode.RGB,
-                    DocumentFill.TRANSPARENT, 1, BitsPerChannelType.EIGHT, "sRGB IEC61966-2.1");
+                try {
+                    doc = app.documents.add(px(data.width), px(data.height), 72, "DESIGNPROD — Ofertas " + fmt.id, NewDocumentMode.RGB,
+                        DocumentFill.TRANSPARENT, 1, BitsPerChannelType.EIGHT, "sRGB IEC61966-2.1");
+                } catch (eProfile) {
+                    doc = app.documents.add(px(data.width), px(data.height), 72, "DESIGNPROD — Ofertas " + fmt.id, NewDocumentMode.RGB,
+                        DocumentFill.TRANSPARENT, 1, BitsPerChannelType.EIGHT);
+                }
                 starter = doc.activeLayer;
             }
             data.width = Math.round(doc.width.as("px")); data.height = Math.round(doc.height.as("px"));

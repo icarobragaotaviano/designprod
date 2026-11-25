@@ -104,21 +104,47 @@
         );
       }
 
+      // SaveForWeb falha em 16/32 bits ou CMYK: normaliza antes de exportar (original nao e salvo).
+      try {
+        if (doc.bitsPerChannel !== BitsPerChannelType.EIGHT) {
+          doc.bitsPerChannel = BitsPerChannelType.EIGHT;
+        }
+      } catch (eBits) {}
+      try {
+        if (doc.mode !== DocumentMode.RGB) {
+          doc.changeMode(ChangeMode.RGB);
+        }
+      } catch (eMode) {}
+
       var ehPNG = cfg.formato === 'PNG-24';
       var base = IBD.slug(IBD.fs.semExtensao(arquivo));
       var saidaArquivo = IBD.fs.caminhoLivre(pasta, base, ehPNG ? 'png' : 'jpg');
 
-      var exportar = new ExportOptionsSaveForWeb();
-      if (ehPNG) {
-        exportar.format = SaveDocumentType.PNG;
-        exportar.PNG8 = false;
-        exportar.transparency = true;
-      } else {
-        exportar.format = SaveDocumentType.JPEG;
-        exportar.quality = Math.max(0, Math.min(100, cfg.qualidade));
-        exportar.optimized = true;
+      try {
+        var exportar = new ExportOptionsSaveForWeb();
+        if (ehPNG) {
+          exportar.format = SaveDocumentType.PNG;
+          exportar.PNG8 = false;
+          exportar.transparency = true;
+        } else {
+          exportar.format = SaveDocumentType.JPEG;
+          exportar.quality = Math.max(0, Math.min(100, cfg.qualidade));
+          exportar.optimized = true;
+        }
+        doc.exportDocument(saidaArquivo, ExportType.SAVEFORWEB, exportar);
+      } catch (eSfw) {
+        if (ehPNG) {
+          var pngOpt = new PNGSaveOptions();
+          pngOpt.compression = 6;
+          pngOpt.interlaced = false;
+          doc.saveAs(saidaArquivo, pngOpt, true, Extension.LOWERCASE);
+        } else {
+          var jpgOpt = new JPEGSaveOptions();
+          jpgOpt.quality = Math.max(1, Math.min(12, Math.round((cfg.qualidade || 85) * 12 / 100)));
+          jpgOpt.embedColorProfile = true;
+          doc.saveAs(saidaArquivo, jpgOpt, true, Extension.LOWERCASE);
+        }
       }
-      doc.exportDocument(saidaArquivo, ExportType.SAVEFORWEB, exportar);
     } finally {
       doc.close(SaveOptions.DONOTSAVECHANGES);
     }

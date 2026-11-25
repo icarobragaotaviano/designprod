@@ -86,6 +86,7 @@
 
     if (cfg.formato === 'PDF') {
       var pdfOpcoes = new PDFSaveOptions();
+      pdfOpcoes.saveMultipleArtboards = true;
       pdfOpcoes.artboardRange = String(indice + 1);
       pdfOpcoes.preserveEditability = false;
       pdfOpcoes.viewAfterSaving = false;

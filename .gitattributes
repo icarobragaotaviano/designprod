@@ -1,4 +1,9 @@
 * text=auto eol=lf
+*.bas text eol=crlf
+*.frm text eol=crlf
+*.cls text eol=crlf
+*.bat text eol=crlf
+*.vbs text eol=crlf
 *.atn binary
 *.asl binary
 *.grd binary

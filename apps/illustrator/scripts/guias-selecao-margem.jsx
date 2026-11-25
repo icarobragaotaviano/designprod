@@ -33,6 +33,7 @@ var G = (function () {
     function toBase(v, unit, resolution) {
         var f = unit === "mm" ? resolution / 25.4 :
             unit === "cm" ? resolution / 2.54 :
+            unit === "in" ? resolution :
             unit === "pt" ? resolution / 72 : 1;
         var result = v * f;
         if (!isFinite(result)) { throw new Error("A medida ultrapassa o limite num\u00e9rico."); }
@@ -123,7 +124,7 @@ var G = (function () {
         var row = w.add("group");
         row.add("statictext", undefined, "Margem em cada lado:");
         var value = row.add("edittext", undefined, "3"); value.characters = 9;
-        var unit = row.add("dropdownlist", undefined, ["mm", "cm", "px", "pt"]); unit.selection = 0;
+        var unit = row.add("dropdownlist", undefined, ["mm", "cm", "px", "pt", "in"]); unit.selection = 0;
         var modes = w.add("dropdownlist", undefined,
             ["Externa \u2014 para fora", "Interna \u2014 para dentro", "Interna e externa"]);
         modes.selection = 0;

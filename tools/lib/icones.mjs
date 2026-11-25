@@ -165,6 +165,26 @@ export const ICONES = {
       { tipo: 'line', x1: 8, y1: 10.5, x2: 13, y2: 10.5 }
     ]
   },
+  papel: {
+    rotulo: 'Papel padrão',
+    cor: '#68a8e8',
+    paths: [
+      { tipo: 'rect', x: 5, y: 3, w: 14, h: 18, rx: 1.5, stroke: true },
+      { tipo: 'line', x1: 8.5, y1: 8, x2: 15.5, y2: 8 },
+      { tipo: 'line', x1: 8.5, y1: 12, x2: 15.5, y2: 12 },
+      { tipo: 'line', x1: 8.5, y1: 16, x2: 12.5, y2: 16 }
+    ]
+  },
+  peca: {
+    rotulo: 'Peça gráfica padrão',
+    cor: '#f0c419',
+    paths: [
+      { tipo: 'rect', x: 3.5, y: 6, w: 17, h: 12, rx: 1.5, stroke: true },
+      { tipo: 'rect', x: 6.5, y: 9, w: 5, h: 6, rx: 0.8, fill: true },
+      { tipo: 'line', x1: 13.5, y1: 10, x2: 17.5, y2: 10 },
+      { tipo: 'line', x1: 13.5, y1: 14, x2: 16.5, y2: 14 }
+    ]
+  },
   acao: {
     rotulo: 'Rotina rápida',
     cor: '#f0c419',
@@ -182,6 +202,8 @@ export const ICONES = {
 /** Resolve qual icone usar para uma ferramenta a partir do id/tipo. */
 export function resolverIconeId(id, tipo) {
   const s = String(id || '').toLowerCase();
+  if (s.includes('papel-padrao')) return 'papel';
+  if (s.includes('peca-padrao')) return 'peca';
   if (s.includes('margem-seguranca')) return 'guia-interna';
   if (s.includes('guias-selecao-margem') && s.includes('illustrator')) return 'guia-externa';
   if (s.includes('remendo') || s.includes('guias-selecao-margem')) return 'remendo';
@@ -226,6 +248,28 @@ export function iconeSvg(iconeId, corOverride, tamanho = 20) {
  * CEP (HTML5) e vitrine Web (browser <script>).
  */
 export function gerarCodigoIconesJs() {
+  const fnResolver = `function resolverIconeId(id, tipo) {
+    var s = String(id || '').toLowerCase();
+    if (s.indexOf('papel-padrao') > -1) return 'papel';
+    if (s.indexOf('peca-padrao') > -1) return 'peca';
+    if (s.indexOf('margem-seguranca') > -1) return 'guia-interna';
+    if (s.indexOf('guias-selecao-margem') > -1 && s.indexOf('illustrator') > -1) return 'guia-externa';
+    if (s.indexOf('remendo') > -1 || s.indexOf('guias-selecao-margem') > -1) return 'remendo';
+    if (s.indexOf('dimensoes') > -1 || s.indexOf('medida') > -1 || s.indexOf('cotas') > -1) return 'cotas';
+    if (s.indexOf('deslocamento') > -1 || s.indexOf('camada-tecnica') > -1 || s.indexOf('exportar-corte') > -1) return 'contorno-offset';
+    if (s.indexOf('sangria') > -1) return 'sangria';
+    if (s.indexOf('auto-layout') > -1) return 'auto-layout';
+    if (s.indexOf('alinhar-distribuir') > -1) return 'alinhar';
+    if (s.indexOf('pdf') > -1) return 'pdf';
+    if (s.indexOf('exportar') > -1) return 'exportar';
+    if (s.indexOf('redimensionar') > -1 || s.indexOf('150-dpi') > -1 || s.indexOf('lote-imagens') > -1) return 'redimensionar';
+    if (s.indexOf('ofertas') > -1) return 'ofertas';
+    if (s.indexOf('precos') > -1 || s.indexOf('place-holder') > -1) return 'precos';
+    if (s.indexOf('organizar') > -1 || s.indexOf('pasta') > -1 || s.indexOf('renomear') > -1 || s.indexOf('limpar') > -1 || s.indexOf('uxp/painel') > -1) return 'organizacao';
+    if (s.indexOf('auditar') > -1 || s.indexOf('conferir') > -1 || s.indexOf('preflight') > -1 || s.indexOf('triagem') > -1 || s.indexOf('preto-tac') > -1) return 'auditoria';
+    if (tipo === 'action' || s.indexOf('imposicao') > -1) return 'acao';
+    return 'acao';
+  }`;
   const fnSvg = `function iconeSvg(iconeId, corOverride, tamanho) {
     var def = ICONES[iconeId] || ICONES.acao;
     var cor = corOverride || def.cor || '#f0c419';
@@ -258,7 +302,7 @@ export function gerarCodigoIconesJs() {
 }(typeof self !== 'undefined' ? self : this, function () {
   var PALETA_ICONES = ${JSON.stringify(PALETA_ICONES, null, 2)};
   var ICONES = ${JSON.stringify(ICONES, null, 2)};
-  ${resolverIconeId.toString()}
+  ${fnResolver}
   ${fnSvg}
   return {
     PALETA_ICONES: PALETA_ICONES,
