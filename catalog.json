@@ -4,6 +4,57 @@
   "geradoPor": "tools/build-catalog.mjs",
   "ferramentas": [
     {
+      "id": "affinity/deslocamento-expandir-contorno",
+      "titulo": "Deslocamento e contorno vetorial",
+      "descricao": "Cria caminho deslocado sem preenchimento e com contorno tecnico no Affinity (SDK Beta 3.3+: exato em retangulos/elipses e poligonal em curvas).",
+      "app": "affinity",
+      "tipo": "script",
+      "arquivo": "apps/affinity/scripts/deslocamento-expandir-contorno.js",
+      "versao": "1.0.0",
+      "tags": [
+        "offset",
+        "deslocamento",
+        "contorno",
+        "curva",
+        "affinity"
+      ],
+      "doc": "docs/ferramentas-vetor.md"
+    },
+    {
+      "id": "affinity/margem-seguranca-guias",
+      "titulo": "Margem de seguranca (guias)",
+      "descricao": "Cria quatro guias nativas de margem de seguranca do documento ou da prancheta selecionada no Affinity (SDK Beta 3.3+).",
+      "app": "affinity",
+      "tipo": "script",
+      "arquivo": "apps/affinity/scripts/margem-seguranca-guias.js",
+      "versao": "1.0.0",
+      "tags": [
+        "guias",
+        "margem",
+        "seguranca",
+        "prancheta",
+        "affinity"
+      ],
+      "doc": "docs/ferramentas-vetor.md"
+    },
+    {
+      "id": "affinity/texto-dimensoes-objeto",
+      "titulo": "Texto com dimensoes do objeto",
+      "descricao": "Cria texto artistico com as dimensoes combinadas dos objetos selecionados na unidade escolhida no Affinity (SDK Beta 3.3+).",
+      "app": "affinity",
+      "tipo": "script",
+      "arquivo": "apps/affinity/scripts/texto-dimensoes-objeto.js",
+      "versao": "1.0.0",
+      "tags": [
+        "dimensoes",
+        "medida",
+        "texto",
+        "cota",
+        "affinity"
+      ],
+      "doc": "docs/ferramentas-vetor.md"
+    },
+    {
       "id": "aftereffects/organizar-projeto",
       "titulo": "Organizar projeto",
       "descricao": "Cria a estrutura de pastas padrão do estúdio e move composições, sólidos, imagens, vídeos e áudio para os lugares certos.",
@@ -15,6 +66,76 @@
         "organizacao",
         "projeto"
       ]
+    },
+    {
+      "id": "coreldraw/deslocamento-expandir-contorno",
+      "titulo": "Deslocamento, expandir e contorno",
+      "descricao": "Aplica contorno deslocado para fora ou dentro na selecao, separa o contorno do efeito, remove o preenchimento e aplica traco CMYK.",
+      "app": "coreldraw",
+      "tipo": "script",
+      "arquivo": "apps/coreldraw/scripts/deslocamento-expandir-contorno.bas",
+      "versao": "1.0.0",
+      "tags": [
+        "contorno",
+        "deslocamento",
+        "offset",
+        "separar",
+        "faca",
+        "coreldraw"
+      ],
+      "doc": "docs/ferramentas-vetor.md"
+    },
+    {
+      "id": "coreldraw/margem-seguranca-guias",
+      "titulo": "Margem de seguranca (guias)",
+      "descricao": "Cria quatro guias internas de margem de seguranca a partir das bordas da pagina ativa ou de todas as paginas do documento.",
+      "app": "coreldraw",
+      "tipo": "script",
+      "arquivo": "apps/coreldraw/scripts/margem-seguranca-guias.bas",
+      "versao": "1.0.0",
+      "tags": [
+        "guias",
+        "margem",
+        "seguranca",
+        "pagina",
+        "coreldraw"
+      ],
+      "doc": "docs/ferramentas-vetor.md"
+    },
+    {
+      "id": "coreldraw/texto-dimensoes-objeto",
+      "titulo": "Texto com dimensoes do objeto",
+      "descricao": "Cria texto artistico com as dimensoes combinadas dos objetos selecionados na unidade escolhida e na camada de textos.",
+      "app": "coreldraw",
+      "tipo": "script",
+      "arquivo": "apps/coreldraw/scripts/texto-dimensoes-objeto.bas",
+      "versao": "1.0.0",
+      "tags": [
+        "dimensoes",
+        "medida",
+        "texto",
+        "cota",
+        "coreldraw"
+      ],
+      "doc": "docs/ferramentas-vetor.md"
+    },
+    {
+      "id": "illustrator/deslocamento-expandir-contorno",
+      "titulo": "Deslocamento, expandir e contorno",
+      "descricao": "Aplica deslocamento (Offset Path) positivo ou negativo na selecao, expande a aparencia e converte em contorno tecnico sem preenchimento.",
+      "app": "illustrator",
+      "tipo": "script",
+      "arquivo": "apps/illustrator/scripts/deslocamento-expandir-contorno.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "offset",
+        "deslocamento",
+        "contorno",
+        "faca",
+        "sangria",
+        "expand"
+      ],
+      "doc": "docs/ferramentas-vetor.md"
     },
     {
       "id": "illustrator/exportar-pranchetas",
@@ -45,6 +166,40 @@
         "arte-final"
       ],
       "doc": "docs/guias-e-sangria.md"
+    },
+    {
+      "id": "illustrator/margem-seguranca-guias",
+      "titulo": "Margem de seguranca (guias)",
+      "descricao": "Cria guias internas de margem de seguranca a partir das bordas da prancheta ativa ou de todas as pranchetas, na unidade escolhida.",
+      "app": "illustrator",
+      "tipo": "script",
+      "arquivo": "apps/illustrator/scripts/margem-seguranca-guias.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "guias",
+        "margem",
+        "seguranca",
+        "prancheta",
+        "acabamento"
+      ],
+      "doc": "docs/ferramentas-vetor.md"
+    },
+    {
+      "id": "illustrator/texto-dimensoes-objeto",
+      "titulo": "Texto com dimensoes do objeto",
+      "descricao": "Gera automaticamente o rotulo de largura e altura dos objetos selecionados na unidade escolhida, posicionado na camada de textos.",
+      "app": "illustrator",
+      "tipo": "script",
+      "arquivo": "apps/illustrator/scripts/texto-dimensoes-objeto.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "dimensoes",
+        "medida",
+        "texto",
+        "cota",
+        "producao"
+      ],
+      "doc": "docs/ferramentas-vetor.md"
     },
     {
       "id": "indesign/exportar-paginas-pdf",
@@ -428,6 +583,56 @@
         "arte-final"
       ],
       "doc": "docs/guias-e-sangria.md"
+    },
+    {
+      "id": "tracedraw/deslocamento-expandir-contorno",
+      "titulo": "Deslocamento e contorno vetorial",
+      "descricao": "Gera caminho deslocado sem preenchimento e com contorno CMYK a partir do PathData da selecao no TraceDraw (M=Mitra, R=Arredondado, C=Chanfrado).",
+      "app": "tracedraw",
+      "tipo": "script",
+      "arquivo": "apps/tracedraw/scripts/deslocamento-expandir-contorno.js",
+      "versao": "1.0.0",
+      "tags": [
+        "offset",
+        "deslocamento",
+        "contorno",
+        "curva",
+        "tracedraw"
+      ],
+      "doc": "docs/ferramentas-vetor.md"
+    },
+    {
+      "id": "tracedraw/margem-seguranca-guias",
+      "titulo": "Margem de seguranca (guias)",
+      "descricao": "Cria quadro retangular de margem de seguranca interno na camada 06_GUIAS bloqueada da pagina ativa ou de todas as paginas no TraceDraw.",
+      "app": "tracedraw",
+      "tipo": "script",
+      "arquivo": "apps/tracedraw/scripts/margem-seguranca-guias.js",
+      "versao": "1.0.0",
+      "tags": [
+        "guias",
+        "margem",
+        "seguranca",
+        "tracedraw"
+      ],
+      "doc": "docs/ferramentas-vetor.md"
+    },
+    {
+      "id": "tracedraw/texto-dimensoes-objeto",
+      "titulo": "Texto com dimensoes do objeto",
+      "descricao": "Calcula a caixa delimitadora da selecao e cria texto artistico com Largura x Altura na unidade configurada no TraceDraw.",
+      "app": "tracedraw",
+      "tipo": "script",
+      "arquivo": "apps/tracedraw/scripts/texto-dimensoes-objeto.js",
+      "versao": "1.0.0",
+      "tags": [
+        "dimensoes",
+        "medida",
+        "texto",
+        "cota",
+        "tracedraw"
+      ],
+      "doc": "docs/ferramentas-vetor.md"
     }
   ]
 }

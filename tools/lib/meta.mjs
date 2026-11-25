@@ -11,18 +11,24 @@ export const APPS = {
   indesign: { nome: 'InDesign', extensaoScript: 'jsx' },
   aftereffects: { nome: 'After Effects', extensaoScript: 'jsx' },
   premiere: { nome: 'Premiere Pro', extensaoScript: 'jsx' },
-  bridge: { nome: 'Bridge', extensaoScript: 'jsx' }
+  bridge: { nome: 'Bridge', extensaoScript: 'jsx' },
+  coreldraw: { nome: 'CorelDRAW', extensaoScript: 'bas' },
+  affinity: { nome: 'Affinity', extensaoScript: 'js' },
+  tracedraw: { nome: 'TraceDraw', extensaoScript: 'js' }
 };
 
 export const CAMPOS_OBRIGATORIOS = ['id', 'titulo', 'descricao', 'app', 'versao'];
 
-/** Extrai o bloco @ibd-* do inicio do arquivo. */
+/** Extrai o bloco @ibd-* do inicio do arquivo (docblock JS ou comentarios VBA). */
 export function lerMetadados(conteudo) {
   const bloco = conteudo.match(/\/\*\*[\s\S]*?\*\//);
-  if (!bloco) return null;
+  const linhas = bloco
+    ? bloco[0].split('\n')
+    : conteudo.split(/\r?\n/).filter((l) => /^\s*(?:'|Rem\b)/i.test(l));
+
+  if (!linhas.length) return null;
 
   const meta = {};
-  const linhas = bloco[0].split('\n');
   for (const linha of linhas) {
     const m = linha.match(/@ibd-([a-z]+)\s+(.+?)\s*$/);
     if (!m) continue;

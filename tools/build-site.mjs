@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url';
 import { reunirVersoes } from './familias-site.mjs';
 import { familiaImposicao } from '../nobel/imposicao/versoes.mjs';
 import { APPS } from './lib/meta.mjs';
-import { resolverIncludes, cabecalho } from './lib/incluir.mjs';
+import { resolverIncludes, montarArquivoPublicavel } from './lib/incluir.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(RAIZ, 'site', 'src');
@@ -74,15 +74,18 @@ const repo = origem();
 const prontos = [];
 
 async function prepararDownload(f) {
-  const { conteudo, embutidos } = await resolverIncludes(RAIZ, f.arquivo);
-  const texto = cabecalho(f, marca, embutidos) + conteudo;
+  const ext = path.extname(f.arquivo).toLowerCase() || '.jsx';
+  const { conteudo, embutidos } = ext === '.jsx'
+    ? await resolverIncludes(RAIZ, f.arquivo)
+    : { conteudo: await readFile(path.join(RAIZ, f.arquivo), 'utf8'), embutidos: [] };
+  const texto = montarArquivoPublicavel(f, marca, conteudo, embutidos);
   // O id ja e unico no catalogo (<app>/<nome>), entao serve de endereco.
-  const destino = `downloads/ferramentas/${f.id}.jsx`;
+  const destino = `downloads/ferramentas/${f.id}${ext}`;
 
   prontos.push({ destino, texto });
   return {
     baixar: destino,
-    baixarNome: `${marca.nome} ${f.titulo}.jsx`,
+    baixarNome: `${marca.nome} ${f.titulo}${ext}`,
     baixarTamanho: Math.max(1, Math.round(Buffer.byteLength(texto, 'utf8') / 1024)),
     coreEmbutido: embutidos.length
   };

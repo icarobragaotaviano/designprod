@@ -137,6 +137,9 @@ button:disabled { cursor: default; opacity: .5; }
 .app-icone[data-app="illustrator"] { background: #3e2b14; color: #ffbd66; }
 .app-icone[data-app="indesign"] { background: #3d2030; color: #ffa3ce; }
 .app-icone[data-app="aftereffects"] { background: #29234c; color: #b9a9ff; }
+.app-icone[data-app="coreldraw"] { background: #183622; color: #7ae594; }
+.app-icone[data-app="affinity"] { background: #1d2f45; color: #8ec8ff; }
+.app-icone[data-app="tracedraw"] { background: #3b2718; color: #ffb374; }
 .lateral-nota { margin-top: auto; padding: 20px 12px 16px; display: flex; align-items: flex-start; gap: 8px; color: var(--texto-secundario); font-size: 11px; }
 .lateral-nota small { color: var(--texto-secundario); font-size: 10px; }
 .indicador { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #8a8a8a; flex: none; margin-top: 6px; }

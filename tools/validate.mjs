@@ -37,21 +37,33 @@ try {
 
 const scripts = [
   ...(await listarArquivos(path.join(RAIZ, 'apps'), 'jsx')),
+  ...(await listarArquivos(path.join(RAIZ, 'apps'), 'js')),
+  ...(await listarArquivos(path.join(RAIZ, 'apps'), 'bas')),
   ...(await listarArquivos(path.join(RAIZ, 'core'), 'jsx'))
 ];
 
 for (const arquivo of scripts) {
   const conteudo = await readFile(arquivo, 'utf8');
-  const includes = [...conteudo.matchAll(/^[ \t]*#include\s+"([^"]+)"/gm)].map((m) => m[1]);
-  for (const alvo of includes) {
-    const resolvido = path.resolve(path.dirname(arquivo), alvo);
-    try {
-      await access(resolvido);
-    } catch {
-      erros.push(`${path.relative(RAIZ, arquivo)}: #include quebrado -> ${alvo}`);
+  const ext = path.extname(arquivo).toLowerCase();
+  if (ext === '.jsx') {
+    const includes = [...conteudo.matchAll(/^[ \t]*#include\s+"([^"]+)"/gm)].map((m) => m[1]);
+    for (const alvo of includes) {
+      const resolvido = path.resolve(path.dirname(arquivo), alvo);
+      try {
+        await access(resolvido);
+      } catch {
+        erros.push(`${path.relative(RAIZ, arquivo)}: #include quebrado -> ${alvo}`);
+      }
     }
   }
-  if (!/^\s*\/\*\*/.test(conteudo)) {
+  if (ext === '.bas') {
+    if (!/^\s*Attribute\s+VB_Name\s*=/m.test(conteudo)) {
+      erros.push(`${path.relative(RAIZ, arquivo)}: modulo VBA precisa de Attribute VB_Name no topo.`);
+    }
+    if (!/^\s*'/m.test(conteudo)) {
+      avisos.push(`${path.relative(RAIZ, arquivo)}: modulo VBA sem comentarios de documentacao.`);
+    }
+  } else if (!/^\s*\/\*\*/.test(conteudo)) {
     avisos.push(`${path.relative(RAIZ, arquivo)}: arquivo nao comeca com bloco de documentacao.`);
   }
 }

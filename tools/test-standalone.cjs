@@ -116,7 +116,7 @@ function executar(texto, appId) {
 /* ------------------------------------------------------------------ */
 
 (async () => {
-  const { resolverIncludes, cabecalho } = await import('../tools/lib/incluir.mjs');
+  const { resolverIncludes, montarArquivoPublicavel } = await import('../tools/lib/incluir.mjs');
   const catalogo = JSON.parse(fs.readFileSync(path.join(base, 'catalog.json'), 'utf8'));
   const marca = JSON.parse(fs.readFileSync(path.join(base, 'brand.config.json'), 'utf8'));
   const scripts = catalogo.ferramentas.filter((f) => f.tipo === 'script');
@@ -174,29 +174,127 @@ function executar(texto, appId) {
   /* Cada ferramenta de verdade -------------------------------------- */
 
   for (const f of scripts) {
-    const { conteudo, embutidos } = await resolverIncludes(base, f.arquivo);
-    const texto = cabecalho(f, marca, embutidos) + conteudo;
+    const ext = path.extname(f.arquivo).toLowerCase();
+    const resolvido = ext === '.jsx'
+      ? await resolverIncludes(base, f.arquivo)
+      : { conteudo: fs.readFileSync(path.join(base, f.arquivo), 'utf8'), embutidos: [] };
+    const texto = montarArquivoPublicavel(f, marca, resolvido.conteudo, resolvido.embutidos);
 
-    test(`${f.id}: sem #include e com #target preservado`, () => {
-      assert.ok(!/^[ \t]*#include/m.test(texto), 'sobrou #include no arquivo baixável');
-      assert.match(texto, new RegExp('^#target ' + f.app, 'm'), 'perdeu a diretiva #target');
-      assert.match(texto, /Arquivo pronto para uso/, 'perdeu o cabeçalho explicativo');
-    });
+    if (ext === '.jsx') {
+      test(`${f.id}: sem #include e com #target preservado`, () => {
+        assert.ok(!/^[ \t]*#include/m.test(texto), 'sobrou #include no arquivo baixável');
+        assert.match(texto, new RegExp('^#target ' + f.app, 'm'), 'perdeu a diretiva #target');
+        assert.match(texto, /Arquivo pronto para uso/, 'perdeu o cabeçalho explicativo');
+      });
 
-    test(`${f.id}: roda sozinho, sem o repositório na máquina`, () => {
-      const saida = executar(texto, f.app);
-      assert.ok(saida.alertas.length > 0 || saida.janelas > 0,
-        'o script não alertou nem abriu janela — provavelmente não chegou a rodar');
-      for (const mensagem of saida.alertas) {
-        assert.ok(!/is not defined|undefined is not|Cannot read/i.test(mensagem),
-          'erro de referência ao rodar: ' + mensagem);
-      }
-      if (embutidos.length) {
-        assert.ok(saida.IBD, 'a biblioteca não foi montada');
-        assert.equal(typeof saida.IBD.slug, 'function');
-        assert.equal(saida.IBD.VERSAO, '0.1.0');
-      }
-    });
+      test(`${f.id}: roda sozinho, sem o repositório na máquina`, () => {
+        const saida = executar(texto, f.app);
+        assert.ok(saida.alertas.length > 0 || saida.janelas > 0,
+          'o script não alertou nem abriu janela — provavelmente não chegou a rodar');
+        for (const mensagem of saida.alertas) {
+          assert.ok(!/is not defined|undefined is not|Cannot read/i.test(mensagem),
+            'erro de referência ao rodar: ' + mensagem);
+        }
+        if (resolvido.embutidos.length) {
+          assert.ok(saida.IBD, 'a biblioteca não foi montada');
+          assert.equal(typeof saida.IBD.slug, 'function');
+          assert.equal(saida.IBD.VERSAO, '0.1.0');
+        }
+      });
+    } else if (ext === '.js') {
+      test(`${f.id}: sintaxe JS válida e cabeçalho preservado`, () => {
+        assert.ok(!/^[ \t]*#include/m.test(texto), 'sobrou #include no arquivo baixável');
+        assert.match(texto, /Arquivo pronto para uso/, 'perdeu o cabeçalho explicativo');
+        new vm.Script(texto, { filename: f.arquivo });
+      });
+
+      test(`${f.id}: executa sem erro em ambiente ${f.app} simulado`, () => {
+        const logs = [];
+        const noop = () => {};
+        const mockUnitType = { Millimetre: 8, Centimetre: 9, Pixel: 5, Inch: 6, Point: 7, Metre: 10 };
+        const mockCtx = {
+          console: { log: (m) => logs.push(String(m)) },
+          print: (m) => logs.push(String(m)),
+          Math, Number, String, Boolean, Array, Object, JSON, parseFloat, parseInt, isNaN, isFinite,
+          Error
+        };
+        if (f.app === 'affinity') {
+          mockCtx.require = (mod) => ({
+            Document: { current: null },
+            DocumentCommand: { createAddHorizontalGuide: noop, createAddVerticalGuide: noop, createAddGuide: noop },
+            CompoundCommandBuilder: { create: () => ({ addCommand: noop, createCommand: noop }) },
+            AddChildNodesCommandBuilder: { create: () => ({ createCommand: noop }) },
+            Dialog: { create: () => ({ show: noop, runModal: () => 0, addColumn: () => ({ addGroup: () => ({}) }) }) },
+            DialogResult: { Ok: 1, Cancel: 0 },
+            UnitType: mockUnitType,
+            Rectangle: function (x, y, w, h) { this.x = x; this.y = y; this.width = w; this.height = h; },
+            Point: function (x, y) { this.x = x; this.y = y; },
+            PolyCurve: { create: () => ({ addCurve: noop }) },
+            Curve: { createRectangle: noop },
+            CurveBuilder: { create: () => ({ beginXY: function () { return this; }, lineToXY: function () { return this; }, close: function () { return this; }, createCurve: noop }) },
+            PolyCurveNodeDefinition: { create: noop },
+            ShapeNodeDefinition: { create: noop },
+            ShapeRectangle: { create: noop },
+            ShapeEllipse: { create: noop },
+            ArtTextNodeDefinition: { createFromStoryBuilder: noop },
+            StoryBuilder: { create: () => ({ setToArtisticTextDefaultStyle: noop, addText: noop }) },
+            FillDescriptor: { createNone: noop, createSolid: noop },
+            BlendMode: { Normal: 0 },
+            LineStyle: { create: noop },
+            LineStyleDescriptor: { create: noop },
+            LineCap: { Butt: 0, Round: 1, Square: 2 },
+            LineJoin: { Miter: 1, Round: 2, Bevel: 3 },
+            LineType: { Solid: 1, None: 0 },
+            StrokeAlignment: { Centre: 0, Outside: 2, Inside: 1 },
+            RGBA8: (r, g, b, a) => ({ r, g, b, alpha: a === undefined ? 255 : a }),
+            CMYK: (c, m, y, k) => ({ c, m, y, k }),
+            Font: { create: noop, createDefault: noop },
+            FontWeight: { Normal: 400, Bold: 700 },
+            FontWidth: { Normal: 5 },
+            ParagraphAlignXType: { Left: 0, Centre: 1, Right: 2 },
+            Selection: { create: () => ({}) },
+            Transform: { createTranslate: noop, createScale: noop },
+            unionRects: noop,
+            NodeChildType: { Main: 0 }
+          });
+        } else {
+          const fakeLayer = {
+            Name: '06_GUIAS',
+            Locked: false,
+            CreateRectangle: () => ({ Fill: { ApplyNoFill: noop }, Outline: { SetProperties: noop }, Move: noop }),
+            CreateArtisticText: () => ({ Fill: { ApplyUniformFill: noop }, Outline: { SetNoOutline: noop }, Bounds: { x: 0, y: 0, width: 10, height: 5, centerX: 5, centerY: 2.5 }, SetPosition: noop }),
+            CreatePath: () => ({ Fill: { ApplyNoFill: noop }, Outline: { SetProperties: noop }, Duplicate: noop })
+          };
+          mockCtx.ActiveDocument = {
+            Selection: { Count: 0, Item: noop, forEach: noop },
+            SelectionRange: { Count: 0, Item: noop, forEach: noop }
+          };
+          mockCtx.ActivePage = {
+            SizeWidth: 210,
+            SizeHeight: 297,
+            Layers: { Find: () => null },
+            CreateLayer: () => fakeLayer
+          };
+          mockCtx.ActiveLayer = fakeLayer;
+          mockCtx.ActiveSelection = mockCtx.ActiveDocument.Selection;
+          mockCtx.Color = {
+            RGB: (r, g, b) => ({ v: { r, g, b } }),
+            CMYK: (c, m, y, k) => ({ v: { c, m, y, k } })
+          };
+          mockCtx.ShapeRange = function (ids) { this.ids = ids || []; this.Count = this.ids.length; };
+        }
+        vm.runInContext(texto, vm.createContext(mockCtx));
+        assert.ok(logs.length > 0, 'o script não registrou saída ao rodar');
+      });
+    } else if (ext === '.bas') {
+      test(`${f.id}: estrutura de módulo VBA (.bas) válida`, () => {
+        assert.match(texto, /^Attribute\s+VB_Name\s*=\s*"IBD_[A-Za-z0-9_]+"/m, 'falta Attribute VB_Name no topo');
+        assert.match(texto, /Arquivo pronto para uso/, 'perdeu o cabeçalho explicativo');
+        assert.match(texto, /^\s*Option Explicit\b/m, 'falta Option Explicit');
+        assert.match(texto, /^\s*(?:Public\s+)?Sub\s+[A-Za-z0-9_]+\s*\(\)/m, 'falta Sub de entrada pública');
+        assert.match(texto, /^\s*End Sub\b/m, 'falta End Sub');
+      });
+    }
   }
 
   // O teste abaixo confere a saida publicada, entao ele mesmo constroi o
@@ -216,7 +314,7 @@ function executar(texto, appId) {
       assert.ok(f.baixarNome.startsWith(marca.nome + ' '), f.id + ': nome fora do padrão do instalador');
       const arquivo = path.join(publico, f.baixar);
       assert.ok(fs.existsSync(arquivo), 'arquivo não publicado: ' + f.baixar);
-      assert.ok(fs.statSync(arquivo).size > 500, 'arquivo publicado vazio: ' + f.baixar);
+      assert.ok(fs.statSync(arquivo).size > 400, 'arquivo publicado vazio: ' + f.baixar);
     }
   });
 

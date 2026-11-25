@@ -58,6 +58,9 @@ Não há dependências externas — só Node 18+.
 | Kit de Produção (Actions) | Photoshop | Suíte de 9 actions (.atn): 150 DPI, atualizar vínculos, sangria, placeholder, revinculação, exportações JPEG/PNG e PDFs |
 | Editar textos e preços | Photoshop | Alterna entre modelos de um ou dois dígitos no PSD aberto, com nome, preços DE/POR, unidades, tela e guias |
 | Criar textos e preços em série | Photoshop | Cria PSDs iguais aos modelos, sem arquivo externo, com textos, UN ou /KG, imagens incorporadas ou vinculadas e nome do arquivo; salva e já abre o próximo |
+| Margem de segurança (guias) | Illustrator, CorelDRAW, Affinity, TraceDraw | Cria guias internas de margem de segurança a partir das bordas da prancheta ou página |
+| Texto com dimensões do objeto | Illustrator, CorelDRAW, Affinity, TraceDraw | Mede a seleção na unidade escolhida (`mm`, `cm`, `m`, `px`, `in`, `pt`) e cria texto na camada `01_TEXTOS` |
+| Deslocamento + expandir + contorno | Illustrator, CorelDRAW, Affinity, TraceDraw | Gera caminho deslocado, separa/expande quando aplicável, remove preenchimento e aplica contorno técnico |
 
 A [família Auto layout](docs/auto-layout.md) traz para o Photoshop o que o auto layout do Figma faz: o grupo é o quadro, as camadas de dentro são os itens, e a regra de arrumação fica guardada no nome do grupo para ser reaplicada quando o conteúdo mudar. As contas ficam em `core/extendscript/ibd-layout.jsx`, sem nenhuma chamada de app — o mesmo motor vai servir Illustrator e InDesign.
 
@@ -70,7 +73,7 @@ O [editor de textos e preços](docs/textos-e-precos.md) inclui os dois PSDs orig
 ## Estrutura
 
 ```
-apps/<app>/scripts/     scripts ExtendScript, um arquivo por ferramenta
+apps/<app>/scripts/     scripts por ferramenta (ExtendScript .jsx, VBA .bas, JavaScript .js)
 apps/<app>/actions/     .atn e presets binários
 apps/<app>/templates/   documentos-base das ferramentas
 historico/              versões anteriores fora do catálogo atual
@@ -96,6 +99,7 @@ Detalhes em [docs/guia-script.md](docs/guia-script.md).
 ## Documentação
 
 - [docs/textos-e-precos.md](docs/textos-e-precos.md) — editor de preços, modelos PSD, estrutura de camadas e testes
+- [docs/ferramentas-vetor.md](docs/ferramentas-vetor.md) — ferramentas vetoriais (Illustrator, CorelDRAW, Affinity e TraceDraw), limites das APIs e validação
 - [docs/actions-photoshop.md](docs/actions-photoshop.md) — suíte de actions: rotinas, instalação, modo de botão e kit
 - [docs/auto-layout.md](docs/auto-layout.md) — família auto layout: modelo, parâmetros e etiqueta `@auto`
 - [docs/site.md](docs/site.md) — vitrine do catálogo: como é montada e como publicar na Vercel

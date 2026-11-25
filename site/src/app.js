@@ -60,7 +60,16 @@
   });
 
   function iconeApp(id) {
-    var abreviacoes = { todos: '▦', photoshop: 'Ps', illustrator: 'Ai', indesign: 'Id', aftereffects: 'Ae' };
+    var abreviacoes = {
+      todos: '▦',
+      photoshop: 'Ps',
+      illustrator: 'Ai',
+      indesign: 'Id',
+      aftereffects: 'Ae',
+      coreldraw: 'Cd',
+      affinity: 'Af',
+      tracedraw: 'Td'
+    };
     var icone = document.createElement('span');
     icone.className = 'app-icone';
     icone.dataset.app = id;
@@ -261,12 +270,19 @@
       var baixar = elo(f.baixar, rotuloBaixar, false);
       baixar.className = 'elo principal';
       baixar.setAttribute('download', f.baixarNome);
-      baixar.title = f.baixarNome + ' · ' + f.baixarTamanho + ' KB' +
-        (f.tipo === 'action'
-          ? ' · conjunto de ações para carregar no Photoshop'
-          : (f.coreEmbutido
-              ? ' · com a biblioteca do estúdio embutida, roda sozinho'
-              : ' · arquivo independente'));
+      var detalheDownload = ' · arquivo independente';
+      if (f.tipo === 'action') {
+        detalheDownload = ' · conjunto de ações para carregar no Photoshop';
+      } else if (f.app === 'coreldraw') {
+        detalheDownload = ' · módulo VBA (.bas) para importar no GlobalMacros do CorelDRAW';
+      } else if (f.app === 'affinity') {
+        detalheDownload = ' · script JavaScript (.js) para Affinity (3.3+)';
+      } else if (f.app === 'tracedraw') {
+        detalheDownload = ' · script JavaScript (.js) para o painel Scripts do TraceDraw';
+      } else if (f.coreEmbutido) {
+        detalheDownload = ' · com a biblioteca do estúdio embutida, roda sozinho';
+      }
+      baixar.title = f.baixarNome + ' · ' + f.baixarTamanho + ' KB' + detalheDownload;
       pe.appendChild(baixar);
     }
 

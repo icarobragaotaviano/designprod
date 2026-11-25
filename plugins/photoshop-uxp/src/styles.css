@@ -1,14 +1,14 @@
 /* Tokens vindos de brand.config.json. Regerar com: npm run build:plugin */
 :root {
-  --fundo: #222222;
-  --superficie: #323232;
-  --texto: #F2F2F2;
-  --texto-secundario: #AFAFAF;
-  --acento: #4069FD;
-  --acento-texto: #FFFFFF;
-  --borda: #444444;
-  --erro: #FF9B91;
-  --sucesso: #7EE2B8;
+  --fundo: #181a1f;
+  --superficie: #20232a;
+  --texto: #e4e7ee;
+  --texto-secundario: #b6bcc8;
+  --acento: #f0c419;
+  --acento-texto: #16181d;
+  --borda: #3a404d;
+  --erro: #f29ca6;
+  --sucesso: #52b788;
 }
 
 /* Cores nativas dos quatro temas do Photoshop; marca como fallback.

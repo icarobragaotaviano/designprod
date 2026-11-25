@@ -90,28 +90,50 @@ export async function resolverIncludes(raiz, relativo) {
  * Cabecalho do arquivo gerado. Sem data, de proposito: assim o mesmo
  * conteudo produz sempre o mesmo arquivo.
  */
-export function cabecalho(ferramenta, marca, embutidos) {
-  const linhas = [
-    '/*',
-    ` * ${marca.nome} — ${ferramenta.titulo}`,
-    ` * ${ferramenta.id} v${ferramenta.versao}`,
-    ' *',
-    ' * Arquivo pronto para uso: a biblioteca comum do estudio esta embutida,',
-    ' * entao ele roda sozinho por Arquivo > Scripts > Procurar.',
-    ' *'
+export function cabecalho(ferramenta, marca, embutidos, ext = '.jsx') {
+  const instrucaoUso = ext === '.bas'
+    ? 'importe no Editor VBA do CorelDRAW (Alt + F11 > Arquivo > Importar).'
+    : (ferramenta.app === 'affinity'
+        ? 'execute pelo painel Scripts / Scripting Studio do Affinity.'
+        : (ferramenta.app === 'tracedraw'
+            ? 'execute pelo painel Scripts do TraceDraw.'
+            : 'entao ele roda sozinho por Arquivo > Scripts > Procurar.'));
+  const corpo = [
+    `${marca.nome} — ${ferramenta.titulo}`,
+    `${ferramenta.id} v${ferramenta.versao}`,
+    '',
+    ext === '.jsx'
+      ? 'Arquivo pronto para uso: a biblioteca comum do estudio esta embutida,'
+      : 'Arquivo pronto para uso: independente do repositorio,',
+    instrucaoUso,
+    ''
   ];
 
   if (embutidos.length) {
-    linhas.push(' * Embutidos:');
-    for (const nome of embutidos) linhas.push(` *   ${nome}`);
-    linhas.push(' *');
+    corpo.push('Embutidos:');
+    for (const nome of embutidos) corpo.push(`  ${nome}`);
+    corpo.push('');
   }
 
-  linhas.push(
-    ` * Gerado de ${ferramenta.arquivo}. Nao edite aqui:`,
-    ' * a origem e o repositorio, e a proxima geracao sobrescreve este arquivo.',
-    ' */',
-    ''
+  corpo.push(
+    `Gerado de ${ferramenta.arquivo}. Nao edite aqui:`,
+    'a origem e o repositorio, e a proxima geracao sobrescreve este arquivo.'
   );
+
+  if (ext === '.bas') {
+    return corpo.map((l) => (l ? `' ${l}` : "'")).join('\n') + '\n';
+  }
+
+  const linhas = ['/*', ...corpo.map((l) => (l ? ` * ${l}` : ' *')), ' */', ''];
   return linhas.join('\n');
+}
+
+export function montarArquivoPublicavel(ferramenta, marca, conteudo, embutidos) {
+  const ext = (ferramenta.arquivo.match(/\.[a-z0-9]+$/i) || ['.jsx'])[0].toLowerCase();
+  const topo = cabecalho(ferramenta, marca, embutidos, ext);
+  if (ext === '.bas') {
+    const m = conteudo.match(/^(\s*Attribute\s+VB_Name\s*=[^\r\n]*\r?\n)/i);
+    if (m) return m[1] + topo + conteudo.slice(m[1].length);
+  }
+  return topo + conteudo;
 }
