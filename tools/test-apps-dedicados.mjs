@@ -5,13 +5,14 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import { apps } from '../nobel/catalogo.mjs';
 import { prancha, lona as mapaLona } from '../nobel/ferramentas/diagramas.mjs';
+import { migrarModelo } from '../nobel/ferramentas/interface.mjs';
 
 const raiz = new URL('../',import.meta.url);
 const ler = p=>readFileSync(new URL(p,raiz),'utf8');
-const ids = ['folhas','montagem','cadernos','lona'];
+const ids = ['folhas','montagem','cadernos','lona','montagem-rapida','comparar-folhas'];
 const valores = m=>Object.fromEntries(m.grupos.flatMap(g=>g.campos.map(c=>[c.id,c.valor])));
 const modulos = await Promise.all(ids.map(id=>import('../nobel/ferramentas/'+id+'.mjs')));
-const [folhas,montagem,cadernos,lona] = modulos;
+const [folhas,montagem,cadernos,lona,rapida,comparar] = modulos;
 const escolha = valores(folhas);
 const rFolhas = folhas.calcular(escolha);
 assert.ok(rFolhas.suggestions.length > 3);
@@ -21,6 +22,17 @@ assert.ok(t4.totalSheets>=Math.ceil(escolha.qty/t4.count));
 assert.throws(()=>folhas.calcular({...escolha,customW:240}),/largura e a altura/);
 assert.ok(folhas.calcular({...escolha,customW:341,customH:489}).suggestions.some(x=>x.id==='personalizada'));
 assert.equal(folhas.calcular({...escolha,pw:4000,ph:4000}).suggestions.length,0);
+for (const suggestMarginPreset of ['process','digital','offset','zero']) {
+    const entrada={...escolha,suggestMarginPreset};
+    const ranking=folhas.calcular(entrada);
+    for (const item of ranking.suggestions) {
+        const url=new URL(folhas.linkMontagem(entrada,item,ranking.margins),'https://designprod.example');
+        const params=montagem.lerLink(url.searchParams);
+        const aplicada=montagem.calcular({...valores(montagem),...params});
+        assert.deepEqual(aplicada.items,item.items,url.search);
+        assert.equal(aplicada.total,item.totalSheets,url.search);
+    }
+}
 
 const s = valores(montagem);
 const r = montagem.calcular(s);
@@ -42,6 +54,23 @@ for(const style of ['single','turn','tumble','perfector']){
 const ocupado=montagem.calcular({...s,pw:.1,ph:.1,bleed:0,gapX:0,gapY:0,orientation:'mixed'});
 assert.match(ocupado.errors.join(' '),/posições/);
 assert.match(prancha(s,r.area,r.faces[0],'Teste & peça'),/<title>Teste &amp; peça<\/title>/);
+const edicao=montagem.iniciarEdicao();
+edicao.ler(s);
+const peca=r.base[0];
+edicao.alterar(peca,{sku:'B'},'editar');
+const editada=montagem.calcular(s,edicao.ler(s));
+assert.equal(editada.faces[0].items[0].sku,'B');
+assert.equal(editada.faces[1].items[0].sku,'B');
+edicao.alterar(editada.base[0],{},'duplicar');
+assert.ok(!montagem.calcular(s,edicao.ler(s)).plano.materializavel);
+edicao.desfazer();
+assert.equal(montagem.calcular(s,edicao.ler(s)).faces[0].items[0].sku,'B');
+edicao.refazer();
+assert.ok(edicao.podeDesfazer());
+assert.deepEqual(edicao.ler({...s,sw:s.sw+1}),{edits:{},extras:[]});
+edicao.restaurar(s,{edits:{[peca.id]:{sku:'C'}},extras:[]});
+assert.equal(montagem.calcular(s,edicao.ler(s)).faces[0].items[0].sku,'C');
+assert.equal(edicao.podeDesfazer(),false);
 
 const miolo = valores(cadernos);
 const livro = cadernos.calcular({...miolo,pages:21});
@@ -61,6 +90,14 @@ assert.equal(lona.calcular({...acabamento,grommetSpacing:0}).grommets.length,0);
 assert.throws(()=>lona.calcular({...acabamento,grommetInset:999}),/recuo/);
 assert.throws(()=>lona.calcular({...acabamento,grommetSpacing:.1}),/espaçamento/);
 assert.match(mapaLona({...acabamento,pw:2980},painel),/viewBox="0 0 3040 1060"/);
+
+const rRapida=rapida.calcular(valores(rapida)).resultado;
+assert.equal(rRapida.freeComparison.winnerCount,rRapida.count);
+const rComparar=comparar.calcular({...valores(comparar),quantidade:8,compareLayout:'overlay'}).resultado;
+assert.equal(rComparar.compareInfo.items.length,8);
+assert.equal(rComparar.compareInfo.items[0].ratioVsFirst,1);
+const legado=migrarModelo({mode:'compare',compareLayout:'overlay',compareSheets:[{name:'Papel serviço',w:350,h:510}]},'comparar-folhas');
+assert.equal(comparar.calcular({...valores(comparar),...legado}).resultado.compareInfo.items[0].name,'Papel serviço');
 
 for(let j=0;j<modulos.length;j++){
     const m=modulos[j], s=valores(m), visuais=[];
@@ -89,7 +126,8 @@ for (const id of ids) {
     const recursos=JSON.parse(sw.match(/^const recursos=(\[.*\]);$/m)[1]);
     for (const arq of recursos.filter(x=>x!=='./')) assert.ok(ler(base+arq).length,base+arq);
     assert.ok(recursos.includes('ferramentas/'+id+'.mjs'));
+    for (const nome of ['engine.js','operacoes.js']) assert.ok(recursos.includes('core/producao/folha/'+nome));
     for (const outro of ids.filter(x=>x!==id)) assert.ok(!recursos.includes('ferramentas/'+outro+'.mjs'));
     assert.ok(!recursos.includes('app.js'));
 }
-console.log('Quatro apps independentes, fórmulas, desenhos e pacotes offline validados.');
+console.log('Seis apps independentes, fórmulas, transferência da sugestão, desenhos e pacotes offline validados.');

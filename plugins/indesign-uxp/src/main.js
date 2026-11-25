@@ -309,5 +309,13 @@ btnModoGrade.addEventListener('click', () => { gerenciando = false; modoVis = 'g
 btnModoLista.addEventListener('click', () => { gerenciando = false; modoVis = 'lista'; salvarModo(); render(); });
 if (btnGerenciar) btnGerenciar.addEventListener('click', () => { gerenciando = !gerenciando; render(); });
 
+document.getElementById('abrir-folha').addEventListener('click', () => {
+  try {
+    require('./bundle/folha/painel-uxp.js').abrirPainelFolha(status, require('./lib/folha-editorial.js').aplicarEditorial);
+  } catch (e) {
+    status('Não foi possível abrir o Folha: ' + e.message, 'erro');
+  }
+});
+
 carregarEstado();
 carregarCatalogo().then(render);

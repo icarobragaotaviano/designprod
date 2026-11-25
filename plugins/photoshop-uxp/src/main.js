@@ -444,5 +444,13 @@ if (btnGerenciar) {
   });
 }
 
+document.getElementById('abrir-folha').addEventListener('click', () => {
+  try {
+    require('./bundle/folha/painel-uxp.js').abrirPainelFolha(status);
+  } catch (e) {
+    status('Não foi possível abrir o Folha: ' + e.message, 'erro');
+  }
+});
+
 carregarEstado();
 carregarCatalogo().then(render);

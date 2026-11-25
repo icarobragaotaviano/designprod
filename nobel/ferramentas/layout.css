@@ -43,6 +43,7 @@ body[data-app-layout] fieldset {
   padding: 0;
   border: 0;
 }
+body[data-app-layout] fieldset[hidden] { display: none; }
 body[data-app-layout] fieldset legend { padding: 0; margin-bottom: .7rem; font-weight: 700; color: var(--ink); }
 body[data-app-layout] .campo-largo { grid-column: 1 / -1; }
 body[data-app-layout] label {
@@ -141,6 +142,10 @@ body[data-app-layout] .parametros-avancados fieldset { padding: .7rem; margin: 0
 .controles-resultado { display: flex; flex-wrap: wrap; gap: .65rem; margin-bottom: .9rem; }
 .controles-resultado:empty { display: none; }
 .controles-resultado label { flex: 1 1 10rem; }
+.editor-posicoes { width: 100%; border: 1px solid var(--rule); border-radius: 9px; padding: .65rem; }
+.editor-posicoes summary { cursor: pointer; font-weight: 650; }
+.editor-campos { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .6rem; }
+.editor-comandos { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .6rem; }
 .metricas {
   display: grid;
   grid-template-columns: repeat(3,minmax(0,1fr));
@@ -175,6 +180,8 @@ body[data-app-layout] .palco img {
   margin: 0;
   box-shadow: 0 12px 28px #0006;
 }
+.palco.palco-ampliado { display: block; overflow: auto; max-height: min(68svh,36rem); }
+body[data-app-layout] .palco-ampliado img { max-width: none; max-height: none; min-width: 140%; }
 .diagrama figcaption { display: grid; justify-items: start; gap: .55rem; padding: .75rem 0; color: var(--ink-soft); font-size: .875rem; }
 .legenda { display: flex; flex-wrap: wrap; gap: .4rem .9rem; list-style: none; padding: 0; margin: 0; }
 .legenda li { display: flex; gap: .35rem; align-items: center; }
@@ -209,7 +216,9 @@ body[data-app-layout] .palco img {
 }
 @media print {
   body[data-app-layout] .painel { display: block; }
-  body[data-app-layout] :is(form,.acao,#controles-resultado) { display: none !important; }
+  body[data-app-layout] :is(form,.acao,#controles-resultado,.diagrama button) { display: none !important; }
+  body[data-app-layout] .palco-ampliado { overflow: visible; max-height: none; }
+  body[data-app-layout] .palco-ampliado img { max-width: 100%; min-width: 0; }
   body[data-app-layout] :is(.painel > article,.palco,.metricas > div) {
     background: white; color: black; border-color: #aaa; box-shadow: none;
   }

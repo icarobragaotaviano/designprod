@@ -1,27 +1,28 @@
 import { painelamento } from '../producao/calculo.mjs';
-import { computeGrommets } from './calculo.mjs';
+import { planoFolha } from './calculo.mjs';
 import { dimensoes, fmt, numero, tiragem } from './componentes.mjs';
 import { lona } from './diagramas.mjs';
 
 export function planejarLona(s) {
-    const { pw, ph, sw, margem, hem, polePocketTop, polePocketBottom, weld, qty, grommetSpacing, grommetInset, safeMargin } = s;
-    const cutW = pw + 2*hem;
-    const cutH = ph + 2*hem + polePocketTop + polePocketBottom;
+    const { pw, ph, sw, margem, polePocketTop, polePocketBottom, weld, qty, grommetSpacing, grommetInset, safeMargin } = s;
     if (2*safeMargin >= Math.min(pw,ph)) throw Error('A área segura precisa caber dentro do formato final.');
     if (grommetSpacing && 2*grommetInset >= Math.min(pw,ph)) throw Error('O recuo dos ilhós precisa caber dentro do formato final.');
     if (grommetSpacing && (grommetSpacing<1 || 2*(pw+ph)/grommetSpacing>5000)) {
         throw Error('Aumente o espaçamento para gerar até 5.000 posições de ilhós.');
     }
+    const plano=planoFolha('planejar-lona',{...s,process:'plotter',left:margem,right:margem,bleed:0});
+    const r=plano.resultado;
+    if (r.errors.length) throw Error(r.errors.join(' '));
+    const {cutW,cutH,grommets}=r.visualInfo;
     const emenda=cutW>sw-2*margem ? weld : 0;
     const [vertical] = painelamento({ largura:cutW, altura:cutH, bobina:sw, margem, emenda, sangria:0, orientacao:'vertical' });
     if (!vertical.valido) throw Error('O painelamento não cabe na largura útil da bobina.');
-    const grommets = computeGrommets(pw,ph,grommetSpacing,grommetInset);
     if (grommets.length>5000) throw Error('Aumente o espaçamento para gerar até 5.000 posições de ilhós.');
     const warnings = [];
     if (grommets.length && safeMargin < grommetInset+10) warnings.push('A margem de segurança está próxima dos ilhós. Confira a distância até textos e logotipos.');
     if (grommets.length && (polePocketTop || polePocketBottom)) warnings.push('Há bolsa e ilhós na mesma peça. Confira as bordas que vão receber ilhós.');
     return { cutW, cutH, grommets, warnings, paineis:vertical.faixas, larguraUtil:sw-2*margem,
-        x:hem, y:hem+polePocketTop, material:vertical.metros*qty, areaCorte:cutW*cutH*qty/1e6 };
+        x:r.items[0].x, y:r.items[0].y, material:vertical.metros*qty, areaCorte:cutW*cutH*qty/1e6 };
 }
 
 export const acao = 'Calcular corte e ilhós';

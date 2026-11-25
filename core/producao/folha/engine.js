@@ -1966,7 +1966,7 @@
 
       if (useMixed) {
         if (mixed.n > 700) {
-          return { errors: ['Mais de 700 posições na grade mista. Aumente a peça ou reduza a folha.'], warnings, items: [], plan: [] };
+          return { errors: ['Mais de 700 posições na grade mista. Aumente a peça ou reduza a folha.'], warnings, items: [], plan: [], capacity: mixed.n };
         }
         layoutNote = mixed.desc;
         if (!isFree) warnings.push('Corte misto (Dutch cut) ativo: peças em 0° e 90° possuem sentidos de fibra perpendiculares.');
@@ -1977,7 +1977,7 @@
         }
       } else {
         if (g.n > 600) {
-          return { errors: ['Mais de 600 posições na grade. Aumente a peça para editar a montagem.'], warnings, items: [], plan: [] };
+          return { errors: ['Mais de 600 posições na grade. Aumente a peça para editar a montagem.'], warnings, items: [], plan: [], capacity: g.n };
         }
         layoutNote = `${g.c} col × ${g.rows} lin (${g.angle}°)`;
         const x0 = r.x + (r.w - (g.c * (g.w + 2 * s.bleed) + (g.c - 1) * s.gapX)) / 2 + s.bleed;

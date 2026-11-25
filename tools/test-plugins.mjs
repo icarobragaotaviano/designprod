@@ -124,6 +124,77 @@ assincronos.push(test('icones.mjs gera SVG, PNG RGBA 48/96px e ICO 32px validos'
   assert.match(sandbox.IBDIcones.iconeSvg('cotas', '#f0c419', 20), /<svg/);
 }));
 
+function testarFolhaUxp(arquivos) {
+  const paginas = [];
+  let fechado = false;
+  const novaPagina = () => {
+    const pagina = {
+      quadros: [],
+      insertLabel(chave, titulo) { this.titulo = titulo; },
+      textFrames: { add(quadro) { pagina.quadros.push(quadro); return quadro; } }
+    };
+    paginas.push(pagina);
+    return pagina;
+  };
+  const doc = {
+    isValid: true,
+    documentPreferences: {},
+    viewPreferences: {},
+    pages: { add: novaPagina },
+    colors: { add: () => 'preto' },
+    close() { fechado = true; }
+  };
+  const app = {
+    scriptPreferences: { measurementUnit: 'pontos' },
+    documents: { add() { doc.pages[0] = novaPagina(); return doc; } },
+    doScript(codigo, linguagem, argumentos, desfazer) {
+      assert.equal(linguagem, 'jsx');
+      assert.equal(desfazer, 'tudo');
+      vm.runInNewContext(codigo, {
+        app, MeasurementUnits: { MILLIMETERS: 'mm' }, RulerOrigin: { PAGE_ORIGIN: 'pagina' },
+        ColorModel: { PROCESS: 'processo' }, ColorSpace: { CMYK: 'cmyk' }, SaveOptions: { NO: 'nao' }
+      });
+    }
+  };
+  const modulos = new Map();
+  function carregar(arquivo) {
+    if (modulos.has(arquivo)) return modulos.get(arquivo);
+    assert.ok(arquivos.has(arquivo), 'Módulo UXP ausente: ' + arquivo);
+    const module = { exports: {} };
+    const require = (nome) => {
+      if (nome === 'indesign') return { app, ScriptLanguage: { JAVASCRIPT: 'jsx' }, UndoModes: { ENTIRE_SCRIPT: 'tudo' } };
+      if (nome === 'uxp') return { storage: { localFileSystem: {} } };
+      return carregar(path.posix.join(path.posix.dirname(arquivo), nome));
+    };
+    vm.runInNewContext(arquivos.get(arquivo).toString('utf8'), { module, require });
+    modulos.set(arquivo, module.exports);
+    return module.exports;
+  }
+  const { executar } = carregar('src/bundle/folha/operacoes.js');
+  const { abrirPainelFolha } = carregar('src/bundle/folha/painel-uxp.js');
+  assert.equal(typeof abrirPainelFolha, 'function');
+  const { aplicarEditorial } = carregar('src/lib/folha-editorial.js');
+  const plano = executar({
+    versaoContrato: 1,
+    operacao: 'planejar-cadernos',
+    parametros: { pages: 13, sw: 450, sh: 320, pw: 90, ph: 50, foldPattern: 'F8-1', style: 'sheetwise' }
+  });
+  assert.equal(aplicarEditorial(plano), 4);
+  assert.equal(paginas.length, 4);
+  assert.deepEqual(paginas.map(p => p.quadros.length), [4, 4, 4, 4]);
+  assert.ok(paginas[1].titulo.endsWith('Verso'));
+  assert.ok(paginas.some(p => p.quadros.some(q => q.contents.startsWith('Branco'))));
+  const [y, x, fimY, fimX] = paginas[0].quadros[0].geometricBounds;
+  assert.equal(fimX - x, 90);
+  assert.equal(fimY - y, 50);
+  assert.equal(doc.documentPreferences.pageWidth, 450);
+  assert.equal(app.scriptPreferences.measurementUnit, 'pontos');
+  doc.colors.add = () => { throw Error('Falha simulada'); };
+  assert.throws(() => aplicarEditorial(plano), /Falha simulada/);
+  assert.equal(fechado, true);
+  assert.equal(app.scriptPreferences.measurementUnit, 'pontos');
+}
+
 assincronos.push(test('npm run build:plugins empacota todos os 5 softwares com arquivos integros', () => {
   execFileSync(process.execPath, [path.join(RAIZ, 'tools', 'build-plugin.mjs'), '--all'], { cwd: RAIZ, stdio: 'pipe' });
   const marca = JSON.parse(fs.readFileSync(path.join(RAIZ, 'brand.config.json'), 'utf8'));
@@ -147,6 +218,16 @@ assincronos.push(test('npm run build:plugins empacota todos os 5 softwares com a
   assert.ok(idMap.has('src/bundle/standalone/indesign/scripts/exportar-paginas-pdf.jsx'));
   assert.match(idMap.get('src/main.js').toString('utf8'), /ibd-id-uxp-ocultas-v1/);
   conferirPng(idMap.get('src/icons/icone-48.png'), 48);
+  for (const plugin of [psMap, idMap]) {
+    assert.match(plugin.get('src/index.html').toString('utf8'), /id="abrir-folha"/);
+    assert.match(plugin.get('src/main.js').toString('utf8'), /painel-uxp\.js/);
+    for (const nome of ['engine.js', 'operacoes.js', 'painel-uxp.js', 'painel-uxp.css']) {
+      assert.ok(plugin.has('src/bundle/folha/' + nome), 'Artefato do Folha ausente: ' + nome);
+    }
+  }
+  assert.deepEqual(idMap.get('src/bundle/folha/engine.js'), psMap.get('src/bundle/folha/engine.js'));
+  assert.deepEqual(idMap.get('src/bundle/folha/operacoes.js'), psMap.get('src/bundle/folha/operacoes.js'));
+  testarFolhaUxp(idMap);
 
   const cepMap = lerZip(fs.readFileSync(path.join(RAIZ, 'dist', `${marca.id}-adobe-cep-${v}.zip`)));
   const cepXml = cepMap.get('CSXS/manifest.xml').toString('utf8');

@@ -25,7 +25,8 @@
     "test:standalone": "node tools/test-standalone.cjs",
     "test:actions": "node tools/test-actions.cjs",
     "test:textos": "node tools/test-textos-precos.cjs && node tools/test-criar-textos-precos.cjs && node tools/test-gerar-textos-precos.cjs",
-    "test:producao": "node tools/test-nobel.mjs && node tools/test-vectorcraft.mjs && node tools/test-gabarito-editores.mjs && node tools/test-expansao-producao.mjs && node tools/test-remendo-editores.mjs && node tools/test-imposicao-editores.mjs && node tools/test-apps-dedicados.mjs",
+    "test:folha": "node tools/test-folha.mjs",
+    "test:producao": "node tools/test-folha.mjs && node tools/test-nobel.mjs && node tools/test-vectorcraft.mjs && node tools/test-gabarito-editores.mjs && node tools/test-expansao-producao.mjs && node tools/test-remendo-editores.mjs && node tools/test-imposicao-editores.mjs && node tools/test-apps-dedicados.mjs",
     "test:vetor": "node tools/test-vetor.cjs",
     "test:vitrine": "node tools/test-vitrine.mjs",
     "test:plugins": "node tools/test-plugins.mjs"

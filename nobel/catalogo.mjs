@@ -10,6 +10,8 @@ export const apps = [
   ['consumo','Consumo de papel','Pré-impressão','Calcule folhas líquidas, perdas, acerto, peso e resmas.'],
   ['corte','Corte de folha-mãe','Pré-impressão','Compare duas orientações de corte e confira o sentido da fibra.'],
   ['montagem','Montagem e virada','Pré-impressão','Confira as posições na frente e no verso da folha de máquina.','dedicado'],
+  ['montagem-rapida','Montagem rápida','Pré-impressão','Compare retrato, paisagem e corte misto na mesma folha.','dedicado'],
+  ['comparar-folhas','Comparar folhas','Pré-impressão','Compare até oito formatos em escala proporcional.','dedicado'],
   ['cadernos','Cadernos e lombada','Acabamento','Planeje dobras, paginação, lombada e compensação de creep.','dedicado'],
   ['gabarito','Gabarito de acabamento','Acabamento','Exporte a prova cotada de corte, sangria e reserva de Wire-o.'],
   ['lona','Lona e ilhós','Acabamento','Planeje bainhas, bolsas, emendas e pontos de instalação.','dedicado'],

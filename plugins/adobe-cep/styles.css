@@ -84,3 +84,10 @@ body {
 .gerenciar-nome { flex: 1; font-size: 11px; font-weight: 600; }
 .gerenciar-estado { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 8px; background: rgba(82, 183, 136, 0.16); color: var(--sucesso); }
 .gerenciar-item.oculta .gerenciar-estado { background: rgba(242, 156, 166, 0.16); color: var(--erro); }
+.folha-painel { flex: 0 1 auto; max-height: 65vh; overflow: auto; padding: 12px; }
+.folha-painel summary { cursor: pointer; }
+.folha-painel form { display: grid; gap: 8px; margin: 12px 0; }
+.folha-painel label, .folha-painel form button, .folha-painel > input, .folha-painel > button { display: block; margin: 6px 0; }
+.folha-painel form input { width: 100%; box-sizing: border-box; }
+.folha-painel svg { display: block; width: 100%; max-height: 160px; margin: 8px 0; }
+.folha-painel svg[hidden] { display: none; }

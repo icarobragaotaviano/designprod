@@ -51,6 +51,7 @@ export function mostrar(r,valores,ui) {
             ['Papel',fmt(r.net)+' folhas líquidas · '+fmt(r.total)+' com perdas e acerto']
         ]);
         ui.avisos(r.warnings);
+        ui.arquivoPlano?.(r.plano,'plano-cadernos');
     }
     desenhar();
 }

@@ -23,6 +23,9 @@
   var env = cs.getHostEnvironment();
   var appDetectado = MAPA_HOST[env && env.appName] || 'illustrator';
   var appAtivo = appDetectado;
+  if (appDetectado === 'illustrator' && env && env.appName === 'ILST' && window.IBDIniciarFolha) {
+    window.IBDIniciarFolha(cs);
+  }
 
   var CHAVE_FAV = 'ibd-cep-favoritos-v1';
   var CHAVE_MODO = 'ibd-cep-modo-v1';

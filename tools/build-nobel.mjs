@@ -32,8 +32,15 @@ for(const [id,titulo,,descricao,origem,modo] of apps){
   const arquivos=new Map();
   if(origem==='dedicado'){
     const nomes=['calculo','componentes','diagramas','interface',id];
-    for(const nome of nomes)arquivos.set('ferramentas/'+nome+'.mjs',await arquivo('ferramentas/'+nome+'.mjs'));
-    arquivos.set('origens/folha/engine.js',await arquivo('origens/folha/engine.js'));
+    const pastaMotor='core/producao/folha/';
+    for(const nome of nomes){
+      const codigo=await arquivo('ferramentas/'+nome+'.mjs');
+      arquivos.set('ferramentas/'+nome+'.mjs',nome==='calculo'
+        ? codigo.toString().replaceAll('../../'+pastaMotor,'../'+pastaMotor) : codigo);
+    }
+    for(const nome of ['engine.js','operacoes.js']){
+      arquivos.set(pastaMotor+nome,await readFile(path.join(raiz,pastaMotor,nome)));
+    }
     if(id==='lona'){
       for(const nome of ['producao/calculo.mjs','calculos.mjs'])arquivos.set(nome,await arquivo(nome));
     }

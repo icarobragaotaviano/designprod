@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>IBD Ferramentas</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="bundle/folha/painel-uxp.css" />
   </head>
   <body>
     <header class="cabecalho">
@@ -31,8 +32,9 @@
       </div>
     </header>
 
-    <div class="barra-busca">
+    <div class="barra-busca folha-uxp-busca">
       <input id="filtro" type="text" placeholder="Buscar por nome ou palavra-chave..." aria-label="Buscar ferramentas" />
+      <button type="button" id="abrir-folha">Folha</button>
     </div>
 
     <nav class="abas" id="abas" role="tablist" aria-label="Categorias">
@@ -43,6 +45,7 @@
     </nav>
 
     <main id="lista" class="lista" aria-labelledby="titulo-painel"></main>
+    <main id="folha-painel" class="folha-uxp-painel" aria-label="Folha" style="display:none"></main>
 
     <footer class="rodape">
       <span id="status" role="status" aria-live="polite" aria-atomic="true">Pronto. Clique em qualquer icone para executar.</span>

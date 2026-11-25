@@ -48,6 +48,26 @@
 
     <main id="lista" class="lista"></main>
 
+    <details id="folha-painel" class="folha-painel" hidden>
+      <summary>Folha · Montagem de peças</summary>
+      <form id="folha-form">
+        <label>Largura da folha (mm) <input name="sw" type="number" min="0.1" step="any" value="328" required></label>
+        <label>Altura da folha (mm) <input name="sh" type="number" min="0.1" step="any" value="478" required></label>
+        <label>Largura da peça (mm) <input name="pw" type="number" min="0.1" step="any" value="90" required></label>
+        <label>Altura da peça (mm) <input name="ph" type="number" min="0.1" step="any" value="50" required></label>
+        <label>Sangria (mm) <input name="bleed" type="number" min="0" step="any" value="3" required></label>
+        <label>Calha (mm) <input name="gapX" type="number" min="0" step="any" value="6" required></label>
+        <label>Tiragem <input name="qty" type="number" min="1" value="1000" required></label>
+        <button type="submit">Calcular</button>
+      </form>
+      <label for="folha-arquivo">Ou importe um plano de montagem (JSON)</label>
+      <input id="folha-arquivo" type="file" accept=".json,application/json">
+      <p id="folha-previa" role="status"></p>
+      <svg id="folha-diagrama" role="img" aria-label="Prévia geométrica da primeira face" hidden></svg>
+      <label><input id="folha-arte" type="checkbox" disabled> Repetir o objeto selecionado (frente simples)</label>
+      <button id="folha-aplicar" type="button" disabled>Criar pranchetas no Illustrator</button>
+    </details>
+
     <footer class="rodape">
       <span id="status" role="status" aria-live="polite">Pronto. Clique em um icone para rodar.</span>
     </footer>
@@ -55,6 +75,9 @@
     <script src="js/CSInterface.js"></script>
     <script src="js/icones.js"></script>
     <script src="catalog.js"></script>
+    <script src="bundle/folha/engine.js"></script>
+    <script src="bundle/folha/operacoes.js"></script>
+    <script src="js/folha.js"></script>
     <script src="main.js"></script>
   </body>
 </html>

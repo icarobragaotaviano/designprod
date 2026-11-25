@@ -121,6 +121,14 @@ async function empacotarUxp(pluginDir, prefixoSaida, iconeId, incluirFullBundle)
   const bundle = path.join(SRC, 'bundle');
   await rm(bundle, { recursive: true, force: true });
   await mkdir(bundle, { recursive: true });
+  const folha = path.join(bundle, 'folha');
+  await mkdir(folha);
+  for (const nome of ['engine.js', 'operacoes.js']) {
+    await cp(path.join(RAIZ, 'core', 'producao', 'folha', nome), path.join(folha, nome));
+  }
+  for (const nome of ['painel-uxp.js', 'painel-uxp.css']) {
+    await cp(path.join(RAIZ, 'plugins', 'shared', 'folha', nome), path.join(folha, nome));
+  }
   if (incluirFullBundle) {
     await cp(path.join(RAIZ, 'core'), path.join(bundle, 'core'), { recursive: true });
     await cp(path.join(RAIZ, 'apps'), path.join(bundle, 'apps'), { recursive: true });
@@ -175,6 +183,11 @@ async function buildAdobeCep() {
     'indesign',
     'photoshop'
   ]);
+  const folha = path.join(DIR, 'bundle', 'folha');
+  await mkdir(folha, { recursive: true });
+  for (const arquivo of ['engine.js', 'operacoes.js']) {
+    await cp(path.join(RAIZ, 'core', 'producao', 'folha', arquivo), path.join(folha, arquivo));
+  }
 
   const { caminhos, pacote } = await ziparDiretorio(DIR);
   const base = `${marca.id}-adobe-cep-${marca.versao}`;
