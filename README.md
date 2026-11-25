@@ -10,6 +10,8 @@ Um repositório único para todas as ferramentas de produção: os scripts nasce
 
 O catálogo principal reúne os apps web, scripts, ações e plugins. Os apps abrem em `/apps/<app>/`. A identidade visual segue [DESIGN.md](DESIGN.md). A branch de trabalho é `main`. Consulte o [projeto de produção gráfica](docs/nobel/README.md) para escopo e homologação.
 
+Os fluxos de preflight, impressão, acabamento e atendimento estão descritos no [guia de produção](docs/fluxos-de-producao.md).
+
 ## Como funciona
 
 ```

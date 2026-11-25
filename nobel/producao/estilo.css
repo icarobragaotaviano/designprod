@@ -1,0 +1,25 @@
+body[data-producao] main{padding-block:24px 38px}
+body[data-producao] .painel{grid-template-columns:minmax(310px,.9fr) minmax(0,1.1fr);align-items:start}
+body[data-producao] fieldset{min-width:0}
+body[data-producao] article h2{font-size:17px;letter-spacing:-.02em}
+body[data-producao] .campo-largo{grid-column:1/-1}
+body[data-producao] .check-row{display:flex;align-items:center;gap:12px;background:var(--raised);padding:8px 10px;border-radius:8px}
+body[data-producao] .check-row input{width:auto;accent-color:var(--accent)}
+body[data-producao] textarea[readonly]{min-height:128px}
+body[data-producao] .tabela-scroll{overflow:auto;max-width:100%;margin:10px 0}
+body[data-producao] table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+body[data-producao] :is(td,th){text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+body[data-producao] th{position:sticky;top:0;background:var(--surface);font:600 10px var(--font-mono);color:var(--ink-soft)}
+body[data-producao] .nota-tecnica{margin:12px 0;color:var(--ink-soft)}
+body[data-producao] #resultado img{border:8px solid var(--stage-bg);border-radius:8px}
+body[data-producao] #resultado .acao{color:var(--secondary);margin:4px}
+body[data-producao] #resultado h2{margin-top:12px}
+@media(max-width:900px){body[data-producao] .painel{grid-template-columns:1fr}}
+@media(max-width:380px){body[data-producao] fieldset{grid-template-columns:1fr}}
+@media print{
+ body[data-producao] .painel{display:block}body[data-producao] :is(form,button,.acao){display:none!important}
+ body[data-producao] :is(main,article,td,th,textarea,.nota-tecnica){background:white!important;color:black!important;border-color:#aaa!important;box-shadow:none!important}
+ body[data-producao] #resultado img{max-height:400px;border:0}
+ body[data-producao] textarea[readonly]{field-sizing:content;height:auto;border:0}
+ body[data-producao] article{padding:0;border:0}
+}

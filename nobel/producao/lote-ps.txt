@@ -1,0 +1,47 @@
+// Execute no Photoshop pelo menu Arquivo > Scripts.
+const {app, core, constants} = require('photoshop');
+const fs = require('uxp').storage.localFileSystem;
+(async function () {
+  const pasta = await fs.getFolder();
+  if (!pasta) return;
+  const arquivos = (await pasta.getEntries()).filter(e=>e.isFile && /\.(jpe?g|png|tiff?|psd)$/i.test(e.name));
+  if (!arquivos.length) { await core.showAlert('Nenhuma imagem compatível na pasta.'); return; }
+  if (/swop/i.test(CONFIG.icc)) throw Error('Selecione um perfil de saída sem SWOP.');
+  const saida = await pasta.createFolder('_PREPRESS_OK', {overwrite:false}).catch(async ()=>{
+    const existente = await pasta.getEntry('_PREPRESS_OK');
+    if (!existente.isFolder) throw Error('_PREPRESS_OK precisa ser uma pasta.');
+    return existente;
+  });
+  const alvos = new Set((await saida.getEntries()).map(e=>e.name.toLowerCase()));
+  const linhas=[];
+  for(const arquivo of arquivos){
+    const nome = arquivo.name + '.jpg';
+    if (alvos.has(nome.toLowerCase())) { linhas.push(arquivo.name+' · já existe'); continue; }
+    let destino;
+    try {
+      await core.executeAsModal(async () => {
+        const abertos = new Set(app.documents.map(d=>d.id));
+        const doc = await app.open(arquivo);
+        if (abertos.has(doc.id)) throw Error('Feche o original aberto e rode novamente.');
+        try {
+          await doc.flatten();
+          const intent=CONFIG.perceptual ? constants.Intent.PERCEPTUAL : constants.Intent.RELATIVECOLORIMETRIC;
+          await doc.convertProfile(CONFIG.icc,intent,true,true);
+          if (doc.mode !== constants.DocumentMode.CMYK || /swop/i.test(doc.colorProfileName || '')) throw Error('O perfil de saída não resultou em CMYK permitido.');
+          const proporcao = CONFIG.mm ? Math.min(1,CONFIG.mm*CONFIG.ppi/(25.4*Math.max(doc.width,doc.height))) : 1;
+          await doc.resizeImage(Math.max(1,Math.round(doc.width*proporcao)),Math.max(1,Math.round(doc.height*proporcao)),CONFIG.ppi);
+          destino=await saida.createFile(nome,{overwrite:false});
+          await doc.saveAs.jpg(destino,{quality:12,embedColorProfile:true},true);
+          linhas.push(arquivo.name+' · CMYK · '+doc.width+' × '+doc.height+' px · '+doc.resolution+' ppi');
+        } finally { await doc.closeWithoutSaving(); }
+      },{commandName:'IBD · Preparar '+arquivo.name});
+      alvos.add(nome.toLowerCase());
+    } catch(e) {
+      if(destino) await destino.delete().catch(()=>{});
+      linhas.push(arquivo.name+' · falha: '+e.message);
+    }
+  }
+  const relatorio=await saida.createFile('relatorio-'+Date.now()+'.txt',{overwrite:false});
+  await relatorio.write(['ICC '+CONFIG.icc,...linhas].join('\n'));
+  await core.showAlert('Lote concluído. Confira '+relatorio.name+' na pasta _PREPRESS_OK.');
+})().catch(e=>core.showAlert(e.message || String(e)));

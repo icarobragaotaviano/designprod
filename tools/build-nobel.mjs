@@ -20,7 +20,18 @@ for(const [id,titulo,,descricao,origem,modo] of apps){
   const dir=path.join(saida,id);
   await mkdir(dir,{recursive:true});
   const arquivos=new Map();
-  if(origem){
+  if(origem==='producao'){
+    await mkdir(path.join(dir,'producao'),{recursive:true});
+    for(const nome of ['interface.mjs','calculo.mjs','fluxo.mjs','codigos.mjs','code128.mjs','qrcode.js','estilo.css','QR-LICENSE.txt','JSBARCODE-LICENSE.txt']){
+      arquivos.set('producao/'+nome,await arquivo('producao/'+nome));
+    }
+    for(const nome of ['calculos.mjs','gabarito-editores.mjs'])arquivos.set(nome,await arquivo(nome));
+    arquivos.set('estilo.css',estilo);
+    if(id==='lote-imagens')arquivos.set('lote-ps.txt',await arquivo('producao/lote-ps.txt'));
+    const cabecalho=head(titulo,base).replace('</head>','<link rel="stylesheet" href="producao/estilo.css"></head>');
+    const qr=id==='codigos'?'<script src="producao/qrcode.js"></script>':'';
+    arquivos.set('index.html',cabecalho+`<body data-app="${id}" data-producao><main><h1>${titulo}</h1><p>${descricao}</p><div class="painel"><form><fieldset aria-label="Parâmetros"></fieldset><button type="submit">Gerar resultado</button></form><article><h2>Resultado</h2><p role="status" id="aviso"></p><div id="resultado"></div></article></div></main>${qr}<script type="module" src="producao/interface.mjs"></script></body></html>`);
+  }else if(origem){
     for(const nome of await readdir(path.join(fonte,'origens',origem))){
       if(nome.endsWith('.sql')) continue;
       let dados=await arquivo('origens/'+origem+'/'+nome);
@@ -34,7 +45,7 @@ for(const [id,titulo,,descricao,origem,modo] of apps){
   }
   arquivos.set('ibd-theme.css',await readFile(path.join(raiz,'docs/ibd-theme.css')));
   let html=arquivos.get('index.html').toString();
-  if(origem)html=html.replace(/<head>/i,'<head><base href="'+base+'">').replace(/<title>.*?<\/title>/i,'<title>'+titulo+' · IBD</title>');
+  if(origem && origem!=='producao')html=html.replace(/<head>/i,'<head><base href="'+base+'">').replace(/<title>.*?<\/title>/i,'<title>'+titulo+' · IBD</title>');
   html=html.replace('</head>','<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap"><link rel="stylesheet" href="ibd-theme.css"></head>').replace('</head>','<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"></head>')
     .replace(/<body([^>]*)>/i,'<body$1><nav class="ibd-nav"><a class="ibd-sign" href="/"><span class="ibd-mark">ib<span class="ibd-dot">.</span></span>designprod<span class="ibd-dot">.</span></a><span class="ibd-sub">Suíte de produção gráfica IBD</span><button id="instalar-nobel" type="button" hidden>Instalar app</button></nav>')
     .replace('</body>','<script src="iniciar.js" defer></script></body>');
@@ -58,7 +69,7 @@ window.addEventListener('beforeinstallprompt',event=>{
     arquivos.set(src,Buffer.from((await arquivo(src+'.b64')).toString(),'base64'));
     icons.push({src,sizes:tamanho+'x'+tamanho,type:'image/png'});
   }
-  arquivos.set('manifest.webmanifest',JSON.stringify({id:'/nobel/'+id+'/',name:titulo+' · IBD',short_name:titulo,start_url:base,scope:base,lang:'pt-BR',display:'standalone',background_color:'#181a1f',theme_color:'#181a1f',icons}));
+  arquivos.set('manifest.webmanifest',JSON.stringify({id:origem==='producao'?base:'/nobel/'+id+'/',name:titulo+' · IBD',short_name:titulo,start_url:base,scope:base,lang:'pt-BR',display:'standalone',background_color:'#181a1f',theme_color:'#181a1f',icons}));
   const hash=createHash('sha256');
   for(const [nome,conteudo] of arquivos){hash.update(nome).update(conteudo);await writeFile(path.join(dir,nome),conteudo);}
   const prefixo='nobel-'+id+'-';

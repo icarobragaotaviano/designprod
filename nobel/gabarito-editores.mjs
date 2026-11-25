@@ -15,7 +15,11 @@ export function planoEditor(dados) {
 }
 
 export function scriptIllustrator(dados) {
-  const p = planoEditor(dados);
+  const {guia,...p} = planoEditor(dados);
+  return scriptIllustratorPlano({...p,linhas:[guia],camada:'Guia Wire-o'});
+}
+
+export function scriptIllustratorPlano(p) {
   return `#target illustrator
 (function () {
     var plano = ${JSON.stringify(p)};
@@ -34,13 +38,15 @@ export function scriptIllustrator(dados) {
     var arte = doc.activeLayer;
     arte.name = "Arte";
     var tecnica = doc.layers.add();
-    tecnica.name = "Guia Wire-o";
+    tecnica.name = plano.camada;
     tecnica.printable = false;
     var rect = doc.artboards[0].artboardRect;
     function pos(p) { return [rect[0] + p[0]*pt, rect[1] - p[1]*pt]; }
-    var guia = tecnica.pathItems.add();
-    guia.setEntirePath([pos(plano.guia[0]),pos(plano.guia[1])]);
-    guia.guides = true;
+    for (var i = 0; i < plano.linhas.length; i++) {
+        var guia = tecnica.pathItems.add();
+        guia.setEntirePath([pos(plano.linhas[i][0]),pos(plano.linhas[i][1])]);
+        guia.guides = true;
+    }
     tecnica.locked = true;
     doc.activeLayer = arte;
 }());
@@ -48,9 +54,13 @@ export function scriptIllustrator(dados) {
 }
 
 export function moduloCorel(dados) {
-  const {largura,altura,sangria,guia} = planoEditor(dados);
+  const {guia,...p} = planoEditor(dados);
+  return moduloCorelPlano({...p,linhas:[guia],camada:'Guia Wire-o'});
+}
+
+export function moduloCorelPlano({largura,altura,sangria,linhas,camada}) {
   // O nome único permite importar mais de um gabarito no mesmo projeto VBA.
-  const assinatura = [largura,altura,sangria,...guia.flat()].join(':');
+  const assinatura = [largura,altura,sangria,...linhas.flat(2)].join(':');
   let hash = 2166136261;
   for (const letra of assinatura) hash = Math.imul(hash ^ letra.charCodeAt(0),16777619);
   const codigo = (hash >>> 0).toString(16);
@@ -66,10 +76,10 @@ Public Sub CriarGabarito_${codigo}()
     pg.Bleed = ${sangria}
     Set arte = pg.ActiveLayer
     arte.Name = "Arte"
-    Set tecnica = pg.CreateLayer("Guia Wire-o")
+    Set tecnica = pg.CreateLayer("${camada}")
     tecnica.Printable = False
-    Set guia = tecnica.CreateLineSegment(pg.LeftX + ${guia[0][0]}, pg.TopY - ${guia[0][1]}, pg.LeftX + ${guia[1][0]}, pg.TopY - ${guia[1][1]})
-    guia.Outline.Color.RGBAssign 224, 75, 30
+${linhas.map(([[x1,y1],[x2,y2]])=>`    Set guia = tecnica.CreateLineSegment(pg.LeftX + ${x1}, pg.TopY - ${y1}, pg.LeftX + ${x2}, pg.TopY - ${y2})
+    guia.Outline.Color.RGBAssign 43, 108, 176`).join('\n')}
     tecnica.Editable = False
     arte.Activate
 End Sub
