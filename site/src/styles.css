@@ -66,11 +66,11 @@ button:disabled { cursor: default; opacity: .5; }
 .topo h1 { font-size: 14px; line-height: 1; font-weight: 600; margin: 0; }
 .subtitulo { color: var(--texto-secundario); padding-left: 12px; border-left: 1px solid var(--borda); }
 .navegacao { align-self: stretch; display: flex; gap: 4px; }
-.navegacao button {
+.navegacao :is(button, a) {
   padding: 0 12px; border: 0; border-bottom: 2px solid transparent;
-  color: var(--texto-secundario); background: transparent;
+  color: var(--texto-secundario); background: transparent; text-decoration: none;
 }
-.navegacao button:hover { background: var(--painel); color: var(--texto); }
+.navegacao :is(button, a):hover { background: var(--painel); color: var(--texto); }
 .navegacao button[aria-pressed="true"] { color: var(--texto); border-bottom-color: var(--acento); }
 .topo-acoes { margin-left: auto; display: flex; gap: 8px; align-items: center; }
 .botao, .elo {
@@ -239,8 +239,8 @@ button:disabled { cursor: default; opacity: .5; }
   .topo { min-height: 46px; flex-wrap: wrap; gap: 0 12px; padding: 0 12px; }
   .topo-marca { flex: 1; }
   .topo-acoes { display: flex; flex-basis: 100%; margin: 0; padding: 0 0 8px; flex-wrap: wrap; }
-  .navegacao { min-height: 46px; }
-  .navegacao button { padding: 0 8px; font-size: 11px; }
+  .navegacao { min-height: 46px; flex-wrap: wrap; }
+  .navegacao :is(button, a) { min-height: 34px; padding: 0 8px; font-size: 11px; }
   .barra-opcoes { padding: 8px 12px; gap: 10px; }
   .campo-busca { flex: 1; min-width: 0; }
   .contexto { display: none; }
@@ -262,7 +262,7 @@ button:disabled { cursor: default; opacity: .5; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; } }
 
 /* Favorites tab and star controls. */
-.navegacao button { display: inline-flex; align-items: center; gap: 6px; }
+.navegacao :is(button, a) { display: inline-flex; align-items: center; gap: 6px; }
 .aba-contador {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; padding: 0 5px;

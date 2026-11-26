@@ -512,6 +512,7 @@
     if (f.codigo) {
       pe.appendChild(elo(f.codigo, f.codigoRotulo || 'Ver código', false));
     }
+    if (f.tutorial) pe.appendChild(elo(f.tutorial, 'Tutorial', false));
     if (f.docUrl) {
       pe.appendChild(elo(f.docUrl, 'Documentação', true));
     }
@@ -614,6 +615,7 @@
     btnFav.appendChild(document.createTextNode(ativo ? 'Remover dos favoritos' : 'Adicionar aos favoritos'));
     btnFav.addEventListener('click', function () { alternarFavorito(f.id); });
     acoes.appendChild(btnFav);
+    if (f.tutorial) acoes.appendChild(elo(f.tutorial, 'Passo a passo', false));
     if (f.docUrl) acoes.appendChild(elo(f.docUrl, 'Abrir documentação', true));
     if (f.codigo) acoes.appendChild(elo(f.codigo, f.codigoRotulo || 'Ver código', false));
     elDetalhes.appendChild(acoes);

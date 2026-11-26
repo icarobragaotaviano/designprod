@@ -49,6 +49,35 @@ test('Todos os itens da vitrine possuem titulo limpo e descricao informativa', (
   }
 });
 
+test('Tutoriais ilustrados apontam para as ferramentas publicadas', () => {
+  const guia = fs.readFileSync(path.join(RAIZ, 'site/publico/tutoriais/index.html'), 'utf8');
+  assert.match(html, /href="\/tutoriais\/">Tutoriais/);
+  const licoes = [...guia.matchAll(/<article class="licao" id="([^"]+)"/g)];
+  assert.equal(licoes.length, 13);
+  assert.equal(new Set(licoes.map(m => m[1])).size, licoes.length);
+  assert.equal((guia.match(/<figcaption>/g) || []).length, licoes.length);
+  assert.equal((guia.match(/<ol class="passos">/g) || []).length, licoes.length);
+  for (const ferramenta of dados.ferramentas.filter(f => f.tutorial)) {
+    assert.ok(guia.includes(`id="${ferramenta.tutorial.split('#')[1]}"`), ferramenta.id);
+    if (ferramenta.baixar) assert.ok(guia.includes(ferramenta.baixar), ferramenta.id);
+  }
+});
+
+test('Índice de scripts inclui as ferramentas do catálogo e da bancada', () => {
+  const pasta = path.join(RAIZ, 'site/publico');
+  const scripts = fs.readFileSync(path.join(pasta, 'scripts/index.html'), 'utf8');
+  assert.match(html, /href="\/scripts\/">Scripts/);
+  const esperados = dados.ferramentas.filter(f => f.tipo === 'script' || (f.id.startsWith('desktop/') && f.tipo === 'utilitário'));
+  assert.ok(esperados.length >= 65);
+  assert.equal((scripts.match(/class="script" data-item/g) || []).length, esperados.length);
+  for (const f of esperados) {
+    for (const url of [f.baixar, f.codigo]) {
+      assert.ok(scripts.includes(url), `${f.id} · ${url}`);
+      assert.ok(fs.statSync(path.join(pasta, url)).isFile(), `${f.id} · ${url}`);
+    }
+  }
+});
+
 /* 2. Harness DOM minimo para testar a aba exclusiva de Favoritos ----- */
 
 function criarDomSimulado(storeInicial, hashInicial) {

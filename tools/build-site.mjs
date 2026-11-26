@@ -26,6 +26,7 @@ import { familiaImposicao } from '../nobel/imposicao/versoes.mjs';
 import { APPS } from './lib/meta.mjs';
 import { resolverIncludes, montarArquivoPublicavel } from './lib/incluir.mjs';
 import { ICONES, PALETA_ICONES, gerarCodigoIconesJs } from './lib/icones.mjs';
+import { prepararGuias, renderScripts, renderTutoriais } from '../site/src/guias/render.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(RAIZ, 'site', 'src');
@@ -62,6 +63,7 @@ function origem() {
 }
 
 const repo = origem();
+const fonteNoGitHub = arquivo => repo?.ref ? `${repo.url}/blob/${repo.ref}/${arquivo}` : undefined;
 
 /* 2. Enriquecer as ferramentas ----------------------------------------- */
 
@@ -102,6 +104,7 @@ for (const f of catalogo.ferramentas) {
   if (f.doc && repo && repo.ref) item.docUrl = `${repo.url}/blob/${repo.ref}/${f.doc}`;
 
   if (f.tipo === 'script') {
+    item.fonteRepositorio = fonteNoGitHub(f.arquivo);
     const pronto = await prepararDownload(f);
     if (nomesUsados.has(pronto.baixar)) {
       console.error(`Dois scripts disputariam o mesmo endereco de download: ${pronto.baixar}`);
@@ -258,10 +261,14 @@ for(const [nome,rotulo] of desktop){
   const imposicao=familiaImposicao.includes(id);
   const descricao=imposicao?'Monte duas folhas alinhadas em escala real, com a arte de impressão e a faca de corte.':rotulo;
   const docUrl=imposicao && repo && repo.ref ? `${repo.url}/blob/${repo.ref}/docs/fluxos-de-producao.md#imposição-de-arte-e-corte` : undefined;
-  ferramentas.push({id,titulo,descricao,docUrl,app,tipo:'utilitário',versao:marca.versao,baixar:'/apps/desktop/'+nome,baixarNome:nome,baixarTamanho:Math.max(1,Math.ceil((await stat(path.join(RAIZ,'nobel/desktop',nome))).size/1024))});
+  const arquivo = 'nobel/desktop/' + nome;
+  ferramentas.push({id,titulo,descricao,docUrl,app,tipo:'utilitário',versao:marca.versao,baixar:'/apps/desktop/'+nome,
+    baixarNome:nome,baixarTamanho:Math.max(1,Math.ceil((await stat(path.join(RAIZ,arquivo))).size/1024)),
+    codigo:'arquivos/'+arquivo,fonteRepositorio:fonteNoGitHub(arquivo)});
 }
 padronizarVitrine(ferramentas);
 reunirVersoes(ferramentas);
+const ferramentasPorId = prepararGuias(ferramentas);
 const dados = {
   marca: catalogo.marca,
   versao: catalogo.versao,
@@ -332,6 +339,19 @@ if (pendentes) {
 }
 await writeFile(path.join(SAIDA, 'index.html'), html, 'utf8');
 
+await Promise.all([
+  cp(path.join(SRC, 'guias', 'guias.css'), path.join(SAIDA, 'guias.css')),
+  cp(path.join(SRC, 'guias', 'guias.js'), path.join(SAIDA, 'guias.js')),
+  ...[
+    ['tutoriais', renderTutoriais(ferramentasPorId)],
+    ['scripts', renderScripts(ferramentas, nomesApps)]
+  ].map(async ([rota, pagina]) => {
+    const pasta = path.join(SAIDA, rota);
+    await mkdir(pasta, { recursive: true });
+    await writeFile(path.join(pasta, 'index.html'), pagina, 'utf8');
+  })
+]);
+
 await writeFile(path.join(SAIDA, 'icones.js'), gerarCodigoIconesJs(), 'utf8');
 await cp(path.join(SRC, 'plugin-builder.js'), path.join(SAIDA, 'plugin-builder.js'));
 await cp(path.join(SRC, 'app.js'), path.join(SAIDA, 'app.js'));
@@ -346,6 +366,7 @@ for (const { destino, texto } of prontos) {
 // Os arquivos servidos: o codigo de cada ferramenta e a biblioteca comum.
 await cp(path.join(RAIZ, 'apps'), path.join(SAIDA, 'arquivos', 'apps'), { recursive: true });
 await cp(path.join(RAIZ, 'core'), path.join(SAIDA, 'arquivos', 'core'), { recursive: true });
+await cp(path.join(RAIZ, 'nobel', 'desktop'), path.join(SAIDA, 'arquivos', 'nobel', 'desktop'), { recursive: true });
 
 const downloads = path.join(RAIZ, 'downloads');
 if (await access(downloads).then(() => true, () => false)) {
