@@ -70,9 +70,9 @@ figcaption { color: #b6bcc8; font-size: 13px; margin-top: 8px; }
 .parametros > div + div { border-top: 1px solid #303541; }
 .parametros dt { color: #a7b2c2; }
 .parametros dd { font-weight: 600; color: #e4e7ee; overflow-wrap: anywhere; }
-.passos { list-style: none; counter-reset: passo; padding: 0; margin: 16px 0; }
-.passos li { position: relative; padding: 10px 0 10px 42px; counter-increment: passo; border-top: 1px solid #333844; }
-.passos li::before { content: counter(passo, decimal-leading-zero); position: absolute; left: 0; top: 10px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 6px; background: #293846; color: #b6d8f8; font: 12px 'Space Mono',monospace; }
+.passos { list-style: none; padding: 0; margin: 16px 0; }
+.passos li { position: relative; padding: 10px 0 10px 42px; border-top: 1px solid #333844; }
+.passo-numero { position: absolute; left: 0; top: 10px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 6px; background: #293846; color: #b6d8f8; font: 12px 'Space Mono',monospace; }
 .passos li p { color: #c4cad5; margin-top: 3px; }
 .checagem { border-left: 3px solid #52b788; background: #1a2825; padding: 10px 13px; border-radius: 0 6px 6px 0; }
 .checagem strong { color: #a4e1c1; margin-right: 4px; }
@@ -140,7 +140,7 @@ figcaption { color: #b6bcc8; font-size: 13px; margin-top: 8px; }
 .pdf { width: min(64px,31%); height: 91px; align-content: end; padding: 3px; }
 .prova-arte { position: absolute; inset: 10px 6px 21px; background: linear-gradient(155deg,#6597bf 55%,#efb526 55%); }
 .prova-mascara { position: absolute; width: 37%; top: 21%; left: 25%; background: #2b4658; }
-.pdf-2 .prova-mascara { background: none; border: 2px solid #df0887; }.pdf-3 .prova-arte { display: none; }.pdf-3 .prova-mascara { background: #000; }
+.pdf-2 .prova-mascara { outline: 2px solid #df0887; }.pdf-3 .prova-arte { display: none; }.pdf-3 .prova-mascara { background: #000; }
 .cal { padding: 4px; display: flex; flex-direction: column; align-items: stretch; font-size: 10px; }
 .cal > b { text-align: center; }.cal.mesa { width: min(82px,32%); height: 64px; border-top: 5px double #314759; }.cal.parede { width: min(72px,31%); height: 97px; justify-content: space-between; }.cal.bolso { width: min(75px,31%); height: 52px; }
 .cal.parede > div,.cal.bolso > div { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 2px; width: 100%; }

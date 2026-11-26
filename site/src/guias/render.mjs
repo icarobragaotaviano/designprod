@@ -82,7 +82,7 @@ function renderLicao(licao, porId) {
       <figure><div class="palco" aria-hidden="true">${imagem}</div><figcaption>${texto(legenda)}</figcaption></figure>
       <dl class="parametros">${licao.dados.map(([k,v]) => `<div><dt>${texto(k)}</dt><dd>${texto(v)}</dd></div>`).join('')}</dl>
     </div>
-    <ol class="passos">${licao.passos.map(([nome, instrucao]) => `<li><strong>${texto(nome)}</strong><p>${texto(instrucao)}</p></li>`).join('')}</ol>
+    <ol class="passos">${licao.passos.map(([nome, instrucao], i) => `<li><span class="passo-numero" aria-hidden="true">${String(i + 1).padStart(2, '0')}</span><strong>${texto(nome)}</strong><p>${texto(instrucao)}</p></li>`).join('')}</ol>
     <p class="checagem"><strong>Conferência</strong> ${texto(licao.checagem)}</p>
     <div class="licao-rodape"><span>${texto(f.titulo)}</span>${acoes(f)}</div>
   </article>`;
