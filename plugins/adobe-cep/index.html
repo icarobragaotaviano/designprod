@@ -51,21 +51,55 @@
     <details id="folha-painel" class="folha-painel" hidden>
       <summary>Folha · Montagem de peças</summary>
       <form id="folha-form">
-        <label>Largura da folha (mm) <input name="sw" type="number" min="0.1" step="any" value="328" required></label>
-        <label>Altura da folha (mm) <input name="sh" type="number" min="0.1" step="any" value="478" required></label>
-        <label>Largura da peça (mm) <input name="pw" type="number" min="0.1" step="any" value="90" required></label>
-        <label>Altura da peça (mm) <input name="ph" type="number" min="0.1" step="any" value="50" required></label>
-        <label>Sangria (mm) <input name="bleed" type="number" min="0" step="any" value="3" required></label>
-        <label>Calha (mm) <input name="gapX" type="number" min="0" step="any" value="6" required></label>
-        <label>Tiragem <input name="qty" type="number" min="1" value="1000" required></label>
+        <fieldset>
+          <legend>Folha de máquina e peça</legend>
+          <label class="folha-largo">Formato da folha <select id="folha-formato"><option value="">Personalizado</option></select></label>
+          <label>Largura da folha (mm) <input name="sw" type="number" min="0.1" step="any" value="328" required></label>
+          <label>Altura da folha (mm) <input name="sh" type="number" min="0.1" step="any" value="478" required></label>
+          <label>Largura da peça (mm) <input name="pw" type="number" min="0.1" step="any" value="90" required></label>
+          <label>Altura da peça (mm) <input name="ph" type="number" min="0.1" step="any" value="50" required></label>
+          <label>Sangria (mm) <input name="bleed" type="number" min="0" step="any" value="3" required></label>
+          <label>Tiragem <input name="qty" type="number" min="1" step="1" value="1000" required></label>
+          <label>Refile <select name="corte"><option value="duplo">Duplo · Sangrias independentes</option><option value="simples">Simples · Corte compartilhado</option></select></label>
+          <label>Orientação <select name="orientation"><option value="auto">Melhor grade uniforme</option><option value="normal">0°</option><option value="rotate">90°</option><option value="mixed">Corte misto</option></select></label>
+          <label>Folga extra entre sangrias (mm) <input name="folga" type="number" min="0" step="any" value="0" required></label>
+          <label>Fibra da folha <select name="grain"><option value="none">Não informada</option><option value="x">Paralela à largura</option><option value="y">Paralela à altura</option></select></label>
+          <label>Eixo do vinco <select name="pieceGrain"><option value="free">Sem restrição</option><option value="width">Paralelo à largura da peça</option><option value="height">Paralelo à altura da peça</option></select></label>
+        </fieldset>
+        <fieldset>
+          <legend>Margens da máquina</legend>
+          <label>Margem técnica (mm) <input name="margem" type="number" min="0" step="any" value="5" required></label>
+          <label>Reserva de pinça (mm) <input name="pinca" type="number" min="0" step="any" value="12" required></label>
+          <label>Lado da pinça <select name="pincaLado"><option value="bottom">Inferior</option><option value="top">Superior</option><option value="left">Esquerdo</option><option value="right">Direito</option></select></label>
+        </fieldset>
         <button type="submit">Calcular</button>
       </form>
       <label for="folha-arquivo">Ou importe um plano de montagem (JSON)</label>
       <input id="folha-arquivo" type="file" accept=".json,application/json">
+      <fieldset class="folha-saida">
+        <legend>Saída no Illustrator</legend>
+        <label class="folha-largo">Montagem <select id="folha-saida">
+          <option value="producao">Novo CMYK · Modelo com marcas técnicas</option>
+          <option value="vinculada">Novo CMYK · Repetir arte vinculada</option>
+          <option value="prova">Documento aberto · Prova geométrica</option>
+          <option value="selecao">Documento aberto · Repetir objeto selecionado</option>
+        </select></label>
+        <label class="folha-largo" id="folha-sangrada-opcao" hidden><input id="folha-sangrada" type="checkbox" checked> Arte inclui sangria simétrica (PDF, AI ou EPS)</label>
+        <div id="folha-marcas" class="folha-opcoes folha-largo">
+          <label>Afastamento (mm) <input id="folha-offset" type="number" min="0" step="any" value="3.5" required></label>
+          <label>Comprimento (mm) <input id="folha-comprimento" type="number" min="0.1" step="any" value="5" required></label>
+          <label>Traço (pt) <input id="folha-stroke" type="number" min="0.25" max="0.5" step="any" value="0.35" required></label>
+          <label>Identificação da OS <input id="folha-os" type="text" maxlength="80"></label>
+          <label><input id="folha-registro" type="checkbox" checked> Miras de registro</label>
+          <label><input id="folha-barra" type="checkbox"> Barra de controle CMYK</label>
+          <label class="folha-patch" hidden>Largura do patch (mm) <input id="folha-patch-w" type="number" min="0.1" step="any" value="5" required></label>
+          <label class="folha-patch" hidden>Altura do patch (mm) <input id="folha-patch-h" type="number" min="0.1" step="any" value="5" required></label>
+        </div>
+      </fieldset>
       <p id="folha-previa" role="status"></p>
       <svg id="folha-diagrama" role="img" aria-label="Prévia geométrica da primeira face" hidden></svg>
-      <label><input id="folha-arte" type="checkbox" disabled> Repetir o objeto selecionado (frente simples)</label>
-      <button id="folha-aplicar" type="button" disabled>Criar pranchetas no Illustrator</button>
+      <button id="folha-aplicar" type="button" disabled>Criar montagem no Illustrator</button>
+      <p id="folha-status" role="status"></p>
     </details>
 
     <footer class="rodape">
@@ -77,6 +111,7 @@
     <script src="catalog.js"></script>
     <script src="bundle/folha/engine.js"></script>
     <script src="bundle/folha/operacoes.js"></script>
+    <script src="js/folha-producao.js"></script>
     <script src="js/folha.js"></script>
     <script src="main.js"></script>
   </body>

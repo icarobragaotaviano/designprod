@@ -86,8 +86,15 @@ body {
 .gerenciar-item.oculta .gerenciar-estado { background: rgba(242, 156, 166, 0.16); color: var(--erro); }
 .folha-painel { flex: 0 1 auto; max-height: 65vh; overflow: auto; padding: 12px; }
 .folha-painel summary { cursor: pointer; }
-.folha-painel form { display: grid; gap: 8px; margin: 12px 0; }
-.folha-painel label, .folha-painel form button, .folha-painel > input, .folha-painel > button { display: block; margin: 6px 0; }
-.folha-painel form input { width: 100%; box-sizing: border-box; }
-.folha-painel svg { display: block; width: 100%; max-height: 160px; margin: 8px 0; }
-.folha-painel svg[hidden] { display: none; }
+.folha-painel form { margin: 12px 0; }
+.folha-painel fieldset, .folha-opcoes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.folha-painel fieldset { min-width: 0; border: 1px solid var(--borda); margin: 8px 0; padding: 8px; }
+.folha-painel label { display: block; min-width: 0; }
+.folha-painel .folha-largo { grid-column: 1 / -1; }
+.folha-painel select, .folha-painel input:not([type="checkbox"]) { width: 100%; box-sizing: border-box; margin: 4px 0; }
+.folha-painel input[type="checkbox"] { accent-color: var(--acento); }
+.folha-painel svg { display: block; width: 100%; height: 240px; margin: 8px 0; }
+.folha-painel [hidden] { display: none; }
+@media (max-width: 340px) {
+  .folha-painel fieldset, .folha-opcoes { grid-template-columns: minmax(0, 1fr); }
+}
