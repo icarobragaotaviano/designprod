@@ -117,3 +117,165 @@ assert.equal(host.ibdAplicarFolha(umCartao), 'ERRO: Falha de desenho');
 assert.equal(abas.length, 2);
 assert.equal(camadas.length, 1);
 console.log(`${cenarios.length} cenários de paridade Folha, contrato, CLI e ponte Illustrator validados.`);
+
+await import('../plugins/adobe-cep/js/folha-producao.js');
+const producao = globalThis.IBDFolhaProducao;
+const maquina = { margem: 5, pinca: 12, pincaLado: 'bottom', compartilhado: false, barra: true, patchH: 5 };
+const valores = { sw: 320, sh: 450, pw: 90, ph: 50, bleed: 3, qty: 1000 };
+const opcoes = { offset: 3.5, comprimento: 5, stroke: 0.35, registro: true, barra: true,
+  patchW: 5, patchH: 5, os: 'OS 10482', arteSangrada: true };
+const montar = (ajustes = {}, medidas = {}) => producao.calcular({ ...valores, ...medidas }, { ...maquina, ...ajustes });
+const duplo = montar();
+const simples = montar({ compartilhado: true });
+assert.equal(duplo.plano.resultado.count, 21);
+assert.equal(duplo.plano.resultado.items[1].x - duplo.plano.resultado.items[0].x, 96);
+assert.equal(21 * 90 * 50 / (320 * 450), 0.65625);
+assert.equal(simples.plano.resultado.count, 24);
+assert.equal(simples.plano.resultado.items[1].x - simples.plano.resultado.items[0].x, 50);
+assert.equal(simples.plano.resultado.items[0].angle, 90);
+assert.throws(() => montar({ compartilhado: true }, { orientation: 'mixed' }), /uniforme/);
+const fibra = montar({}, { grain: 'x', pieceGrain: 'height' });
+assert.ok(fibra.plano.resultado.items.length > 0);
+assert.ok(fibra.plano.resultado.items.every(item => item.angle === 90));
+
+for (const pincaLado of ['top', 'bottom', 'left', 'right']) {
+  for (const compartilhado of [false, true]) {
+    const m = montar({ pincaLado, compartilhado });
+    const t = producao.tecnicas(m, opcoes);
+    const expected = { top: [0, 12, 320, 450], bottom: [0, 0, 320, 438],
+      left: [12, 0, 320, 450], right: [0, 0, 308, 450] };
+    assert.deepEqual(t.area, expected[pincaLado]);
+    assert.equal(t.faltantes, 0);
+    assert.equal(t.escala.length, 14);
+    assert.equal(t.miras.length, 4);
+    assert.equal(t.os.length, 4);
+    const folga = opcoes.stroke / (2 * pt);
+    const regioes = t.linhas.map(l => [l[0] - folga, l[1] - folga, l[2] + folga, l[3] + folga])
+      .concat(t.miras.map(([x, y, raio]) => [x - 1.6 * raio, y - 1.6 * raio, x + 1.6 * raio, y + 1.6 * raio]))
+      .concat(t.escala.map(([x, y, w, h]) => [x, y, x + w, y + h]), [t.os]);
+    for (const b of regioes) {
+      const [x1, y1, x2, y2] = b;
+      const [ax1, ay1, ax2, ay2] = t.arte;
+      assert.ok(x1 >= t.area[0] && y1 >= t.area[1] && x2 <= t.area[2] && y2 <= t.area[3]);
+      assert.ok(x2 <= ax1 || y2 <= ay1 || x1 >= ax2 || y1 >= ay2, 'Marca sobre a sangria');
+    }
+  }
+}
+assert.ok(producao.tecnicas(duplo, { ...opcoes, offset: 0 }).avisos.some(a => a.includes('Afastamento')));
+assert.equal(producao.tecnicas(duplo, { ...opcoes, patchW: 100 }).escala.length, 0);
+assert.ok(producao.tecnicas(duplo, { ...opcoes, comprimento: 1000 }).faltantes > 0);
+
+const dados = producao.tecnicas(simples, opcoes);
+const geometria = producao.codificar(simples.plano, false);
+const comandos = producao.codificarTecnicas(simples, dados, opcoes, true);
+assert.equal(host.ibdLerTecnicasFolha(comandos, host.ibdLerGeometriaFolha(geometria)).escala.length, 14);
+assert.throws(() => host.ibdLerTecnicasFolha(comandos.replace('0.35', '1'), host.ibdLerGeometriaFolha(geometria)), /inválidas/);
+
+const pdfPrefs = { pDFCropToBox: 'preferência', pageToOpen: 7 };
+let arquivoFonte = { name: 'cartao.pdf', exists: true };
+let larguraVinculo = 96;
+let chamadasCriacao = 0;
+let gerado;
+const origemReal = [123, 789];
+const spotRegistro = { colorType: 'registro' };
+function caminhos(destino) {
+  function criar() {
+    const path = { setEntirePath(pontos) { this.pontos = pontos; }, zOrder() {} };
+    destino.paths.push(path);
+    return path;
+  }
+  return { add: criar, rectangle(...b) { const path = criar(); path.ret = b; return path; },
+    ellipse(...b) { const path = criar(); path.elipse = b; return path; } };
+}
+function camada() {
+  const c = { paths: [], grupos: [], textos: [], printable: true };
+  c.pathItems = caminhos(c);
+  c.groupItems = { add() {
+    const g = { paths: [] };
+    g.pathItems = caminhos(g);
+    c.grupos.push(g);
+    return g;
+  } };
+  c.textFrames = { add() {
+    const t = { textRange: { characterAttributes: {} }, width: 30, height: 9 };
+    c.textos.push(t);
+    return t;
+  } };
+  return c;
+}
+function novoDocumento(modo, w, h) {
+  assert.equal(modo, 'CMYK');
+  assert.ok(Math.abs(w - 320 * pt) < 1e-8 && Math.abs(h - 450 * pt) < 1e-8);
+  chamadasCriacao++;
+  const layers = [camada()];
+  layers.add = () => { const c = camada(); layers.unshift(c); return c; };
+  return gerado = {
+    layers, spots: [{ name: 'Registro personalizado', colorType: 'spot' }, spotRegistro], copias: [],
+    artboards: [{ artboardRect: [...origemReal, origemReal[0] + w, origemReal[1] - h] }],
+    close(opcao) { assert.equal(opcao, 'descartar'); this.fechou = true; },
+    placedItems: { add() {
+      return {
+        set file(arquivo) {
+          assert.equal(arquivo, arquivoFonte);
+          assert.equal(pdfPrefs.pageToOpen, 1);
+          assert.equal(pdfPrefs.pDFCropToBox, 'BleedBox');
+          this.geometricBounds = [0, 0, larguraVinculo * pt, -56 * pt];
+        },
+        duplicate() {
+          const copia = {
+            geometricBounds: this.geometricBounds.slice(),
+            rotate(graus) {
+              assert.equal(graus, -90);
+              const b = this.geometricBounds;
+              this.geometricBounds = [0, 0, -b[3], -b[2]];
+            },
+            translate(dx, dy) { this.deslocamento = [dx, dy]; },
+            move(g) { g.arte = this; }
+          };
+          gerado.copias.push(copia);
+          return copia;
+        },
+        remove() { gerado.removeuFonte = true; }
+      };
+    } }
+  };
+}
+Object.assign(host, {
+  app: { coordinateSystem: 'anterior', preferences: { PDFFileOptions: pdfPrefs }, documents: { add: novoDocumento } },
+  ColorModel: { REGISTRATION: 'registro' }, SpotColor: function () {}, StrokeCap: { BUTTENDCAP: 'reto' },
+  DocumentColorSpace: { CMYK: 'CMYK' }, SaveOptions: { DONOTSAVECHANGES: 'descartar' },
+  Transformation: { CENTER: 'centro' }, ElementPlacement: { PLACEATEND: 'fim' }, ZOrderMethod: { BRINGTOFRONT: 'frente' },
+  PDFBoxType: { PDFBLEEDBOX: 'BleedBox', PDFTRIMBOX: 'TrimBox' }, $: { os: 'Windows' },
+  File: { openDialog: () => arquivoFonte }
+});
+assert.equal(host.ibdGerarFolha(geometria, comandos, opcoes.os), 'OK');
+assert.equal(gerado.copias.length, 24);
+assert.equal(gerado.layers[1].grupos.length, 24);
+assert.ok(gerado.layers[1].grupos.every(g => g.clipped && g.paths[0].clipping));
+const [recorteTopo, recorteX, recorteLarg, recorteAlt] = gerado.layers[1].grupos[0].paths[0].ret;
+const pose = simples.plano.faces[0].items[0];
+assert.equal(recorteTopo, origemReal[1] - (pose.y - 3) * pt);
+assert.equal(recorteX, origemReal[0] + (pose.x - 3) * pt);
+assert.equal(recorteLarg, 53 * pt);
+assert.equal(recorteAlt, 93 * pt);
+assert.equal(gerado.layers[0].paths[0].strokeColor.spot, spotRegistro);
+assert.equal(gerado.layers[0].grupos[0].paths.length, 14);
+assert.equal(gerado.layers[0].grupos[0].paths[0].fillColor.cyan, 100);
+assert.equal(gerado.layers[0].textos[0].contents, opcoes.os);
+assert.equal(gerado.removeuFonte, true);
+assert.equal(host.app.coordinateSystem, 'anterior');
+assert.deepEqual(pdfPrefs, { pDFCropToBox: 'preferência', pageToOpen: 7 });
+
+const desvinculado = producao.codificarTecnicas(simples, dados, opcoes, false);
+assert.equal(host.ibdGerarFolha(geometria, desvinculado, opcoes.os), 'OK');
+assert.equal(gerado.layers[1].paths.length, 25);
+assert.equal(gerado.layers[1].printable, false);
+larguraVinculo = 95;
+assert.match(host.ibdGerarFolha(geometria, comandos, opcoes.os), /Confira o formato/);
+assert.equal(gerado.fechou, true);
+assert.deepEqual(pdfPrefs, { pDFCropToBox: 'preferência', pageToOpen: 7 });
+const contagemAntes = chamadasCriacao;
+arquivoFonte = null;
+assert.equal(host.ibdGerarFolha(geometria, comandos, opcoes.os), 'Cancelado.');
+assert.equal(chamadasCriacao, contagemAntes);
+console.log('Montagem de produção, pinça, matriz vinculada, sangria compartilhada e marcas técnicas validadas.');
