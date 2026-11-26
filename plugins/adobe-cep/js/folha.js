@@ -6,15 +6,16 @@
     function id(nome) { return document.getElementById('folha-' + nome); }
     var painel = id('painel');
     if (!painel) return;
-    painel.hidden = false;
     var form = id('form'), arquivo = id('arquivo'), previa = id('previa'), diagrama = id('diagrama');
     var aplicar = id('aplicar'), saida = id('saida'), status = id('status'), formato = id('formato');
+    var resumoSaida = painel.querySelector('.folha-saida');
+    var metricas = id('metricas'), provador = id('provador'), diagnosticos = id('diagnosticos');
     var barra = id('barra'), sangrada = id('sangrada'), producao = root.IBDFolhaProducao;
     var montagem, tecnicas, opcoes, origem, ocupado = false, podeAplicar = false, revisao = 0;
     if (!root.FolhaOperacoes || !producao) {
       previa.textContent = 'O Folha requer uma versão do painel CEP com suporte ao motor JavaScript atual.';
-      arquivo.disabled = true;
       form.hidden = true;
+      resumoSaida.hidden = true;
       return;
     }
 
@@ -28,13 +29,33 @@
 
     function novo() { return saida.value === 'producao' || saida.value === 'vinculada'; }
 
+    function mostrarDiagnosticos(mensagens) {
+      diagnosticos.textContent = '';
+      mensagens.forEach(function (mensagem) {
+        var item = document.createElement('li');
+        item.textContent = mensagem;
+        diagnosticos.appendChild(item);
+      });
+      diagnosticos.hidden = !mensagens.length;
+    }
+
+    function focarPrevia() {
+      if (painel.hidden) return;
+      var titulo = id('titulo-previa');
+      titulo.focus({ preventScroll: true });
+      titulo.scrollIntoView({ block: 'nearest' });
+    }
+
     function limpar(mensagem) {
       montagem = null;
       podeAplicar = false;
       aplicar.disabled = true;
-      diagrama.setAttribute('hidden', '');
+      metricas.hidden = true;
+      provador.hidden = true;
       diagrama.textContent = '';
-      previa.textContent = mensagem || '';
+      painel.classList.remove('folha-calculada');
+      previa.textContent = 'Calcule a montagem ou importe um plano.';
+      mostrarDiagnosticos(mensagem ? [mensagem] : []);
       status.textContent = '';
     }
 
@@ -97,7 +118,7 @@
         });
         if (t.os.length) desenho('text', { x: t.os[0], y: t.os[3] - 0.5, 'font-size': 2.5, fill: '#171713' }).textContent = opcoes.os;
       }
-      diagrama.removeAttribute('hidden');
+      provador.hidden = false;
     }
 
     function atualizar() {
@@ -109,17 +130,25 @@
       var mensagens = plano.diagnosticos.map(function (item) { return item.mensagem; });
       if (s.pieceGrain !== 'free' && s.grain === 'none') mensagens.push('Informe o sentido da fibra para aplicar a restrição do vinco.');
       var pronto = plano.materializavel && plano.faces.length;
-      var resumo = '';
+      metricas.hidden = !pronto;
+      provador.hidden = true;
+      painel.classList.toggle('folha-calculada', Boolean(pronto));
       if (pronto) {
         var areaFinal = r.count * s.pw * s.ph;
         var folga = m.compartilhado ? 2 * m.sangria : 0;
         function percentual(area) {
           return (100 * areaFinal / area).toLocaleString('pt-BR', { maximumFractionDigits: 2, minimumFractionDigits: 2 }) + '%';
         }
-        resumo = r.count + ' poses · ' + r.layoutNote + ' · ' + percentual(s.sw * s.sh) + ' da folha · ' +
-          percentual((r.area.w + folga) * (r.area.h + folga)) + ' da área útil · ' + r.total + ' folhas · ' + plano.faces.length + ' face(s). ';
-        if (r.freeComparison) resumo += 'Capacidade por orientação: 0° ' + r.freeComparison.normal.count +
-          ' · 90° ' + r.freeComparison.rotate.count + '. ';
+        id('poses').textContent = r.count;
+        id('rendimento').textContent = percentual(s.sw * s.sh);
+        id('total').textContent = r.total.toLocaleString('pt-BR');
+        previa.textContent = (origem === 'arquivo' ? 'Plano importado · ' : '') + s.sw + ' × ' + s.sh + ' mm · ' +
+          r.layoutNote + ' · ' + percentual((r.area.w + folga) * (r.area.h + folga)) + ' da área útil · ' +
+          plano.faces.length + (plano.faces.length === 1 ? ' face' : ' faces');
+        if (r.freeComparison) previa.textContent += ' · 0°: ' + r.freeComparison.normal.count +
+          ' / 90°: ' + r.freeComparison.rotate.count;
+      } else {
+        previa.textContent = 'Montagem indisponível para estas medidas.';
       }
       tecnicas = null;
       if (pronto) {
@@ -138,7 +167,7 @@
         } catch (erro) { mensagens.push(erro.message); }
         desenhar(plano, tecnicas, m);
       }
-      previa.textContent = resumo + mensagens.join(' ');
+      mostrarDiagnosticos(mensagens);
       aplicar.disabled = ocupado || !podeAplicar;
     }
 
@@ -169,6 +198,10 @@
       revisao += 1;
       limpar();
     });
+    form.addEventListener('invalid', function (evento) {
+      var detalhe = evento.target.closest('details');
+      if (detalhe) detalhe.open = true;
+    }, true);
     form.addEventListener('submit', function (evento) {
       evento.preventDefault();
       revisao += 1;
@@ -176,17 +209,18 @@
       origem = 'manual';
       try { calcularManual(); atualizar(); }
       catch (erro) { limpar(erro.message); }
+      focarPrevia();
     });
 
-    painel.querySelector('.folha-saida').addEventListener('input', function () {
+    resumoSaida.addEventListener('input', function (evento) {
       revisao += 1;
       status.textContent = '';
       id('marcas').hidden = !novo();
       id('sangrada-opcao').hidden = saida.value !== 'vinculada';
-      var patches = painel.querySelectorAll('.folha-patch');
-      for (var i = 0; i < patches.length; i++) patches[i].hidden = !barra.checked;
+      id('patches').hidden = !barra.checked;
       try {
-        if (origem === 'manual') calcularManual();
+        if (origem === 'manual' && (!montagem || evento.target === saida ||
+            evento.target === barra || evento.target === id('patch-h'))) calcularManual();
         atualizar();
       } catch (erro) { limpar(erro.message); }
     });
@@ -198,7 +232,11 @@
       origem = null;
       limpar();
       arquivo.value = '';
-      if (selecionado.size > 4 * 1024 * 1024) { limpar('O arquivo Folha excede 4 MB.'); return; }
+      if (selecionado.size > 4 * 1024 * 1024) {
+        limpar('O arquivo Folha excede 4 MB.');
+        focarPrevia();
+        return;
+      }
       var leitor = new FileReader();
       leitor.onload = function () {
         if (leitura !== revisao) return;
@@ -214,8 +252,13 @@
           }
           atualizar();
         } catch (erro) { limpar(erro instanceof SyntaxError ? 'O arquivo não contém um plano Folha válido.' : erro.message); }
+        focarPrevia();
       };
-      leitor.onerror = function () { if (leitura === revisao) limpar('Não foi possível ler o plano.'); };
+      leitor.onerror = function () {
+        if (leitura !== revisao) return;
+        limpar('Não foi possível ler o plano.');
+        focarPrevia();
+      };
       leitor.readAsText(selecionado);
     });
 

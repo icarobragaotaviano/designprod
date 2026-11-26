@@ -23,8 +23,25 @@
   var env = cs.getHostEnvironment();
   var appDetectado = MAPA_HOST[env && env.appName] || 'illustrator';
   var appAtivo = appDetectado;
-  if (appDetectado === 'illustrator' && env && env.appName === 'ILST' && window.IBDIniciarFolha) {
+  if (env && env.appName === 'ILST' && window.IBDIniciarFolha) {
+    var ferramentas = document.getElementById('vista-ferramentas');
+    var rodape = document.getElementById('rodape-ferramentas');
+    var painelFolha = document.getElementById('folha-painel');
+    var abrirFerramentas = document.getElementById('abrir-ferramentas');
+    var abrirFolha = document.getElementById('abrir-folha');
+
+    function mostrarFolha(ativo) {
+      ferramentas.hidden = ativo;
+      rodape.hidden = ativo;
+      painelFolha.hidden = !ativo;
+      abrirFerramentas.setAttribute('aria-pressed', String(!ativo));
+      abrirFolha.setAttribute('aria-pressed', String(ativo));
+    }
+
     window.IBDIniciarFolha(cs);
+    abrirFerramentas.addEventListener('click', function () { mostrarFolha(false); });
+    abrirFolha.addEventListener('click', function () { mostrarFolha(true); });
+    document.getElementById('vistas-painel').hidden = false;
   }
 
   var CHAVE_FAV = 'ibd-cep-favoritos-v1';

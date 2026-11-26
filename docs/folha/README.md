@@ -34,7 +34,7 @@ O plano exportado contém os parâmetros efetivos e a revisão do motor. O consu
 ## Adaptadores e conferência
 
 - **Bancada Nobel.** Abra a ferramenta pelo catálogo. Em Escolher folha, aplique a sugestão em Montagem e virada. Use a exportação do plano na montagem para abrir a mesma geometria em um editor compatível.
-- **Illustrator CEP.** Use **Folha · Montagem de peças** para calcular ou importar um plano. A saída permite gerar um modelo CMYK, repetir arte vinculada ou criar uma prova geométrica no documento aberto. A prova aceita as faces de um plano de frente e verso. O cálculo direto exige um runtime CEP que execute os módulos JavaScript atuais.
+- **Illustrator CEP.** Abra a aba **Imposição** do painel para calcular ou importar um plano. A saída permite gerar um modelo CMYK, repetir arte vinculada ou criar uma prova geométrica no documento aberto. A prova aceita as faces de um plano de frente e verso. O cálculo direto exige um runtime CEP que execute os módulos JavaScript atuais.
 - **InDesign UXP.** Calcule ou importe a operação editorial. A prova cria um documento novo, com página por face e quadros técnicos rotulados por página, rotação e creep. A prova pode ser conferida sem alterar o documento ativo.
 - **Photoshop UXP.** Calcule, confira e troque arquivos JSON de plano no painel. A aplicação em camadas é uma etapa posterior.
 
