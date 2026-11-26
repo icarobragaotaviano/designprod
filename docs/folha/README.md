@@ -52,4 +52,19 @@ As marcas periféricas têm traço configurável de 0,25 a 0,5 pt. O painel ajus
 
 **Conferência SRA3.** Uma folha 320 × 450 mm, com peça 90 × 50 mm, sangria de 3 mm, margem técnica de 5 mm e pinça inferior de 12 mm, rende **21 poses em corte duplo (3 × 7, 65,63% da folha)**. O corte simples rende **24 poses (6 × 4, 75% da folha)**. Na conferência em produção, meça o formato e a pinça, confirme os vínculos e inspecione a cor de Registro, os patches e as separações do PDF exportado.
 
+### Separações do PDF de imposição
+
+Conferência local em 25/11/2026 com Illustrator 2027 (31.0) e Acrobat Pro. A prova SRA3 usa uma arte sintética de 90 × 50 mm com sangria de 3 mm, um campo de magenta e uma tinta especial chamada `IBD_Teste_Verde`. Na região de sobreposição, a tinta especial tem sobreimpressão ativa.
+
+| Prova | Resultado da inspeção do PDF |
+| --- | --- |
+| Arte vinculada em corte duplo | 21 poses, tinta especial com nome próprio e sobreimpressão preservada |
+| Arte vinculada em corte simples | 24 poses rotacionadas, mesma tinta especial e sobreimpressão preservada |
+| Marcas e barra | Marcas de corte, miras e OS usam Registro (`/Separation /All`). Os 14 patches de 5 × 5 mm preservam seus valores CMYK |
+| Modelo de montagem | As guias ficam ocultas no estado inicial do PDF com camadas. Ao desativar **Criar camadas do Acrobat a partir das camadas de nível superior**, a exportação exclui os traços das guias e mantém as marcas e a barra |
+
+Na exportação de teste, a conversão de cores e a edição no Illustrator foram desativadas. A Visualização de saída do Acrobat confirmou visualmente a sobreimpressão no caso de corte duplo. [Documentação do Acrobat sobre Visualização de saída](https://helpx.adobe.com/acrobat/using/previewing-output-acrobat-pro.html)
+
+A homologação no RIP da gráfica segue pendente. Na fila de prova, use a configuração de produção prevista para o trabalho. Confira quatro separações CMYK e uma separação `IBD_Teste_Verde`. As marcas de Registro devem aparecer nas cinco, e os patches da barra devem aparecer nos canais CMYK correspondentes. Na área sobreposta, confira a presença simultânea de magenta e tinta especial. Use o preset de PDF e os parâmetros de retícula da gráfica para a validação final.
+
 Consulte também [design.md](design.md).
