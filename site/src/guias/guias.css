@@ -146,6 +146,10 @@ figcaption { color: #b6bcc8; font-size: 13px; margin-top: 8px; }
 .cal.parede > div,.cal.bolso > div { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 2px; width: 100%; }
 .mes-mini { display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; }
 .mes-mini i { grid-column: 1/-1; height: 2px; background: #315b76; }.mes-mini b { height: 3px; background: #adc4d3; }
+.caderno-face { width: 81px; height: 114px; padding: 5px 5px 5px 15px; align-content: start; border-left: 7px solid #9bbad1; }
+.caderno-face.verso { border-left-width: 1px; border-right: 7px solid #9bbad1; padding: 5px 15px 5px 5px; }
+.caderno-face i { width: 100%; height: 64px; background: repeating-linear-gradient(transparent 0 7px,#9bbad1 7px 8px); }
+.caderno-face small { justify-self: end; }
 .imposicao { width: 110px; padding: 7px; gap: 4px; }
 .imposicao > div,.printcut .folha > div { display: grid; width: 100%; grid-template-columns: repeat(3,1fr); gap: 2px; }
 .imposicao i,.printcut i { display: block; height: 10px; background: #96bad3; border: 1px solid #547895; }

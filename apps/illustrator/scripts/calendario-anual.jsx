@@ -1,135 +1,176 @@
 /**
  * @ibd-id illustrator/calendario-anual
  * @ibd-titulo Calendário anual
- * @ibd-descricao Gera calendários editáveis de mesa em 14 pranchetas, de parede com 12 meses em bloco inferior e de bolso em duas faces.
+ * @ibd-descricao Gera calendários de mesa, parede e bolso com folha, margens, tipografia, destaques, feriados e rodapés por mês configuráveis.
  * @ibd-app illustrator
- * @ibd-versao 1.0.0
- * @ibd-tags calendário, folhinha, wire-o, calendário de mesa, cartão
+ * @ibd-versao 2.0.0
+ * @ibd-tags calendário, folhinha, wire-o, calendário de mesa, cartão, feriados, rodapé
  * @ibd-doc docs/folha/README.md
  */
 #target illustrator
 #include "../../../core/extendscript/ibd-ui.jsx"
 #include "../../../core/extendscript/ibd-preimpressao.jsx"
+#include "../../../core/extendscript/ibd-editorial.jsx"
+#include "../../../core/extendscript/ibd-datas-calendario.jsx"
 
-(function (p) {
+(function (p,e,datas) {
   var titulo='Calendário anual', pt=p.pt;
-  var modelos=['Mesa · 14 páginas','Parede · folhinha','Bolso · 90 × 50 mm'];
+  var modelos=['Mesa · 14 páginas','Parede · folhinha','Bolso · 2 faces'];
+  var tipos=['Cor do número','Círculo preenchido','Contorno circular','Tarja','Sublinhado'];
+  var alvos=['Feriados e fins de semana','Somente feriados','Somente fins de semana','Nenhum'];
+  var modosNota=['Rodapé em cada mês','Somente destaque das datas'];
   var dias=['D','S','T','Q','Q','S','S'];
-  var cores;
+  var bases=[
+    {w:210,h:150,sangria:0,arte:5,borda:'Superior',acabamento:15,titulo:24,data:15,rodape:8},
+    {w:290,h:390,sangria:0,arte:8,borda:'Sem reserva',acabamento:0,titulo:11,data:9,rodape:7},
+    {w:90,h:50,sangria:0,arte:2,borda:'Sem reserva',acabamento:0,titulo:5,data:4,rodape:4}
+  ];
 
-  function texto(camada,a,x,y,n,valor,cor,posicao,limite) {
-    var t=camada.textFrames.pointText([a[0]+x*pt,a[1]-y*pt]);
-    t.contents=String(valor);
-    var chars=t.textRange.characterAttributes;
-    chars.size=n;
-    chars.fillColor=cor;
-    if (limite && t.width>limite*pt) chars.size=n*limite*pt/t.width;
-    if (posicao==='centro') t.left-=t.width/2;
-    return t;
+  function editarDatas(ano,referencia) {
+    var w=new Window('dialog','Feriados e rodapés · '+ano);
+    w.orientation='column';w.alignChildren='fill';w.margins=16;
+    w.add('statictext',undefined,'DD/MM | Feriado marca uma data. MM | Nota acrescenta texto ao rodapé do mês.');
+    w.add('statictext',undefined,'Exemplos   19/03 | São José   ·   03 | Atendimento em horário especial');
+    var input=w.add('edittext',undefined,referencia,{multiline:true,scrolling:true});
+    input.preferredSize=[540,265];
+    var botoes=w.add('group');
+    botoes.alignment='right';
+    botoes.add('button',undefined,'Cancelar',{name:'cancel'});
+    botoes.add('button',undefined,'Gerar calendário',{name:'ok'});
+    if (w.show()!==1) return null;
+    return datas.ler(ano,input.text);
   }
 
-  function mes(camada,a,ano,m,x,y,w,h,compacto) {
-    var info=p.mes(ano,m);
-    var diaW=w/7, linhaH=h/9;
-    var xTexto=x+w/2, anoMes=compacto ? info.nome : info.nome+' '+ano;
-    var tit=Math.min(compacto ? 16 : 32,linhaH*pt*0.83,w*pt/6);
-    var corpo=Math.min(compacto ? 13 : 24,linhaH*pt*0.65,diaW*pt*0.68);
-    texto(camada,a,xTexto,y+linhaH,tit,anoMes,cores.preto,'centro',w*0.95);
+  function temaDoModelo(base,modelo) {
+    return e.tipografia('Tipografia, cor e destaques',[
+      ['titulo','Título dos meses',base.titulo,'0 0 0 100','Arial-BoldMT'],
+      ['dia','Dias e cabeçalho',base.data,'0 0 0 100','ArialMT'],
+      ['nota','Rodapé',base.rodape,'0 0 0 85','ArialMT']
+    ],[
+      e.escolha('tipo','Marcador',tipos,tipos[1],'Destaques'),
+      e.escolha('alvo','Marcar',alvos,alvos[0],'Destaques'),
+      e.campo('tinta','Destaque CMYK (%)','0 82 65 28','Destaques'),
+      e.escolha('notas','Texto dos feriados',modosNota,modelo===2 ? modosNota[1] : modosNota[0],'Rodapés')
+    ]);
+  }
+
+  function marca(destino,a,x,y,w,h,tipo,cor) {
+    var d=Math.min(w*0.7,h*0.86);
+    if (tipo===tipos[1] || tipo===tipos[2]) {
+      var disco=destino.pathItems.ellipse(a[1]-(y-d/2)*pt,a[0]+(x-d/2)*pt,d*pt,d*pt);
+      disco.filled=tipo===tipos[1];disco.stroked=!disco.filled;
+      if(disco.filled) disco.fillColor=cor;
+      else {disco.strokeColor=cor;disco.strokeWidth=0.45;}
+    } else if (tipo===tipos[3]) {
+      p.ret(destino,a,x-w*0.38,y-d/2,w*0.76,d,cor,0);
+    } else if (tipo===tipos[4]) {
+      p.linha(destino,a,[x-d*0.35,y+d*0.49,x+d*0.35,y+d*0.49],cor,0.5,false);
+    }
+  }
+
+  function mes(camada,a,ano,m,regiao,tema,ajustes,compacto) {
+    var calendario=p.mes(ano,m), fonte=tema.dia;
+    var grupo=camada.layers.add();grupo.name=calendario.nome;
+    var tituloH=tema.titulo.tamanho*1.25/pt, notaH=tema.nota.tamanho*1.3/pt;
+    var notas=[];
+    if(ajustes.mostraNota) notas=e.quebrar(grupo,datas.rodape(ajustes.dados[m]),tema.nota,regiao.w);
+    var alturaNota=notas.length*notaH+(notas.length ? notaH*0.4 : 0);
+    var largura=regiao.w/7, altura=(regiao.h-tituloH-alturaNota)/7;
+    if (altura<fonte.tamanho*1.18/pt || largura<fonte.tamanho*0.98/pt) {
+      throw Error(calendario.nome+' não cabe na área segura com estas fontes e rodapés. Amplie o formato ou reduza as fontes.');
+    }
+    var nome=compacto ? calendario.nome : calendario.nome+' '+ano;
+    e.texto(grupo,a,regiao,regiao.y+tituloH/2,nome,tema.titulo,'centro');
+    var corpoY=regiao.y+tituloH, tituloDias={fonte:fonte.fonte,tamanho:fonte.tamanho*0.78,cor:fonte.cor};
     for (var i=0;i<7;i++) {
-      var centro=x+diaW*(i+0.5);
-      texto(camada,a,centro,y+2*linhaH,corpo*0.82,dias[i],i===0||i===6 ? cores.destaque : cores.preto,'centro');
+      e.texto(grupo,a,{x:regiao.x+largura*i,w:largura},corpoY+altura/2,dias[i],tituloDias,'centro');
     }
-    for (var d=1;d<=info.dias;d++) {
-      var celula=info.inicio+d-1, col=celula%7, linha=Math.floor(celula/7);
-      texto(camada,a,x+diaW*(col+0.5),y+(3+linha)*linhaH,corpo,d,
-        col===0||col===6 ? cores.destaque : cores.preto,'centro');
-    }
-  }
-
-  function guiasMesa(d,w) {
-    var guia=d.layers.add();
-    guia.name='Wire-o · margem de segurança 15 mm';
-    guia.printable=false;
-    for (var i=0;i<d.artboards.length;i++) {
-      var linha=p.linha(guia,d.artboards[i].artboardRect,[0,15,w,15],cores.destaque,0.5,false);
-      linha.guides=true;
-      linha.name='Wire-o · 15 mm';
-    }
-    guia.locked=true;
-  }
-
-  function mesa(d,ano,w,h) {
-    var camada=d.layers[0]; camada.name='Calendário de mesa';
-    var a=d.artboards[0].artboardRect, fim=d.artboards[13].artboardRect;
-    texto(camada,a,w/2,h*0.57,64,ano,cores.preto,'centro',w-20);
-    texto(camada,a,w/2,h*0.72,12,'CALENDÁRIO',cores.destaque,'centro',w-20);
-    for (var i=0;i<12;i++) {
-      mes(camada,d.artboards[i+1].artboardRect,ano,i,w*0.1,21,w*0.8,h-27,false);
-    }
-    texto(camada,fim,w/2,h*0.6,24,ano,cores.preto,'centro',w-20);
-    guiasMesa(d,w);
-  }
-
-  function parede(d,ano,w,h) {
-    var a=d.artboards[0].artboardRect, camada=d.layers[0];
-    camada.name='Folhinha anual';
-    var m=w*0.04, y=h*0.48, cw=(w-2*m)/4, ch=(h-y-4-m)/3;
-    texto(camada,a,m,y,24,ano,cores.preto,null,w-2*m);
-    for (var i=0;i<12;i++) mes(camada,a,ano,i,m+(i%4)*cw,y+4+Math.floor(i/4)*ch,cw*0.94,ch,true);
-  }
-
-  function bolso(d,ano) {
-    var camada=d.layers[0]; camada.name='Cartão calendário';
-    for (var i=0;i<2;i++) {
-      var a=d.artboards[i].artboardRect;
-      texto(camada,a,45,4.6,7.8,i===0 ? ano+' · JAN–JUN' : ano+' · JUL–DEZ',cores.preto,'centro',84);
-      for (var j=0;j<6;j++) mes(camada,a,ano,i*6+j,3+(j%3)*28,5+Math.floor(j/3)*21,25,21,true);
-    }
-  }
-
-  function criar(ano,modelo,w,h) {
-    var nomes, d;
-    if (modelo===modelos[0]) {
-      nomes=['01 · Capa'];
-      for (var i=0;i<12;i++) {
-        var ordem=String(i+2);
-        if (ordem.length<2) ordem='0'+ordem;
-        nomes.push(ordem+' · '+p.mes(ano,i).nome);
+    for(var d=1;d<=calendario.dias;d++) {
+      var celula=calendario.inicio+d-1, col=celula%7, linha=Math.floor(celula/7);
+      var x=regiao.x+largura*col,y=corpoY+(1.5+linha)*altura;
+      var feriado=ajustes.feriados && !!ajustes.dados[m].dias[d];
+      var finde=ajustes.finde && (col===0 || col===6);
+      var corDia=fonte.cor;
+      if (feriado || finde) {
+        marca(grupo,a,x+largura/2,y,largura,altura,ajustes.tipo,ajustes.tinta);
+        corDia=ajustes.tinta;
+        if (ajustes.tipo===tipos[1] || ajustes.tipo===tipos[3]) corDia=ajustes.branco;
       }
-      nomes.push('14 · Contracapa');
-      d=p.novaGrade([w,h],14,4,10,nomes);
-    } else if (modelo===modelos[1]) {
-      d=p.novaGrade([w,h],1,1,0,['Folhinha '+ano]);
-    } else {
-      d=p.novaGrade([90,50],2,2,10,['01 · Janeiro a junho','02 · Julho a dezembro']);
+      e.texto(grupo,a,{x:x,w:largura},y,d,fonte,'centro',corDia);
     }
+    for(var j=0;j<notas.length;j++) {
+      e.texto(grupo,a,regiao,regiao.y+regiao.h-alturaNota+notaH*(0.9+j),notas[j],tema.nota,'esquerda');
+    }
+  }
+
+  function criar(ano,modelo,g,tema,ajustes) {
+    var nomes=[];
+    if (modelo===0) {
+      nomes.push('01 · Capa');
+      for(var i=0;i<12;i++) nomes.push(('0'+(i+2)).slice(-2)+' · '+p.mes(ano,i).nome);
+      nomes.push('14 · Contracapa');
+    } else if(modelo===1) {
+      nomes.push('Folhinha '+ano);
+    } else {
+      nomes=['01 · Janeiro a junho','02 · Julho a dezembro'];
+    }
+    var doc=e.novo(g,nomes);
     try {
-      cores={preto:p.cmyk(0,0,0,100),destaque:p.cmyk(0,82,65,28)};
-      if (modelo===modelos[0]) mesa(d,ano,w,h);
-      else if (modelo===modelos[1]) parede(d,ano,w,h);
-      else bolso(d,ano);
-      return d;
-    } catch(e) { p.fechar(d); throw e; }
+      var camada=doc.layers[0];camada.name='Calendário · '+ano;
+      var r=e.area(g,false);
+      for(var j=0;j<nomes.length;j++) {
+        var a=doc.artboards[j].artboardRect;
+        if(modelo===0){
+          if(j===0 || j===13) e.texto(camada,a,r,r.y+r.h/2,ano,tema.titulo,'centro');
+          else mes(camada,a,ano,j-1,r,tema,ajustes,false);
+          continue;
+        }
+        var cols=3,rows=2,inicio=j*6,desloc=tema.titulo.tamanho*1.45/pt;
+        if(modelo===1) {
+          cols=4;rows=3;inicio=0;
+          desloc=Math.max(desloc,r.h*0.44);
+        }
+        var folga=Math.min(3,r.w/32), cw=(r.w-(cols-1)*folga)/cols, ch=(r.h-desloc-(rows-1)*folga)/rows;
+        var cab=ano;
+        if(modelo===2) cab=ano+(j===0 ? ' · JAN–JUN' : ' · JUL–DEZ');
+        e.texto(camada,a,r,r.y+desloc-tema.titulo.tamanho*0.7/pt,cab,tema.titulo,'centro');
+        for(var k=0;k<cols*rows;k++) {
+          var celula={x:r.x+(cw+folga)*(k%cols),y:r.y+desloc+(ch+folga)*Math.floor(k/cols),w:cw,h:ch};
+          mes(camada,a,ano,inicio+k,celula,tema,ajustes,true);
+        }
+      }
+      e.criarGuias(doc,g,[]);
+      return doc;
+    } catch(err){p.fechar(doc);throw err;}
   }
 
   p.executar(titulo,function () {
-    var base=IBD.ui.formulario(titulo,[
-      {id:'ano',rotulo:'Ano',padrao:String(new Date().getFullYear()+1)},
-      {id:'modelo',rotulo:'Modelo',tipo:'escolha',opcoes:modelos,padrao:modelos[0]}
-    ],'Continuar');
-    if (!base) return;
-    var ano=p.num(base.ano,'Ano',1900,2199,true), w, h;
-    if (base.modelo!==modelos[2]) {
-      var mesaPadrao=base.modelo===modelos[0];
-      var v=IBD.ui.formulario(base.modelo,[
-        {id:'w',rotulo:'Largura (mm)',padrao:mesaPadrao?'210':'290'},
-        {id:'h',rotulo:'Altura (mm)',padrao:mesaPadrao?'150':'390'}
-      ],'Gerar');
-      if (!v) return;
-      w=p.num(v.w,'Largura',mesaPadrao?100:180,700);
-      h=p.num(v.h,'Altura',mesaPadrao?75:220,1000);
-    }
-    var d=criar(ano,base.modelo,w,h);
-    IBD.ui.resumo(titulo,[base.modelo+' · '+ano,d.artboards.length+' pranchetas em um novo documento CMYK.']);
+    var calendarios=['Referência federal do Brasil','Lista em branco'];
+    var ui=IBD.ui.formulario(titulo,[
+      e.campo('ano','Ano',String(new Date().getFullYear()+1)),
+      e.escolha('modelo','Modelo',modelos),
+      e.escolha('feriados','Feriados iniciais',calendarios)
+    ],'Continuar',{subtitulo:'Escolha o modelo. Você poderá editar todos os feriados e escrever uma nota para cada mês.'});
+    if(!ui) return;
+    var ano=p.num(ui.ano,'Ano',1900,2199,true);
+    var modelo=0;
+    if(ui.modelo===modelos[1]) modelo=1;
+    if(ui.modelo===modelos[2]) modelo=2;
+    var g=e.geometria('Formato, folha e margens',bases[modelo],false);
+    if(!g) return;
+    var tema=temaDoModelo(bases[modelo],modelo);
+    if(!tema) return;
+    var ref=ui.feriados===calendarios[0] ? datas.referencia(ano) : '';
+    var lista=editarDatas(ano,ref);
+    if(!lista) return;
+    var op=tema.opcoes;
+    var doc=criar(ano,modelo,g,tema,{
+      tipo:op.tipo,tinta:e.cor(op.tinta,'Cor de destaque'), branco:p.cmyk(0,0,0,0), dados:lista,
+      feriados:op.alvo===alvos[0]||op.alvo===alvos[1],finde:op.alvo===alvos[0]||op.alvo===alvos[2],
+      mostraNota:op.notas===modosNota[0]
+    });
+    IBD.ui.resumo(titulo,[ui.modelo+' · '+ano+' · '+doc.artboards.length+' faces',
+      'Formato final '+g.w+' × '+g.h+' mm · Folha '+g.sw+' × '+g.sh+' mm',
+      'As linhas de corte, sangria e segurança são guias. Confira a lista de feriados da localidade antes da tiragem.']);
   });
-}(IBDPP));
+}(IBDPP,IBDEditorial,IBDCalendarioDatas));

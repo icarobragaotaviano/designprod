@@ -168,3 +168,23 @@ assert.equal(prepress.mes(2027, 0).inicio, 5);
 assert.ok(prepress.rico({ typename: 'CMYKColor', cyan: 40, magenta: 40, yellow: 30, black: 100 }));
 assert.ok(!prepress.rico({ typename: 'CMYKColor', cyan: 0, magenta: 0, yellow: 0, black: 100 }));
 console.log('Pré-impressão mantém a sangria livre e valida capa, datas e tinta preta.');
+
+const editorial = vm.runInNewContext([
+    'core/extendscript/ibd-preimpressao.jsx',
+    'core/extendscript/ibd-editorial.jsx',
+    'core/extendscript/ibd-datas-calendario.jsx'
+].map(ler).join('\n') + '\n({editorial: IBDEditorial, datas: IBDCalendarioDatas})');
+const dimensoes = {w:'148', h:'210', sw:'320', sh:'450', sangria:'3', arte:'8', acabamento:'15', borda:'Esquerda'};
+const medida = editorial.editorial.medir(dimensoes);
+const frente = editorial.editorial.area(medida,false), verso = editorial.editorial.area(medida,true);
+validarPonto([medida.x,medida.y,frente.x,frente.w,verso.x,verso.w], [86,120,101,125,94,125]);
+assert.equal(verso.borda, 'Direita');
+assert.throws(() => editorial.editorial.medir({...dimensoes, sw:'148'}), /sangria precisa caber/);
+assert.throws(() => editorial.editorial.medir({...dimensoes, sh:''}), /duas medidas/);
+assert.equal(editorial.datas.paixao(2028).toISOString().slice(0,10), '2028-04-14');
+assert.match(editorial.datas.referencia(2026), /03\/04 \| Paixão de Cristo/);
+assert.doesNotMatch(editorial.datas.referencia(2023), /20\/11/);
+const fevereiro = editorial.datas.ler(2028, '29/02 | Data especial\n02 | Nota mensal\n29/02 | Aniversário')[1];
+assert.equal(editorial.datas.rodape(fevereiro), 'Nota mensal · 29 Data especial / Aniversário');
+assert.throws(() => editorial.datas.ler(2027, '29/02 | Data especial'), /Data inválida/);
+console.log('Calendário e caderno validaram feriados móveis, notas, sangria, folha e espelhamento.');

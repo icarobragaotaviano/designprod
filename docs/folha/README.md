@@ -105,4 +105,15 @@ Abra **IBD Ferramentas → Ferramentas** e procure pelo nome do módulo. Cada sc
 - **Curvas.** Informe um nome novo para a cópia. O Illustrator abre a cópia como documento ativo, converte também caixas em camadas ocultas e bloqueadas e restaura esses estados. Confira caixas encadeadas ou com texto que exceda a área antes da conversão.
 - **Marcas.** Informe a sangria real. O script eleva o afastamento quando necessário para que o traço de 0,35 pt fique fora da sangria. Os vincos usam distâncias desde o topo esquerdo da peça. Use ponto e vírgula para listar posições. Exporte a prancheta **FOLHA DE MÁQUINA** para incluir as marcas.
 - **Enobrecimento.** Selecione caminhos fechados, compostos ou grupos desses vetores. A preparação transfere a seleção para a camada técnica superior. Trabalhe em documento CMYK e incorpore imagens CMYK que precisem entrar na arte. O exportador verifica a prancheta ativa e a camada do acabamento informado. O PDF contém arte de processo, arte com contorno magenta de 0,5 pt em sobreimpressão e preenchimento vetorial K100. Confira sobreimpressão e separações no RIP antes de gravar o clichê.
-- **Calendários.** A semana começa no domingo. A versão de mesa reserva 15 mm junto à furação superior e gera as 14 faces na ordem de leitura para impor e parear frente e verso. As datas saem como texto vetorial editável.
+- **Calendários.** A semana começa no domingo. A versão de mesa oferece 15 mm como reserva inicial de furação e gera 14 faces em ordem de leitura. Mesa, parede e bolso aceitam medidas personalizadas e tipografia editável.
+- **Cadernos.** O script Caderno paramétrico gera miolo pautado, quadriculado, pontilhado ou livre. Configure título, rodapé, numeração, pauta e cores. A capa e a contracapa são opcionais. Na encadernação lateral, a reserva pode passar para a borda oposta nas faces de verso.
+
+### Formato, margens e feriados
+
+Em Calendário anual ou Caderno paramétrico, informe o corte final e a sangria. Ao preencher largura e altura da folha, a peça é centralizada na folha de máquina. Com os campos vazios, a prancheta usa o formato mais a sangria solicitada. A margem de arte vale para os quatro lados. Na borda de acabamento, vale o maior recuo entre a margem da arte e a reserva de acabamento. As guias ficam em camada não imprimível. Cada face usa uma prancheta.
+
+As fontes são selecionadas entre as disponíveis no Illustrator. Informe os tamanhos em pontos e as porcentagens CMYK separadas por espaços. O documento mantém os tamanhos solicitados e sinaliza se o texto exceder a área segura.
+
+No calendário, o editor aceita `DD/MM | Nome do feriado` ou `MM | Texto do rodapé`, uma entrada por linha. A lista federal serve como ponto de partida editável. Confira as datas estaduais, municipais e específicas do ano do trabalho. Em tamanhos reduzidos, a opção Somente destaque das datas mantém as marcações e oculta os textos do rodapé. [Referência federal de feriados](https://legis.sigepe.gov.br/legis/detalhar/25014)
+
+Abra os exemplos de [calendário](https://designprod.vercel.app/tutoriais/#calendario-anual), [caderno](https://designprod.vercel.app/tutoriais/#caderno-parametrico) e [capa dura](https://designprod.vercel.app/tutoriais/#lombada-e-capa-dura).

@@ -126,17 +126,31 @@ export const modulos = [
     ]
   },
   {
-    id: 'calendarios', titulo: 'Calendários anuais', licoes: [
+    id: 'calendarios', titulo: 'Calendários e cadernos', licoes: [
       {
         id: 'calendario-anual', titulo: 'Calendários de mesa, parede e bolso', ferramenta: 'illustrator/calendario-anual',
-        uso: 'Gere o calendário de 2028 e confira o dia 29 de fevereiro antes de aplicar a identidade do cliente.',
-        dados: [['Mesa', '14 faces · 210 × 150 mm'], ['Parede', '290 × 390 mm'], ['Bolso', '90 × 50 mm · 2 faces']],
+        uso: 'Monte um calendário de mesa de 2028, com rodapés mensais e reserva superior para Wire-o, em folhas SRA3.',
+        dados: [['Formato final', '210 × 150 mm'], ['Folha e sangria', '320 × 450 mm · 3 mm'], ['Área segura', '5 mm de arte · 15 mm no topo']],
         passos: [
-          ['Mesa com Wire-o', 'Em Calendário anual, informe 2028 e escolha Mesa · 14 páginas. Informe 210 × 150 mm. A capa, os 12 meses e a contracapa saem em ordem de leitura, com guia superior de 15 mm. Pareie as 14 faces em sete lâminas na imposição.'],
-          ['Folhinha de parede', 'Execute novamente e escolha Parede · folhinha. Informe 290 × 390 mm. Os 12 meses são agrupados na metade inferior, deixando a área de cima para a arte.'],
-          ['Cartão de bolso', 'Escolha Bolso · 90 × 50 mm. Confira janeiro a junho na primeira prancheta e julho a dezembro na segunda. As datas permanecem editáveis.']
+          ['Escolha o modelo e o ano', 'Abra Calendário anual. Use 2028 e Mesa · 14 páginas para este exemplo. A folhinha de parede agrupa os meses na parte inferior. O bolso usa duas faces e começa em 90 × 50 mm.'],
+          ['Defina o formato e as reservas', 'Informe 210 × 150 mm de formato final e 320 × 450 mm de folha. Use sangria de 3 mm, margem de arte de 5 mm e reserva superior de 15 mm para o Wire-o.'],
+          ['Escolha as fontes e cores', 'Experimente título de 24 pt, dias de 15 pt e rodapé de 8 pt. Informe cada cor em C M Y K, por exemplo 0 0 0 100. Escolha Contorno circular e Somente feriados para marcar apenas as datas cadastradas.'],
+          ['Edite feriados e rodapés', 'Use uma linha DD/MM | Nome para cada data, como 19/03 | São José, se aplicável à localidade. Use MM | Nota para um texto mensal, como 03 | Atendemos por agendamento.'],
+          ['Confira as faces e o encaixe', 'Gere e confira 29 de fevereiro, os rodapés e a guia superior. Em formatos compactos, reduza as fontes, aumente o formato ou selecione Somente destaque das datas se o rodapé não couber.']
         ],
-        checagem: 'Confira o ano em todas as faces, fevereiro e a ordem de leitura. A grade começa no domingo.'
+        checagem: 'Calendários de mesa saem com capa, 12 meses e contracapa em ordem de leitura. A referência federal é editável. Confirme as datas locais antes de imprimir.'
+      },
+      {
+        id: 'caderno-parametrico', titulo: 'Caderno A5 com pauta e margem de Wire-o', ferramenta: 'illustrator/caderno-parametrico',
+        uso: 'Gere capa, contracapa e 40 páginas de miolo, com encadernação lateral espelhada no verso.',
+        dados: [['Formato final', 'A5 · 148 × 210 mm'], ['Pauta', '7 mm · traço 0,5 pt'], ['Acabamento', '15 mm na lateral']],
+        passos: [
+          ['Escolha o miolo', 'Abra Caderno paramétrico, selecione Pautado e informe 40 páginas. Ative capa, contracapa e numeração. Digite o título e um rodapé, como Oficina gráfica.'],
+          ['Defina a área segura', 'Informe 148 × 210 mm, margem de arte de 8 mm, acabamento na esquerda e reserva de 15 mm. Marque Espelhar a lateral no verso. Se houver folha de máquina, digite seu tamanho nos dois campos.'],
+          ['Ajuste o estilo', 'Escolha as fontes do título e do rodapé, suas cores CMYK e um destaque para o cabeçalho. Digite intervalo de 7 mm e traço de 0,5 pt. Também há miolo quadriculado, pontilhado ou livre.'],
+          ['Confira duas faces consecutivas', 'As faces saem em ordem de leitura. Confira se a pauta termina antes do rodapé e se a reserva de encadernação muda de lado no verso.']
+        ],
+        checagem: 'O exemplo gera 42 pranchetas. As guias de corte, sangria, arte e acabamento ficam em camada técnica. Para a planificação da capa dura, use Lombada e capa dura em Gabaritos.'
       }
     ]
   },

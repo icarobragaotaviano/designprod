@@ -1,10 +1,10 @@
 /**
  * @ibd-id illustrator/gabaritos-pre-impressao
  * @ibd-titulo Gabaritos de pré-impressão
- * @ibd-descricao Cria formas no corte ou na sangria, pranchetas em lote, capa dura com lombada e guias para Wire-o ou espiral.
+ * @ibd-descricao Cria formas no corte ou na sangria, pranchetas em lote, faca de capa dura com lombada e guias de encadernação.
  * @ibd-app illustrator
- * @ibd-versao 1.0.0
- * @ibd-tags gabarito, prancheta, capa dura, lombada, wire-o, espiral, sangria
+ * @ibd-versao 1.0.1
+ * @ibd-tags gabarito, prancheta, capa dura, faca, lombada, wire-o, espiral, sangria
  * @ibd-doc docs/folha/README.md
  */
 #target illustrator
