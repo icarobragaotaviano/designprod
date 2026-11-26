@@ -150,3 +150,21 @@ assert.ok(curvaPlt.length > 10 && curvaPlt.some(p => p[1] > 10));
 assert.equal(curvaPlt[0], curvaPlt[curvaPlt.length - 1]);
 assert.doesNotMatch(pltOptico, /NaN|Infinity|PD-\d/);
 console.log('Print & Cut mantém escala, origens e curvas e reserva as marcas ópticas.');
+
+const prepress = vm.runInNewContext(ler('core/extendscript/ibd-preimpressao.jsx') + '\nIBDPP');
+validarPonto(prepress.medidas('T4'), [328, 478]);
+const capa = prepress.margensCapa(215, 303, 129, 0.1, 7, 18);
+validarPonto([capa.largura, capa.altura, capa.lombada], [486.5, 339, 6.5]);
+const marcas = prepress.marcas(100, 150, 3, 3, 5, true, [50], [75]);
+assert.equal(marcas.segmentos.length, 12);
+assert.equal(marcas.segmentos.filter(s => s[4]).length, 4);
+for (const [x1, y1, x2, y2] of marcas.segmentos) {
+    const distancia = Math.max(Math.min(x1, x2)-100, -Math.max(x1, x2), Math.min(y1, y2)-150, -Math.max(y1, y2));
+    assert.ok(distancia - 0.35/(2*prepress.pt) > 3);
+}
+assert.equal(prepress.mes(1900, 1).dias, 28);
+assert.equal(prepress.mes(2000, 1).dias, 29);
+assert.equal(prepress.mes(2027, 0).inicio, 5);
+assert.ok(prepress.rico({ typename: 'CMYKColor', cyan: 40, magenta: 40, yellow: 30, black: 100 }));
+assert.ok(!prepress.rico({ typename: 'CMYKColor', cyan: 0, magenta: 0, yellow: 0, black: 100 }));
+console.log('Pré-impressão mantém a sangria livre e valida capa, datas e tinta preta.');

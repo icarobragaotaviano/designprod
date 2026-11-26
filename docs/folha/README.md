@@ -87,3 +87,22 @@ A ferramenta preserva o documento de origem e abre um mestre CMYK com duas pranc
 Importe o PLT a 100% e confira o sentido dos eixos e a origem na prévia do software de corte. A leitura automática das marcas e a passagem em máquina dependem do equipamento e do perfil configurado.
 
 Consulte também [design.md](design.md).
+
+## Suíte de pré-impressão para Illustrator
+
+Abra **IBD Ferramentas → Ferramentas** e procure pelo nome do módulo. Cada script também pode ser executado por **Arquivo → Scripts → Outro script** usando o arquivo JSX independente.
+
+| Ferramenta | Operações |
+| --- | --- |
+| Gabaritos de pré-impressão | Retângulo da prancheta no corte ou na sangria, lote de pranchetas, lombada e capa dura com canaletas e vira, guia de Wire-o e espiral |
+| Preflight express | Conversão de preto composto para K100 em textos abaixo de 24 pt, códigos de barras identificados e traços finos, com sobreimpressão. Conversão de tipografia em curvas em uma cópia AI |
+| Marcas externas de corte e vinco | Marcas de corte e testemunhas tracejadas fora da sangria. Prancheta expandida para exportação da folha de máquina |
+| Enobrecimento e prova de registro | Máscara vetorial em `Verniz_UV` ou `Hot_Stamp` com sobreimpressão. PDF de três páginas a partir da prancheta ativa |
+| Calendário anual | Mesa com capa, 12 meses e contracapa em 14 faces, folhinha de parede com bloco inferior e cartão de bolso de 90 × 50 mm em duas faces |
+
+- **Capa dura.** Informe as medidas dos papelões e o caliper medido. Com o campo vazio, a gramatura e o papel fornecem uma estimativa. A lombada calcula uma folha para cada duas páginas, arredondando para cima. Meça o miolo encadernado para definir a lombada de produção. As linhas da faca externa, das canaletas e dos papelões ficam em camadas técnicas não imprimíveis.
+- **Higienização.** O detector atua em preto composto com as quatro tintas, K de pelo menos 80% e diferença de até 35 pontos percentuais entre C, M e Y. Identifique códigos de barras vetoriais pelo nome do objeto ou do grupo, como `Código de barras`, `Barcode` ou `EAN`. A análise oferece o documento ou a seleção e pede confirmação antes de editar.
+- **Curvas.** Informe um nome novo para a cópia. O Illustrator abre a cópia como documento ativo, converte também caixas em camadas ocultas e bloqueadas e restaura esses estados. Confira caixas encadeadas ou com texto que exceda a área antes da conversão.
+- **Marcas.** Informe a sangria real. O script eleva o afastamento quando necessário para que o traço de 0,35 pt fique fora da sangria. Os vincos usam distâncias desde o topo esquerdo da peça. Use ponto e vírgula para listar posições. Exporte a prancheta **FOLHA DE MÁQUINA** para incluir as marcas.
+- **Enobrecimento.** Selecione caminhos fechados, compostos ou grupos desses vetores. A preparação transfere a seleção para a camada técnica superior. Trabalhe em documento CMYK e incorpore imagens CMYK que precisem entrar na arte. O exportador verifica a prancheta ativa e a camada do acabamento informado. O PDF contém arte de processo, arte com contorno magenta de 0,5 pt em sobreimpressão e preenchimento vetorial K100. Confira sobreimpressão e separações no RIP antes de gravar o clichê.
+- **Calendários.** A semana começa no domingo. A versão de mesa reserva 15 mm junto à furação superior e gera as 14 faces na ordem de leitura para impor e parear frente e verso. As datas saem como texto vetorial editável.
