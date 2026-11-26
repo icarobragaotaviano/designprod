@@ -53,7 +53,7 @@ test('Tutoriais ilustrados apontam para as ferramentas publicadas', () => {
   const guia = fs.readFileSync(path.join(RAIZ, 'site/publico/tutoriais/index.html'), 'utf8');
   assert.match(html, /href="\/tutoriais\/">Tutoriais/);
   const licoes = [...guia.matchAll(/<article class="licao" id="([^"]+)"/g)];
-  assert.equal(licoes.length, 14);
+  assert.equal(licoes.length, 15);
   assert.equal(new Set(licoes.map(m => m[1])).size, licoes.length);
   assert.equal((guia.match(/<figcaption>/g) || []).length, licoes.length);
   assert.equal((guia.match(/<ol class="passos">/g) || []).length, licoes.length);
@@ -68,7 +68,7 @@ test('Índice de scripts inclui as ferramentas do catálogo e da bancada', () =>
   const scripts = fs.readFileSync(path.join(pasta, 'scripts/index.html'), 'utf8');
   assert.match(html, /href="\/scripts\/">Scripts/);
   const esperados = dados.ferramentas.filter(f => f.tipo === 'script' || (f.id.startsWith('desktop/') && f.tipo === 'utilitário'));
-  assert.ok(esperados.length >= 66);
+  assert.ok(esperados.length >= 67);
   assert.equal((scripts.match(/class="script" data-item/g) || []).length, esperados.length);
   for (const f of esperados) {
     for (const url of [f.baixar, f.codigo]) {

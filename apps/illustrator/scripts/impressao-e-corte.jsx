@@ -3,7 +3,7 @@
  * @ibd-titulo Montagem para impressão e corte
  * @ibd-descricao Repete arte e faca em duas pranchetas sincronizadas. Gera PDFs separados, marcas ópticas configuráveis e PLT em escala 1:1.
  * @ibd-app illustrator
- * @ibd-versao 1.0.0
+ * @ibd-versao 1.1.0
  * @ibd-doc docs/folha/README.md
  * @ibd-tags print cut, adesivo, faca, plotter, hpgl, plt, sangria, imposicao
  */
@@ -16,7 +16,7 @@
 (function () {
   var pt = imposicaoPt;
   var titulo = 'Impressão e corte';
-  var nomesMarca = ['Sem marcas', 'Cantoneiras em L', 'Quadrados sólidos'];
+  var nomesMarca = ['Sem marcas', 'Cantoneiras em L', 'Quadrados sólidos', 'Círculos sólidos'];
   var nomesSangria = ['Estender fundo vetorial', 'Arte já sangrada', 'Sem sangria'];
   var nomesOrigem = ['Canto inferior esquerdo · Y para cima', 'Marca superior esquerda · Y para baixo'];
 
@@ -33,6 +33,7 @@
       { id: 'spot', rotulo: 'Nome da cor spot', grupo: 'Arte e faca', padrao: 'CutContour' },
       { id: 'marca', rotulo: 'Padrão', grupo: 'Marcas ópticas', tipo: 'escolha', opcoes: nomesMarca, padrao: nomesMarca[1] },
       { id: 'tamanho', rotulo: 'Haste/lado (mm)', grupo: 'Marcas ópticas', padrao: '12' },
+      { id: 'diametro', rotulo: 'Círculo · Ø (mm)', grupo: 'Marcas ópticas', padrao: '5' },
       { id: 'recuo', rotulo: 'Recuo (mm)', grupo: 'Marcas ópticas', padrao: '3' },
       { id: 'respiro', rotulo: 'Zona livre (mm)', grupo: 'Marcas ópticas', padrao: '6' },
       { id: 'origem', rotulo: 'Origem do PLT', grupo: 'Exportação', tipo: 'escolha', opcoes: nomesOrigem, padrao: nomesOrigem[0] }
@@ -63,6 +64,12 @@
     o.marca = 'nenhuma';
     if (v.marca === nomesMarca[1]) o.marca = 'l';
     if (v.marca === nomesMarca[2]) o.marca = 'quadrado';
+    if (v.marca === nomesMarca[3]) {
+      o.marca = 'circulo';
+      var dm = String(v.diametro || '5').replace(',', '.').replace(/^\s+|\s+$/g, '');
+      o.tamanho = Number(dm);
+      if (!/^\d+(?:\.\d+)?$/.test(dm) || o.tamanho < 1 || o.tamanho > 30) throw Error('Confira o diâmetro do círculo (1 a 30 mm).');
+    }
     o.origem = v.origem === nomesOrigem[1] ? 'marca' : 'folha';
     if (o.origem === 'marca' && o.marca === 'nenhuma') throw Error('A origem na marca exige marcas ópticas.');
     o.modo = 'sem';
@@ -253,6 +260,14 @@
     camada.name = 'Marcas ópticas K100';
     var quadrado = o.marca === 'quadrado', preto = corProcesso(0, 100);
     for (var i = 0; i < marcas.length; i++) {
+      if (o.marca === 'circulo') {
+        var centro = marcas[i][0], d = o.tamanho * pt;
+        var ponto = camada.pathItems.ellipse(board[1] - centro[1] * pt + d / 2, board[0] + centro[0] * pt - d / 2, d, d);
+        ponto.filled = true;
+        ponto.stroked = false;
+        ponto.fillColor = preto;
+        continue;
+      }
       var curva = camada.pathItems.add(), pontos = [];
       for (var j = 0; j < marcas[i].length; j++) {
         var p = marcas[i][j];

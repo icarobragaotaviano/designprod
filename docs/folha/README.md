@@ -75,14 +75,14 @@ No painel **IBD Ferramentas → Ferramentas**, procure **Montagem para impressã
 
 - **Estender fundo vetorial** aplica Offset Path sob a arte. Em um grupo, o fundo deve ser um único traçado vetorial chamado `Fundo`, preenchido, fechado e alinhado ao contorno da faca. Confira visualmente a cobertura da sangria em toda a peça.
 - **Arte já sangrada** usa a sangria existente. Para faca retangular, o corte recua o valor informado nos quatro lados. Para faca personalizada, selecione o traçado no tamanho final.
-- **Marcas ópticas** oferece cantoneiras em L ou quadrados sólidos em K100, com medida, recuo e zona livre configuráveis. Ajuste esses valores e o padrão no software da sua máquina. [Manual de marcas ópticas da Graphtec](https://www.graphtecamerica.com/s/FC8600-User-Manual.pdf)
+- **Marcas ópticas** oferece cantoneiras em L, quadrados sólidos ou círculos sólidos em K100, com medida, recuo e zona livre configuráveis. Ajuste esses valores e o padrão no software da sua máquina. [Manual de marcas ópticas da Graphtec](https://www.graphtecamerica.com/s/FC8600-User-Manual.pdf)
 
 A ferramenta preserva o documento de origem e abre um mestre CMYK com duas pranchetas do mesmo formato. Na pasta de saída, grava `IMPRESSAO.pdf` com arte, sangria e marcas ópticas, `FACA.pdf` com o traçado em cor especial e sobreimpressão, e `CORTE.plt` com os mesmos contornos. O PDF de faca preserva as curvas Bézier. O PLT aproxima as curvas em segmentos com tolerância de 0,025 mm antes da quantização em 40 unidades por mm. [Referência de unidades HP-GL da HP](https://www.hp.com/ctg/Manual/bpl13211.pdf)
 
 | Origem do PLT | Coordenadas |
 | --- | --- |
 | Canto inferior esquerdo da folha | X para a direita, Y para cima |
-| Marca superior esquerda | X para a direita, Y para baixo. A referência é o vértice externo da cantoneira ou do quadrado |
+| Marca superior esquerda | X para a direita, Y para baixo. A referência é o vértice externo da cantoneira ou do quadrado e o centro do círculo |
 
 Importe o PLT a 100% e confira o sentido dos eixos e a origem na prévia do software de corte. A leitura automática das marcas e a passagem em máquina dependem do equipamento e do perfil configurado.
 
@@ -117,3 +117,20 @@ As fontes são selecionadas entre as disponíveis no Illustrator. Informe os tam
 No calendário, o editor aceita `DD/MM | Nome do feriado` ou `MM | Texto do rodapé`, uma entrada por linha. A lista federal serve como ponto de partida editável. Confira as datas estaduais, municipais e específicas do ano do trabalho. Em tamanhos reduzidos, a opção Somente destaque das datas mantém as marcações e oculta os textos do rodapé. [Referência federal de feriados](https://legis.sigepe.gov.br/legis/detalhar/25014)
 
 Abra os exemplos de [calendário](https://designprod.vercel.app/tutoriais/#calendario-anual), [caderno](https://designprod.vercel.app/tutoriais/#caderno-parametrico) e [capa dura](https://designprod.vercel.app/tutoriais/#lombada-e-capa-dura).
+
+
+## Estruturas de calendário no Illustrator
+
+Abra **Estruturas de calendário** na vitrine e execute o JSX no Illustrator. Use o modo **Calendário anual** para trabalhar tipografia, rodapés e feriados. O modo estrutural gera a planificação com os meses básicos editáveis quando a peça recebe as datas.
+
+| Modelo | Saída |
+| --- | --- |
+| Cavalete Wire-o | Aba de colagem com três vincos, trava com lingueta e fenda, ou papelão com três placas, canaletas e vira. A furação aparece em prévia |
+| Tenda autoportante | Uma peça planificada com janeiro a junho em uma face e julho a dezembro na outra, orientados para a dobra |
+| Cartela e bloco destacável | Cartela com furo de 4 a 6 mm e área de fixação. Bloco de 12 páginas em documento separado com guia de microsserrilha e spot `Serrilha` opcional |
+| Pôster de folha única | Calendário anual com escolha de furo central ou varão, com altura da reserva ajustável |
+| Miolo Wire-o | Capa, 12 meses e contracapa em 14 faces. O modo tombado gira as faces pares em 180° e move a reserva de furação para o pé dessas pranchetas |
+
+**Exemplo.** Faces de 150 × 120 mm, fundo de 58 mm, sobreposição de 10 mm, lingueta de 18 mm, pescoço de 70 mm, orelhas de 2,5 mm, folga de 0,8 mm e alívios de raio 0,9 mm. A planificação com trava mede 150 × 326 mm e a fenda tem comprimento total de 70,8 mm. Com a aba colada de 22 mm, mede 150 × 320 mm. Para papelão de 1,9 mm, canaletas de 3,5 mm e vira de 18 mm, o forro mede 186 × 341 mm. O ângulo é calculado para um prisma simétrico. Com fundo de 58 mm, é de cerca de 76°. Faça uma amostra no cartão real para conferir estabilidade, trava e fibra.
+
+**Saídas.** A opção 0×0 gera o desenho técnico sem arte. A base impressa inclui fundo inicial CMYK com 3 mm de sangria. Para exportar a impressão, oculte as camadas técnicas de faca e serrilha. Em `FACA_CORTE`, o perímetro e a fenda são caminhos fechados em `Corte`. Em `FACA_VINCO`, os vincos usam a spot `Vinco` com traço de 0,5 pt em sobreimpressão. Para corte digital, confira como o equipamento identifica camada, spot e linha tracejada. Em cartonagem, exporte os papelões separadamente do forro, a partir da camada `PAPELOES · corte separado`. As guias e os furos simulados não são imprimíveis.

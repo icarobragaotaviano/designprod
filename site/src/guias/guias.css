@@ -146,6 +146,11 @@ figcaption { color: #b6bcc8; font-size: 13px; margin-top: 8px; }
 .cal.parede > div,.cal.bolso > div { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 2px; width: 100%; }
 .mes-mini { display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; }
 .mes-mini i { grid-column: 1/-1; height: 2px; background: #315b76; }.mes-mini b { height: 3px; background: #adc4d3; }
+.cavalete-guia { width: 100px; grid-template-rows: 19px 45px 45px 22px; margin-bottom: 10px; }
+.cavalete-guia > * { display: grid; width: 100%; place-items: center; }
+.cavalete-guia > * + * { border-top: 1px dashed #497c51; }
+.cavalete-guia .aba-femea i { width: 43%; height: 3px; border-radius: 50%; background: #94186e; }
+.cavalete-guia .aba-macho i { position: absolute; top: 100%; width: 47%; height: 12px; background: #f5f6f6; border: 1px solid #95186e; border-top: 0; clip-path: polygon(3% 0,97% 0,100% 45%,94% 100%,6% 100%,0 45%); }
 .caderno-face { width: 81px; height: 114px; padding: 5px 5px 5px 15px; align-content: start; border-left: 7px solid #9bbad1; }
 .caderno-face.verso { border-left-width: 1px; border-right: 7px solid #9bbad1; padding: 5px 15px 5px 5px; }
 .caderno-face i { width: 100%; height: 64px; background: repeating-linear-gradient(transparent 0 7px,#9bbad1 7px 8px); }

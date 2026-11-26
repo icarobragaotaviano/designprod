@@ -29,6 +29,8 @@ export const figuras = {
       folha('pdf pdf-' + (i+1), `<div class="prova-arte"></div><div class="prova-mascara"></div><small>${nome}</small>`)).join('') + '</div>'],
   'calendario-anual': ['Mesa com 14 faces, parede com 12 meses reunidos e bolso com seis meses por face.',
     `<div class="modelos-calendario">${folha('cal mesa', '<small>Mesa</small><b>2028</b>' + mini())}${folha('cal parede', '<small>Parede</small><b>2028</b><div>' + mini().repeat(12) + '</div>')}${folha('cal bolso', '<small>Bolso</small><div>' + mini().repeat(6) + '</div>')}</div>`],
+  'estruturas-calendario': ['A faca tem uma fenda na aba superior e uma lingueta integrada à borda inferior. Os três vincos separam abas e faces.',
+    folha('cavalete-guia', '<div class="aba-femea"><i></i></div><b>Frente</b><b>Verso</b><div class="aba-macho"><i></i></div>')],
   'caderno-parametrico': ['O exemplo espelha a lateral de encadernação nas faces consecutivas.',
     `<div class="antes-depois caderno-guia">${folha('caderno-face', '<b>Frente</b><i></i><small>01</small>')}<span aria-hidden="true">↔</span>${folha('caderno-face verso', '<b>Verso</b><i></i><small>02</small>')}</div>`],
   'imposicao-sra3': ['Grade de 3 × 7 cartões. A faixa inferior é a reserva de pinça.',

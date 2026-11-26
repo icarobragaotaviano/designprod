@@ -198,7 +198,7 @@
       "tipo": "script",
       "icone": "acao",
       "arquivo": "apps/illustrator/scripts/calendario-anual.jsx",
-      "versao": "2.0.0",
+      "versao": "2.0.1",
       "tags": [
         "calendário",
         "folhinha",
@@ -291,6 +291,29 @@
       "doc": "docs/folha/README.md"
     },
     {
+      "id": "illustrator/estruturas-calendario",
+      "titulo": "Estruturas de calendário",
+      "descricao": "Planifica cavaletes, tendas e cartelas com facas spot, vinco, trava de encaixe, bases empastadas e miolo Wire-o tombado.",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "acao",
+      "arquivo": "apps/illustrator/scripts/estruturas-calendario.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "calendário",
+        "cavalete",
+        "faca",
+        "vinco",
+        "vira",
+        "wire-o",
+        "tenda",
+        "encaixe",
+        "fibra",
+        "pôster"
+      ],
+      "doc": "docs/folha/README.md"
+    },
+    {
       "id": "illustrator/exportar-pranchetas",
       "titulo": "Exportar pranchetas em lote",
       "descricao": "Exporta cada prancheta selecionada ou todas em arquivos PNG, JPG ou PDF individuais usando o nome da prancheta e salvando as preferências.",
@@ -351,7 +374,7 @@
       "tipo": "script",
       "icone": "acao",
       "arquivo": "apps/illustrator/scripts/impressao-e-corte.jsx",
-      "versao": "1.0.0",
+      "versao": "1.1.0",
       "tags": [
         "print cut",
         "adesivo",

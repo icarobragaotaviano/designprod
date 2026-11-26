@@ -36,6 +36,7 @@ var IBDPrintCut = (function () {
         var dy = (y ? -1 : 1) * o.tamanho;
         var pontos = [[vx + dx, vy], [vx, vy], [vx, vy + dy]];
         if (o.marca === 'quadrado') pontos.push([vx + dx, vy + dy]);
+        else if (o.marca === 'circulo') pontos = [[vx + dx / 2, vy + dy / 2]];
         marcas.push(pontos);
       }
     }
@@ -94,6 +95,7 @@ var IBDPrintCut = (function () {
     var linhas = ['IN;', 'SP1;', 'PA;'];
     var optico = o.origem === 'marca';
     var origem = optico ? o.recuo : 0;
+    if (optico && o.marca === 'circulo') origem += o.tamanho / 2;
     for (var i = 0; i < posicoes.length; i++) for (var j = 0; j < curvas.length; j++) {
       var dx = posicoes[i][0], dy = posicoes[i][1], ultima, inicio, n = 0;
       var p;

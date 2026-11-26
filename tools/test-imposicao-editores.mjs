@@ -188,3 +188,23 @@ const fevereiro = editorial.datas.ler(2028, '29/02 | Data especial\n02 | Nota me
 assert.equal(editorial.datas.rodape(fevereiro), 'Nota mensal · 29 Data especial / Aniversário');
 assert.throws(() => editorial.datas.ler(2027, '29/02 | Data especial'), /Data inválida/);
 console.log('Calendário e caderno validaram feriados móveis, notas, sangria, folha e espelhamento.');
+
+const estruturas = vm.runInNewContext(ler('core/extendscript/ibd-estruturas-calendario.jsx') + '\nIBDEstruturas');
+const baseCalendario = {tipo:'trava',w:150,h:120,fundo:58,aba:10,caliper:0.45,neck:70,lingueta:18,orelha:2.5,folga:0.8,raio:0.9};
+const interlock = estruturas.prisma(baseCalendario);
+validarPonto([interlock.w, interlock.h, interlock.fenda.l, interlock.fenda.y, interlock.fenda.abertura], [150,326,70.8,14,0.6]);
+assert.equal(interlock.contorno.length, 12);
+assert.ok(interlock.inclinacao > 75 && interlock.inclinacao < 77);
+assert.throws(() => estruturas.prisma({...baseCalendario,fundo:20}), /não comporta/);
+assert.throws(() => estruturas.prisma({...baseCalendario,folga:5}), /ultrapassar a fenda/);
+const baseDura = estruturas.prisma({...baseCalendario,tipo:'dura',canal:3.5,vira:18,caliper:1.9});
+validarPonto([baseDura.w,baseDura.h], [186,341]);
+assert.equal(baseDura.placas.length, 3);
+assert.equal(estruturas.parede(328,478,5,12,10,120).fixacao, 348);
+assert.equal(estruturas.wire(150,3,4,8).length, 16);
+const circulo = {...parametrosPrintCut,marca:'circulo',tamanho:5};
+const gradeCirculos = printCut.planejar(circulo,cortePrintCut,cortePrintCut);
+assert.equal(gradeCirculos.marcas.length, 4);
+validarPonto(gradeCirculos.marcas[0][0],[5.5,5.5]);
+assert.match(printCut.plt([polilinha],[[20,20]],circulo), /^IN;\nSP1;\nPA;\nPU580,580;/);
+console.log('Cavaletes, trava, cartela, furação e origem circular do PLT validados.');

@@ -141,6 +141,18 @@ export const modulos = [
         checagem: 'Calendários de mesa saem com capa, 12 meses e contracapa em ordem de leitura. A referência federal é editável. Confirme as datas locais antes de imprimir.'
       },
       {
+        id: 'estruturas-calendario', titulo: 'Cavalete com trava, tenda e calendário de parede', ferramenta: 'illustrator/estruturas-calendario',
+        uso: 'Monte uma base de 150 × 120 mm com trava sem cola e confira a faca antes de testar no cartão.',
+        dados: [['Fundo e sobreposição', '58 mm · 10 mm'], ['Pescoço e fenda', '70 mm · 70,8 mm'], ['Planificação', '150 × 326 mm, antes da sangria']],
+        passos: [
+          ['Defina a base', 'Escolha Cavalete Wire-o, Trava sem cola e faces de 150 × 120 mm. Use fundo de 58 mm, sobreposição de 10 mm e cartão de 0,45 mm.'],
+          ['Configure o encaixe', 'Use pescoço de 70 mm, lingueta de 18 mm, orelhas de 2,5 mm, folga de 0,8 mm e alívios de raio 0,9 mm. A lingueta integra o perímetro. Na outra aba, procure a fenda de 70,8 mm.'],
+          ['Confira as camadas', 'Isole FACA_CORTE e FACA_VINCO para revisar o desenho técnico. Para imprimir a arte, oculte as duas camadas. Compare a orientação da fibra com os vincos e teste o passo de furação.'],
+          ['Escolha outros formatos', 'Aba colada e Base dura empastada são opções do cavalete. A Tenda coloca seis meses de cada lado. A cartela gera um bloco separado. O pôster pode usar varão ou furo. No miolo Wire-o, selecione Versos tombados para a virada pelo topo.']
+        ],
+        checagem: 'Os furos do Wire-o são guias visuais. A trava e a dobra exigem prova no material final. O mapeamento das cores técnicas deve ser conferido no seu equipamento.'
+      },
+      {
         id: 'caderno-parametrico', titulo: 'Caderno A5 com pauta e margem de Wire-o', ferramenta: 'illustrator/caderno-parametrico',
         uso: 'Gere capa, contracapa e 40 páginas de miolo, com encadernação lateral espelhada no verso.',
         dados: [['Formato final', 'A5 · 148 × 210 mm'], ['Pauta', '7 mm · traço 0,5 pt'], ['Acabamento', '15 mm na lateral']],
@@ -173,7 +185,7 @@ export const modulos = [
         dados: [['Grade', '2 colunas × 4 linhas'], ['Sangria', '2 mm'], ['Arquivos', 'IMPRESSAO.pdf · FACA.pdf · CORTE.plt']],
         passos: [
           ['Separe a arte e a faca', 'Abra um documento CMYK. Agrupe a arte já sangrada com 2 mm. Selecione a arte e o traçado fechado separado, nomeado FACA ou CutContour.'],
-          ['Configure a folha e a leitura', 'Abra Montagem para impressão e corte. Informe 320 × 450 mm, margem 10 mm, grade 2 × 4 e intervalo 4 mm. Escolha Arte já sangrada. Use a origem e o padrão de marcas do seu equipamento.'],
+          ['Configure a folha e a leitura', 'Abra Montagem para impressão e corte. Informe 320 × 450 mm, margem 10 mm, grade 2 × 4 e intervalo 4 mm. Escolha Arte já sangrada. Use a origem e o padrão de marcas do seu equipamento. Para pontos redondos, escolha Círculos sólidos e informe o diâmetro. O padrão inicial é 5 mm.'],
           ['Valide os três arquivos', 'Clique em Gerar arquivos e selecione a pasta de saída. Compare a arte e a faca nos dois PDFs. Importe CORTE.plt a 100% e confira orientação, origem e medida antes da leitura óptica.']
         ],
         checagem: 'A arte e a faca compartilham as posições. A passagem em máquina depende da origem e do padrão de marcas aceitos pela plotter.'
