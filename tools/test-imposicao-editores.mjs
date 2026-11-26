@@ -118,3 +118,35 @@ const [ax,ay] = paginas[0].camadas[0].arte[0], [fx,fy,,fh] = paginas[1].camadas[
 validarPonto([ax-fx,fy+fh-ay],[2,2]);
 assert.deepEqual(paginas[0].camadas[1].linhas,paginas[1].camadas[1].linhas);
 console.log('Grade, offset, versões e alinhamento da arte com a faca validados.');
+
+const printCut = vm.runInNewContext(fonte + '\n' +
+    ler('core/extendscript/ibd-print-cut.jsx').replace(/^#include.*$/m, '') + '\nIBDPrintCut');
+const parametrosPrintCut = {
+    largura: 320, altura: 450, margem: 10, espaco: 4, colunas: 2, linhas: 4,
+    marca: 'l', recuo: 3, tamanho: 12, respiro: 6, origem: 'marca'
+};
+const cortePrintCut = [0, 0, 90, 50];
+const gradePrintCut = printCut.planejar(parametrosPrintCut, [-2, -2, 92, 52], cortePrintCut);
+assert.equal(gradePrintCut.posicoes.length, 8);
+assert.ok(gradePrintCut.margem > 21 && gradePrintCut.margem < 22);
+validarPonto(gradePrintCut.posicoes[0], [66, 113]);
+assert.equal(gradePrintCut.marcas.length, 4);
+assert.ok(gradePrintCut.marcas.every(m => m.length === 3));
+const quadrados = printCut.planejar({ ...parametrosPrintCut, marca: 'quadrado' }, cortePrintCut, cortePrintCut);
+assert.ok(quadrados.marcas.every(m => m.length === 4));
+assert.throws(() => printCut.planejar({ ...parametrosPrintCut, colunas: 3 }, [-2, -2, 92, 52], cortePrintCut), /Cabem até 2/);
+const polilinha = printCut.polilinha(printCut.retangulo(cortePrintCut));
+const pltOptico = printCut.plt([polilinha], gradePrintCut.posicoes, parametrosPrintCut);
+assert.match(pltOptico, /^IN;\nSP1;\nPA;\nPU2520,4400;\nPD6120,4400;\nPD6120,6400;\nPD2520,6400;\nPD2520,4400;\nPU;/);
+assert.equal(pltOptico.match(/^PU[\d,]+;$/gm).length, 8);
+const pltFolha = printCut.plt([polilinha], [[10, 20]], { ...parametrosPrintCut, origem: 'folha' });
+assert.match(pltFolha, /PU400,17200;\nPD4000,17200;\nPD4000,15200;/);
+assert.throws(() => printCut.plt([polilinha], [[-10, 20]], parametrosPrintCut), /ultrapassa/);
+const curvaPlt = printCut.polilinha([
+    {anchor: [0, 0], left: [0, 0], right: [0, 15]},
+    {anchor: [10, 0], left: [10, 15], right: [10, 0]}
+]);
+assert.ok(curvaPlt.length > 10 && curvaPlt.some(p => p[1] > 10));
+assert.equal(curvaPlt[0], curvaPlt[curvaPlt.length - 1]);
+assert.doesNotMatch(pltOptico, /NaN|Infinity|PD-\d/);
+console.log('Print & Cut mantém escala, origens e curvas e reserva as marcas ópticas.');

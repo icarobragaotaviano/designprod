@@ -36,6 +36,11 @@ function imposicaoGrade(o, arte, faca) {
     if (!isFinite(w) || !isFinite(h) || w <= 0 || h <= 0) throw Error("Dimensões da peça inválidas.");
     var colunas = Math.max(0, Math.floor((o.largura - 2 * o.margem + o.espaco + 1e-8) / (w + o.espaco)));
     var linhas = Math.max(0, Math.floor((o.altura - 2 * o.margem + o.espaco + 1e-8) / (h + o.espaco)));
+    if (o.colunas > colunas || o.linhas > linhas) {
+        throw Error("Cabem até " + colunas + " coluna(s) e " + linhas + " linha(s) com estas margens.");
+    }
+    colunas = o.colunas || colunas;
+    linhas = o.linhas || linhas;
     var maximo = colunas * linhas;
     if (!maximo) throw Error("A peça com a faca e a margem não cabe nesta folha.");
     var n = o.quantidade || maximo;

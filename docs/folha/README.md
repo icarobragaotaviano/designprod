@@ -67,4 +67,23 @@ Na exportação de teste, a conversão de cores e a edição no Illustrator fora
 
 A homologação no RIP da gráfica segue pendente. Na fila de prova, use a configuração de produção prevista para o trabalho. Confira quatro separações CMYK e uma separação `IBD_Teste_Verde`. As marcas de Registro devem aparecer nas cinco, e os patches da barra devem aparecer nos canais CMYK correspondentes. Na área sobreposta, confira a presença simultânea de magenta e tinta especial. Use o preset de PDF e os parâmetros de retícula da gráfica para a validação final.
 
+## Impressão e corte no Illustrator
+
+Abra um documento CMYK. Selecione a arte ou o grupo de impressão. Para uma faca personalizada, selecione também o traçado fechado ou composto, separado da arte, e identifique-o como `FACA` ou `CutContour`. Com apenas a arte selecionada, a ferramenta usa uma faca retangular.
+
+No painel **IBD Ferramentas → Ferramentas**, procure **Montagem para impressão e corte**. Informe o formato da folha, a margem e a grade. Use zero em colunas ou linhas para o cálculo automático daquele eixo. A reserva das marcas ópticas pode aumentar a margem efetiva.
+
+- **Estender fundo vetorial** aplica Offset Path sob a arte. Em um grupo, o fundo deve ser um único traçado vetorial chamado `Fundo`, preenchido, fechado e alinhado ao contorno da faca. Confira visualmente a cobertura da sangria em toda a peça.
+- **Arte já sangrada** usa a sangria existente. Para faca retangular, o corte recua o valor informado nos quatro lados. Para faca personalizada, selecione o traçado no tamanho final.
+- **Marcas ópticas** oferece cantoneiras em L ou quadrados sólidos em K100, com medida, recuo e zona livre configuráveis. Ajuste esses valores e o padrão no software da sua máquina. [Manual de marcas ópticas da Graphtec](https://www.graphtecamerica.com/s/FC8600-User-Manual.pdf)
+
+A ferramenta preserva o documento de origem e abre um mestre CMYK com duas pranchetas do mesmo formato. Na pasta de saída, grava `IMPRESSAO.pdf` com arte, sangria e marcas ópticas, `FACA.pdf` com o traçado em cor especial e sobreimpressão, e `CORTE.plt` com os mesmos contornos. O PDF de faca preserva as curvas Bézier. O PLT aproxima as curvas em segmentos com tolerância de 0,025 mm antes da quantização em 40 unidades por mm. [Referência de unidades HP-GL da HP](https://www.hp.com/ctg/Manual/bpl13211.pdf)
+
+| Origem do PLT | Coordenadas |
+| --- | --- |
+| Canto inferior esquerdo da folha | X para a direita, Y para cima |
+| Marca superior esquerda | X para a direita, Y para baixo. A referência é o vértice externo da cantoneira ou do quadrado |
+
+Importe o PLT a 100% e confira o sentido dos eixos e a origem na prévia do software de corte. A leitura automática das marcas e a passagem em máquina dependem do equipamento e do perfil configurado.
+
 Consulte também [design.md](design.md).

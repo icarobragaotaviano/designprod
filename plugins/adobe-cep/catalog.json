@@ -262,6 +262,27 @@
       "doc": "docs/guias-e-sangria.md"
     },
     {
+      "id": "illustrator/impressao-e-corte",
+      "titulo": "Montagem para impressão e corte",
+      "descricao": "Repete arte e faca em duas pranchetas sincronizadas. Gera PDFs separados, marcas ópticas configuráveis e PLT em escala 1:1.",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "acao",
+      "arquivo": "apps/illustrator/scripts/impressao-e-corte.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "print cut",
+        "adesivo",
+        "faca",
+        "plotter",
+        "hpgl",
+        "plt",
+        "sangria",
+        "imposicao"
+      ],
+      "doc": "docs/folha/README.md"
+    },
+    {
       "id": "illustrator/margem-seguranca-guias",
       "titulo": "Criar margem de segurança interna (guias)",
       "descricao": "Cria retângulos-guia internos na camada 06_GUIAS com a distância escolhida (mm, cm, px, in ou pt) para dentro da prancheta ativa ou de todas.",
