@@ -26,6 +26,9 @@
 
     <main class="workspace-cep">
       <section id="vista-ferramentas" class="vista-cep" aria-label="Ferramentas">
+        <div class="atalhos-ilustrador" id="atalhos-documento" hidden>
+          <button type="button" data-script="illustrator/organizacao-documento">Organizar camadas e pranchetas</button>
+        </div>
         <div class="barra-busca">
           <input id="filtro" type="text" placeholder="Buscar por nome ou tag..." aria-label="Buscar ferramentas" />
           <select id="sel-app" aria-label="Software ativo">
@@ -61,6 +64,11 @@
 
       <section id="folha-painel" class="vista-cep folha-painel" aria-labelledby="folha-titulo" hidden>
         <div class="folha-conteudo">
+          <div class="atalhos-ilustrador" id="atalhos-imposicao" hidden>
+            <button type="button" data-script="illustrator/imposicao-livretos">Imposição de livretos</button>
+            <button type="button" data-script="illustrator/imposicao-frente-verso">Frente e verso</button>
+          </div>
+          <p id="status-imposicao" class="status-atalho" role="status" hidden></p>
           <h2 id="folha-titulo">Montagem de peças</h2>
           <div class="folha-layout">
             <form id="folha-form" class="folha-parametros">

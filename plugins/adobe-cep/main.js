@@ -42,6 +42,8 @@
     abrirFerramentas.addEventListener('click', function () { mostrarFolha(false); });
     abrirFolha.addEventListener('click', function () { mostrarFolha(true); });
     document.getElementById('vistas-painel').hidden = false;
+    ligarAtalhos('atalhos-documento');
+    ligarAtalhos('atalhos-imposicao', document.getElementById('status-imposicao'));
   }
 
   var CHAVE_FAV = 'ibd-cep-favoritos-v1';
@@ -162,21 +164,41 @@
     return btn;
   }
 
-  function executar(f) {
+  function ligarAtalhos(id, mensagem) {
+    var bloco = document.getElementById(id);
+    var botoes = bloco.querySelectorAll('[data-script]');
+    var scripts = scriptsDoApp('illustrator');
+    Array.prototype.forEach.call(botoes, function (botao) {
+      var arquivo = scripts.filter(function (script) { return script.id === botao.dataset.script; })[0];
+      botao.hidden = !arquivo;
+      if (!arquivo) return;
+      bloco.hidden = false;
+      botao.onclick = function () {
+        executar(arquivo, mensagem ? function (texto, tipo) {
+          mensagem.hidden = false;
+          mensagem.textContent = texto;
+          mensagem.className = 'status-atalho' + (tipo ? ' ' + tipo : '');
+        } : status);
+      };
+    });
+  }
+
+  function executar(f, informar) {
     var baseExt = cs.getSystemPath(window.SystemPath.EXTENSION) || '';
     var norm = baseExt.replace(/\\/g, '/').replace(/\/+$/, '');
     var relStandalone = 'bundle/standalone/' + f.arquivo.replace(/^apps\//, '');
     var caminho = norm ? (norm + '/' + relStandalone) : relStandalone;
 
-    status('Executando: ' + f.titulo + '...');
+    informar = informar || status;
+    informar('Abrindo ' + f.titulo + '…');
     cs.evalScript('ibdExecutarArquivo(' + JSON.stringify(caminho) + ')', function (res) {
       var texto = res === undefined || res === null ? '' : String(res);
       if (texto.indexOf('ERRO:') === 0) {
-        status(texto.replace(/^ERRO:/, ''), 'erro');
+        informar(texto.replace(/^ERRO:/, ''), 'erro');
       } else if (!texto || texto === 'EvalScript error.' || texto === 'undefined') {
-        status('Erro de execucao no host (' + (texto || 'sem resposta') + '). Confira a versao do script.', 'erro');
+        informar('Erro de execução no aplicativo (' + (texto || 'sem resposta') + ').', 'erro');
       } else {
-        status('Concluido: ' + f.titulo, 'sucesso');
+        informar(f.titulo + ' · janela fechada', 'sucesso');
       }
     });
   }

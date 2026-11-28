@@ -124,6 +124,22 @@ button:focus, input:focus, select:focus, summary:focus {
   color: var(--texto-secundario);
 }
 
+.atalhos-ilustrador { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--borda); }
+.atalhos-ilustrador button {
+  flex: 1 1 126px;
+  min-height: 34px;
+  padding: 4px 8px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  background: var(--superficie);
+  color: var(--acento);
+  font: 600 12px/1.3 system-ui, sans-serif;
+  cursor: pointer;
+}
+.atalhos-ilustrador button:hover, .atalhos-ilustrador button:focus-visible { border-color: var(--acento); }
+.folha-conteudo .atalhos-ilustrador { border: 0; padding: 0; margin-bottom: 14px; }
+.status-atalho { margin: 0 0 10px; color: var(--texto-secundario); }
+.status-atalho.erro { color: var(--erro); }
 .folha-conteudo { max-width: 1024px; padding: 12px; margin: 0 auto; }
 .folha-conteudo h2 { margin: 0 0 12px; font-size: 16px; line-height: 1.25; }
 .folha-layout, .folha-parametros, .folha-resultado, .folha-pilha, .folha-acoes, .folha-saida {

@@ -134,3 +134,24 @@ Abra **Estruturas de calendário** na vitrine e execute o JSX no Illustrator. Us
 **Exemplo.** Faces de 150 × 120 mm, fundo de 58 mm, sobreposição de 10 mm, lingueta de 18 mm, pescoço de 70 mm, orelhas de 2,5 mm, folga de 0,8 mm e alívios de raio 0,9 mm. A planificação com trava mede 150 × 326 mm e a fenda tem comprimento total de 70,8 mm. Com a aba colada de 22 mm, mede 150 × 320 mm. Para papelão de 1,9 mm, canaletas de 3,5 mm e vira de 18 mm, o forro mede 186 × 341 mm. O ângulo é calculado para um prisma simétrico. Com fundo de 58 mm, é de cerca de 76°. Faça uma amostra no cartão real para conferir estabilidade, trava e fibra.
 
 **Saídas.** A opção 0×0 gera o desenho técnico sem arte. A base impressa inclui fundo inicial CMYK com 3 mm de sangria. Para exportar a impressão, oculte as camadas técnicas de faca e serrilha. Em `FACA_CORTE`, o perímetro e a fenda são caminhos fechados em `Corte`. Em `FACA_VINCO`, os vincos usam a spot `Vinco` com traço de 0,5 pt em sobreimpressão. Para corte digital, confira como o equipamento identifica camada, spot e linha tracejada. Em cartonagem, exporte os papelões separadamente do forro, a partir da camada `PAPELOES · corte separado`. As guias e os furos simulados não são imprimíveis.
+
+## Livretos, frente e verso e organização no Illustrator
+
+### Imposição de livretos
+
+1. Abra a arte CMYK com uma prancheta por página na ordem de leitura. Use o mesmo formato final em todas as páginas. Com sangria de 3 mm, deixe pelo menos 6 mm entre pranchetas.
+2. No painel IBD Ferramentas, abra **Imposição → Imposição de livretos**. Informe o intervalo de pranchetas, a folha de máquina, a margem, a sangria e a virada da impressora.
+3. Clique em **Gerar imposição**. A montagem para grampo canoa é criada em um novo documento com uma prancheta por face de folha. Um livreto de oito páginas com virada lateral sai como `8 | 1` e `2 | 7` na primeira folha e `6 | 3` e `4 | 5` na segunda. Com seis páginas, as posições 7 e 8 ficam em branco.
+
+### Imposição frente e verso
+
+1. Coloque frente e verso em pranchetas consecutivas. Por exemplo, pranchetas 1 e 2 são o primeiro cartão, e 3 e 4 são o segundo cartão.
+2. Abra **Imposição → Frente e verso**. Escolha a folha e a virada. Para uma grade de seis cartões de 90 × 50 mm em SRA3, informe 3 colunas e 2 linhas. Use 0 em qualquer eixo para preencher a capacidade disponível.
+3. Confira as pranchetas de frente e verso do novo documento. Na virada lateral, o verso troca de lado na folha. Na virada pelo topo, a posição muda no eixo vertical e a arte do verso gira 180°. A última frente fica com verso em branco se o intervalo tiver quantidade ímpar.
+4. Imprima uma folha de prova em escala real e confira a virada e o encontro das marcas antes da tiragem.
+
+### Organizar camadas e pranchetas
+
+1. Abra **Ferramentas → Organizar camadas e pranchetas**. Use **Separar objetos por tipo** para distribuir objetos em subcamadas de texto, imagens incorporadas, vínculos e elementos gráficos. Grupos com tipos diferentes ficam juntos, inclusive quando contêm máscaras.
+2. A mesma categoria pode aparecer em mais de uma subcamada para manter a ordem visual. Camadas técnicas, protegidas ou não imprimíveis e ramos com objetos diretos intercalados com subcamadas são preservados.
+3. Use uma operação de renomeação para definir seu modelo e conferir a prévia. `{n} · {nome}` gera, por exemplo, `01 · Capa`. Em pranchetas, `OS-3621_{n}_{largura}x{altura}` gera `OS-3621_01_90x50`. Escolha a quantidade de dígitos, a capitalização e o separador de espaços.

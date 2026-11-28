@@ -170,20 +170,43 @@
       "doc": "docs/ferramentas-vetor.md"
     },
     {
+      "id": "illustrator/caderno-parametrico",
+      "titulo": "Caderno paramétrico",
+      "descricao": "Gera capa, miolo paginado pautado, quadriculado, pontilhado ou livre com tipografia, cor e reservas de encadernação.",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "acao",
+      "arquivo": "apps/illustrator/scripts/caderno-parametrico.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "caderno",
+        "miolo",
+        "pauta",
+        "pontilhado",
+        "capa",
+        "acabamento",
+        "rodapé",
+        "wire-o"
+      ],
+      "doc": "docs/folha/README.md"
+    },
+    {
       "id": "illustrator/calendario-anual",
       "titulo": "Calendário anual",
-      "descricao": "Gera calendários editáveis de mesa em 14 pranchetas, de parede com 12 meses em bloco inferior e de bolso em duas faces.",
+      "descricao": "Gera calendários de mesa, parede e bolso com folha, margens, tipografia, destaques, feriados e rodapés por mês configuráveis.",
       "app": "illustrator",
       "tipo": "script",
       "icone": "acao",
       "arquivo": "apps/illustrator/scripts/calendario-anual.jsx",
-      "versao": "1.0.0",
+      "versao": "2.0.1",
       "tags": [
         "calendário",
         "folhinha",
         "wire-o",
         "calendário de mesa",
-        "cartão"
+        "cartão",
+        "feriados",
+        "rodapé"
       ],
       "doc": "docs/folha/README.md"
     },
@@ -268,6 +291,29 @@
       "doc": "docs/folha/README.md"
     },
     {
+      "id": "illustrator/estruturas-calendario",
+      "titulo": "Estruturas de calendário",
+      "descricao": "Planifica cavaletes, tendas e cartelas com facas spot, vinco, trava de encaixe, bases empastadas e miolo Wire-o tombado.",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "acao",
+      "arquivo": "apps/illustrator/scripts/estruturas-calendario.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "calendário",
+        "cavalete",
+        "faca",
+        "vinco",
+        "vira",
+        "wire-o",
+        "tenda",
+        "encaixe",
+        "fibra",
+        "pôster"
+      ],
+      "doc": "docs/folha/README.md"
+    },
+    {
       "id": "illustrator/exportar-pranchetas",
       "titulo": "Exportar pranchetas em lote",
       "descricao": "Exporta cada prancheta selecionada ou todas em arquivos PNG, JPG ou PDF individuais usando o nome da prancheta e salvando as preferências.",
@@ -285,16 +331,17 @@
     {
       "id": "illustrator/gabaritos-pre-impressao",
       "titulo": "Gabaritos de pré-impressão",
-      "descricao": "Cria formas no corte ou na sangria, pranchetas em lote, capa dura com lombada e guias para Wire-o ou espiral.",
+      "descricao": "Cria formas no corte ou na sangria, pranchetas em lote, faca de capa dura com lombada e guias de encadernação.",
       "app": "illustrator",
       "tipo": "script",
       "icone": "acao",
       "arquivo": "apps/illustrator/scripts/gabaritos-pre-impressao.jsx",
-      "versao": "1.0.0",
+      "versao": "1.0.1",
       "tags": [
         "gabarito",
         "prancheta",
         "capa dura",
+        "faca",
         "lombada",
         "wire-o",
         "espiral",
@@ -320,6 +367,44 @@
       "doc": "docs/guias-e-sangria.md"
     },
     {
+      "id": "illustrator/imposicao-frente-verso",
+      "titulo": "Imposição frente e verso",
+      "descricao": "Repete pares de pranchetas em uma grade alinhada, com virada lateral ou pelo topo e marcas de refilo.",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "acao",
+      "arquivo": "apps/illustrator/scripts/imposicao-frente-verso.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "imposição",
+        "livreto",
+        "frente e verso",
+        "dobra",
+        "sangria",
+        "refilo"
+      ],
+      "doc": "docs/folha/README.md"
+    },
+    {
+      "id": "illustrator/imposicao-livretos",
+      "titulo": "Imposição de livretos",
+      "descricao": "Monta cadernos de grampo canoa com frente e verso, páginas em branco, sangria e marcas de refilo e dobra.",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "acao",
+      "arquivo": "apps/illustrator/scripts/imposicao-livretos.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "imposição",
+        "livreto",
+        "frente e verso",
+        "dobra",
+        "sangria",
+        "refilo"
+      ],
+      "doc": "docs/folha/README.md"
+    },
+    {
       "id": "illustrator/impressao-e-corte",
       "titulo": "Montagem para impressão e corte",
       "descricao": "Repete arte e faca em duas pranchetas sincronizadas. Gera PDFs separados, marcas ópticas configuráveis e PLT em escala 1:1.",
@@ -327,7 +412,7 @@
       "tipo": "script",
       "icone": "acao",
       "arquivo": "apps/illustrator/scripts/impressao-e-corte.jsx",
-      "versao": "1.0.0",
+      "versao": "1.1.0",
       "tags": [
         "print cut",
         "adesivo",
@@ -376,6 +461,28 @@
         "acabamento"
       ],
       "doc": "docs/ferramentas-vetor.md"
+    },
+    {
+      "id": "illustrator/organizacao-documento",
+      "titulo": "Organizar camadas e pranchetas",
+      "descricao": "Separa textos, imagens incorporadas, vínculos e gráficos preservando o empilhamento. Renomeia camadas e pranchetas em lote.",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "acao",
+      "arquivo": "apps/illustrator/scripts/organizacao-documento.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "organização",
+        "camadas",
+        "pranchetas",
+        "nomes",
+        "lote",
+        "texto",
+        "imagens",
+        "links",
+        "renomear"
+      ],
+      "doc": "docs/folha/README.md"
     },
     {
       "id": "illustrator/preflight-express",

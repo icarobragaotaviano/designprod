@@ -208,3 +208,29 @@ assert.equal(gradeCirculos.marcas.length, 4);
 validarPonto(gradeCirculos.marcas[0][0],[5.5,5.5]);
 assert.match(printCut.plt([polilinha],[[20,20]],circulo), /^IN;\nSP1;\nPA;\nPU580,580;/);
 console.log('Cavaletes, trava, cartela, furação e origem circular do PLT validados.');
+
+// A imposição editorial usa o mesmo plano para recortar a arte e marcar cada face.
+const planoOficina = vm.runInNewContext(fonte + '\n' + ler('core/extendscript/ibd-plano-imposicao.jsx') + '\nIBDPlanoImposicao');
+const medidasOficina = {sw:150,sh:180,w:50,h:70,b:3,paginas:8,margem:8,marcas:true};
+const folios = resultado => normalizar(resultado.faces.map(face=>face.poses.map(pose=>pose.pagina)));
+assert.deepEqual(folios(planoOficina.livreto(medidasOficina)), [[8,1],[2,7],[6,3],[4,5]]);
+assert.deepEqual(folios(planoOficina.livreto({...medidasOficina,paginas:6})), [[0,1],[2,0],[6,3],[4,5]]);
+const livroTombado=planoOficina.livreto({...medidasOficina,tombado:true});
+assert.deepEqual(folios(livroTombado), [[8,1],[7,2],[6,3],[5,4]]);
+assert.ok(livroTombado.faces[1].poses.every(p=>p.ang===180));
+assert.ok(livroTombado.faces.every(face=>face.poses[0].r===0 && face.poses[1].l===0));
+assert.throws(()=>planoOficina.livreto({...medidasOficina,sw:120}), /precisam caber/);
+
+const gradeDuplex={...medidasOficina,paginas:3,folga:3,colunas:2,linhas:2};
+for (const tombado of [false,true]) {
+    const resultado=planoOficina.duplex({...gradeDuplex,tombado});
+    assert.deepEqual(folios(resultado), [[1,1,1,1],[2,2,2,2],[3,3,3,3],[0,0,0,0]]);
+    assert.equal(resultado.brancas,1);
+    for (const [i,frente] of resultado.faces[0].poses.entries()) {
+        const verso=resultado.faces[1].poses[i];
+        validarPonto([verso.x,verso.y], tombado
+            ? [frente.x,gradeDuplex.sh-frente.y-frente.h]
+            : [gradeDuplex.sw-frente.x-frente.w,frente.y]);
+        assert.equal(verso.ang,tombado ? 180 : 0);
+    }
+}

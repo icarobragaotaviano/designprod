@@ -367,6 +367,44 @@
       "doc": "docs/guias-e-sangria.md"
     },
     {
+      "id": "illustrator/imposicao-frente-verso",
+      "titulo": "Imposição frente e verso",
+      "descricao": "Repete pares de pranchetas em uma grade alinhada, com virada lateral ou pelo topo e marcas de refilo.",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "acao",
+      "arquivo": "apps/illustrator/scripts/imposicao-frente-verso.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "imposição",
+        "livreto",
+        "frente e verso",
+        "dobra",
+        "sangria",
+        "refilo"
+      ],
+      "doc": "docs/folha/README.md"
+    },
+    {
+      "id": "illustrator/imposicao-livretos",
+      "titulo": "Imposição de livretos",
+      "descricao": "Monta cadernos de grampo canoa com frente e verso, páginas em branco, sangria e marcas de refilo e dobra.",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "acao",
+      "arquivo": "apps/illustrator/scripts/imposicao-livretos.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "imposição",
+        "livreto",
+        "frente e verso",
+        "dobra",
+        "sangria",
+        "refilo"
+      ],
+      "doc": "docs/folha/README.md"
+    },
+    {
       "id": "illustrator/impressao-e-corte",
       "titulo": "Montagem para impressão e corte",
       "descricao": "Repete arte e faca em duas pranchetas sincronizadas. Gera PDFs separados, marcas ópticas configuráveis e PLT em escala 1:1.",
@@ -423,6 +461,28 @@
         "acabamento"
       ],
       "doc": "docs/ferramentas-vetor.md"
+    },
+    {
+      "id": "illustrator/organizacao-documento",
+      "titulo": "Organizar camadas e pranchetas",
+      "descricao": "Separa textos, imagens incorporadas, vínculos e gráficos preservando o empilhamento. Renomeia camadas e pranchetas em lote.",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "acao",
+      "arquivo": "apps/illustrator/scripts/organizacao-documento.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "organização",
+        "camadas",
+        "pranchetas",
+        "nomes",
+        "lote",
+        "texto",
+        "imagens",
+        "links",
+        "renomear"
+      ],
+      "doc": "docs/folha/README.md"
     },
     {
       "id": "illustrator/preflight-express",
