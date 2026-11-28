@@ -90,6 +90,17 @@ var IBDPP = (function () {
     return p;
   }
 
+  function retanguloPrancheta(d, a, sangria, contorno) {
+    var camada = d.layers.add();
+    try {
+      camada.name = sangria ? 'Forma · BleedBox' : 'Forma · TrimBox';
+      var item = ret(camada, a, -sangria, -sangria, (a[2]-a[0])/pt + 2*sangria,
+        (a[1]-a[3])/pt + 2*sangria, preta(d), contorno ? 0.5 : 0);
+      item.name = camada.name;
+      return item;
+    } catch (e) { try { camada.remove(); } catch (_) {} throw e; }
+  }
+
   function linha(destino, a, segmento, cor, traco, tracejado) {
     var p = destino.pathItems.add();
     p.setEntirePath([[a[0] + segmento[0] * pt, a[1] - segmento[1] * pt],
@@ -224,7 +235,7 @@ var IBDPP = (function () {
   }
 
   return { pt: pt, num: num, medidas: medidas, cmyk: cmyk, preta: preta, doc: doc, executar: executar,
-    novaGrade: novaGrade, fechar: fechar, ret: ret, linha: linha, margensCapa: margensCapa, marcas: marcas,
+    novaGrade: novaGrade, fechar: fechar, ret: ret, retanguloPrancheta: retanguloPrancheta, linha: linha, margensCapa: margensCapa, marcas: marcas,
     mes: mes, rico: rico, visivel: visivel, editavel: editavel, recorte: recorte, copiarEm: copiarEm,
     spot: spot, pdf: pdf, salvarArquivo: salvarArquivo, sangria: sangria };
 }());

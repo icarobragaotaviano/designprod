@@ -20,13 +20,7 @@
   function forma(d, a, v) {
     var f = 0;
     if (v.limite === 'Sangria (BleedBox)') f = p.num(v.sangria, 'Sangria', 0, 30);
-    var camada = d.layers.add();
-    camada.name = f ? 'Forma · BleedBox' : 'Forma · TrimBox';
-    try {
-      var contorno = v.estilo === 'Sem preenchimento';
-      var item = p.ret(camada, a, -f, -f, (a[2]-a[0])/pt + 2*f, (a[1]-a[3])/pt + 2*f, p.preta(d), contorno ? 0.5 : 0);
-      item.name = camada.name;
-    } catch (e) { try { camada.remove(); } catch (_) {} throw e; }
+    p.retanguloPrancheta(d,a,f,v.estilo==='Sem preenchimento');
   }
 
   function lote(v) {

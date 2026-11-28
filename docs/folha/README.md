@@ -155,3 +155,21 @@ Abra **Estruturas de calendário** na vitrine e execute o JSX no Illustrator. Us
 1. Abra **Ferramentas → Organizar camadas e pranchetas**. Use **Separar objetos por tipo** para distribuir objetos em subcamadas de texto, imagens incorporadas, vínculos e elementos gráficos. Grupos com tipos diferentes ficam juntos, inclusive quando contêm máscaras.
 2. A mesma categoria pode aparecer em mais de uma subcamada para manter a ordem visual. Camadas técnicas, protegidas ou não imprimíveis e ramos com objetos diretos intercalados com subcamadas são preservados.
 3. Use uma operação de renomeação para definir seu modelo e conferir a prévia. `{n} · {nome}` gera, por exemplo, `01 · Capa`. Em pranchetas, `OS-3621_{n}_{largura}x{altura}` gera `OS-3621_01_90x50`. Escolha a quantidade de dígitos, a capitalização e o separador de espaços.
+
+## Retângulo da prancheta e Preflight digital
+
+### Retângulo da prancheta em um clique
+
+1. Ative a prancheta desejada. Em um documento com várias pranchetas, clique na área da peça ou selecione-a no painel Pranchetas.
+2. No **IBD Ferramentas → Ferramentas**, clique em **Retângulo da prancheta**. Uma prancheta de 90 × 50 mm recebe um caminho editável de 90 × 50 mm, sobre as quatro bordas do corte.
+3. O caminho fica na camada **Forma · TrimBox**, com traço preto de 0,5 pt e sem preenchimento. Para um fundo chapado ou um caminho incluindo sangria, use **Gabaritos de pré-impressão → Forma na prancheta**.
+
+### Auditar um trabalho híbrido
+
+1. Em **Ferramentas → Preflight digital**, escolha o equipamento, o substrato e a saída. Para uma apostila com capa colorida e miolo preto, escolha **Híbrido** e informe `1-2` se as duas primeiras pranchetas forem coloridas.
+2. Ajuste os limites da bandeja, medidas de folha, sangria, segurança e TAC. As medidas do C4080 correspondem à bandeja com suporte a 330,2 × 487,7 mm. Informe as medidas de acordo com a bandeja e a configuração da gráfica. Os presets sem modelo específico partem de medidas em branco.
+3. Clique em **Auditar documento**. Selecione a ocorrência e use **Localizar** para aproximar a área. **Criar guias** desenha referências em uma camada não imprimível.
+4. Em **Escolher correções**, marque somente os ajustes desejados. O cinza é aplicado a textos e vetores editáveis que aparecem somente nas páginas P&B. Imagens, cores especiais e arquivos fechados vinculados pedem conferência própria.
+5. Salve o AI e use **Fechar PDF/X**. Escolha um preset instalado e aprovado para seu RIP, com `PDF/X-4` ou `PDF/X-1a` no nome conforme a saída escolhida. O preset define o *Output Intent*. Depois da exportação, o relatório acompanha o PDF com o mapa estimado de cliques e as ocorrências.
+
+O preflight verifica cores e geometria expostas pelo Illustrator. O PPI é medido em JPEG vinculado. Gradientes, imagens de outros tipos, arquivos vinculados fechados e aparências complexas podem exigir conferência no PDF. O contador real de cliques, a validação de conformidade PDF/X e as separações de quinta cor devem ser conferidos no RIP ou no Acrobat Preflight.

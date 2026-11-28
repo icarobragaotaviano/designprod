@@ -485,6 +485,27 @@
       "doc": "docs/folha/README.md"
     },
     {
+      "id": "illustrator/preflight-digital",
+      "titulo": "Preflight digital",
+      "descricao": "Audita pranchetas para produção digital, estima cliques, localiza ocorrências, aplica correções escolhidas e fecha PDF/X com relatório.",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "auditoria",
+      "arquivo": "apps/illustrator/scripts/preflight-digital.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "preflight",
+        "digital",
+        "konica minolta",
+        "ricoh",
+        "k-only",
+        "quinta cor",
+        "pdfx",
+        "rip"
+      ],
+      "doc": "docs/folha/README.md"
+    },
+    {
       "id": "illustrator/preflight-express",
       "titulo": "Preflight express",
       "descricao": "Revisa preto composto em textos pequenos, códigos de barras e traços finos. Converte tipografia em curvas em uma cópia AI.",
@@ -500,6 +521,26 @@
         "overprint",
         "tipografia",
         "curvas"
+      ],
+      "doc": "docs/folha/README.md"
+    },
+    {
+      "id": "illustrator/retangulo-prancheta",
+      "titulo": "Retângulo da prancheta",
+      "descricao": "Cria com um clique um retângulo editável, sem preenchimento e alinhado às quatro bordas da prancheta ativa.",
+      "app": "illustrator",
+      "tipo": "script",
+      "icone": "acao",
+      "arquivo": "apps/illustrator/scripts/retangulo-prancheta.jsx",
+      "versao": "1.0.0",
+      "tags": [
+        "retângulo",
+        "forma",
+        "prancheta",
+        "centralizar",
+        "corte",
+        "trimbox",
+        "gabarito"
       ],
       "doc": "docs/folha/README.md"
     },
